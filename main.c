@@ -1,11 +1,23 @@
 #include "vector.h"
+#include <stdio.h>
+#define UNIT long long int
 
-int main(int argc, char** argv)
+void func(int pos, void *value)
 {
-    vector_t* v = new_vector(10);
-    int i = 10;
-    void* ptr = (void*)(&i);
-    vector_insert(v, ptr);
-    print_vector(v);
+    UNIT *c = (UNIT *)(value);
+    printf("[%d] %lld\n", pos, *c);
+}
+
+int main(int argc, char **argv)
+{
+    vector_t v;
+    init_vector(&v, 10, sizeof(UNIT));
+    UNIT i;
+    for (i = 0; i <= 25; i++)
+    {
+        vector_push_back(&v, (void *)&i);
+    }
+    print_vector(v, func);
+    free_vector(v);
     return 0;
 }
