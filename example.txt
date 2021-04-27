@@ -1,0 +1,4 @@
+./the-program -f image.png text.txt binary.bin -o package.bin -p p@s$w0rD
+
+
+
