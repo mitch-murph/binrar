@@ -50,10 +50,9 @@ void init(const void *a)
     as->in_use = 0;
 }
 
-void hash_demo()
+void prepare_compression_map(hashmap_t* map)
 {
-    hashmap_t map;
-    init_hashmap(&map, sizeof(struct s), 0x101, comp, hash, exists, init);
+    init_hashmap(map, sizeof(struct s), 0x101, comp, hash, exists, init);
 
     int buffer;
     FILE *ptr;
@@ -66,21 +65,27 @@ void hash_demo()
         s_t s;
         s.key = buffer;
 
-        s_t *sMaybe = (s_t *)hashmap_get(map, (void *)&s);
+        s_t *sMaybe = (s_t *)hashmap_get(*map, (void *)&s);
         if (sMaybe->in_use)
         {
             sMaybe->value++;
-            hashmap_set(map, (void *)sMaybe);
+            hashmap_set(*map, (void *)sMaybe);
         }
         else
         {
             s.value = 1;
             s.in_use = 1;
-            hashmap_set(map, (void *)&s);
+            hashmap_set(*map, (void *)&s);
         }
     }
 
     fclose(ptr);
+}
+
+int main(int argc, char **argv)
+{
+    hashmap_t map;
+    prepare_compression_map(&map);
 
     vector_t v;
     init_vector(&v, 10, sizeof(s_t));
@@ -90,11 +95,6 @@ void hash_demo()
 
     free_hashmap(&map);
     free_vector(v);
-}
-
-int main(int argc, char **argv)
-{
-    hash_demo();
 
     return 0;
 }
