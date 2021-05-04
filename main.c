@@ -17,7 +17,8 @@ struct s
 void func(int pos, void *value)
 {
     s_t *c = (s_t *)(value);
-    printf("[%d] %02x %d\n", pos, c->key, c->value);
+    printf("%p [%d]\t%02x\t%d\n", value, pos, c->key, c->value);
+    /* printf("\t%p\t%p\n", c->left, c->right);*/
 }
 
 int comp(const void *a, const void *b)
@@ -79,11 +80,26 @@ void prepare_compression_map(hashmap_t *map)
         {
             s.value = 1;
             s.in_use = 1;
+            s.right = NULL;
+            s.left = NULL;
+
             hashmap_set(*map, (void *)&s);
         }
     }
 
     fclose(ptr);
+}
+
+void print_tree_rec(s_t *n, int i)
+{
+    if (n == NULL)
+    {
+        return;
+    }
+    printf("%p [%d]\t%02x\t%d\n", n, i, n->key, n->value);
+    printf("\t%p\t%p\n", n->left, n->right);
+    print_tree_rec(n->left, i + 1);
+    print_tree_rec(n->right, i + 1);
 }
 
 int main(int argc, char **argv)
@@ -95,11 +111,11 @@ int main(int argc, char **argv)
     init_vector(&v, 10, sizeof(s_t));
     hashmap_convert_to_vector(map, &v);
     vector_sort(v, comp2);
+    /*
     print_vector(v, func);
-
+*/
     vector_t nodes;
-    init_vector(&nodes, v.size + 1, sizeof(s_t));
-
+    init_vector(&nodes, v.size * 10, sizeof(s_t));
     while (v.size > 1)
     {
         int curr = v.size - 1;
@@ -114,6 +130,7 @@ int main(int argc, char **argv)
 
         s_t new;
         new.in_use = 1;
+        new.key = 0;
         new.value = ((s_t *)ap)->value + ((s_t *)bp)->value;
         new.left = ap;
         new.right = bp;
@@ -121,16 +138,16 @@ int main(int argc, char **argv)
         vector_push_back(&v, &new);
         vector_sort(v, comp2);
     }
-    print_vector(v, func);
+    /*
+    printf("%p\n\n", NULL);
+*/
+    print_vector(nodes, func);
+
+    s_t *root = (s_t *)vector_get(v, 0);
+    print_tree_rec(root, 0);
 
     free_hashmap(&map);
     free_vector(v);
 
     return 0;
 }
-
-int in_use;
-unsigned char key;
-int value;
-s_t *left;
-s_t *right;
