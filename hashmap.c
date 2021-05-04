@@ -1,5 +1,6 @@
 #include "hashmap.h"
 #include "vector.h"
+#include <stdio.h>
 
 int init_hashmap(hashmap_t *hashmap, size_t element_size, int size,
                  int (*compare)(const void *a, const void *b),
@@ -32,7 +33,10 @@ int free_hashmap(hashmap_t *hashmap)
 int hashmap_set(hashmap_t hashmap, void *item)
 {
     int hash = hashmap.hash(item);
-    vector_insert(&hashmap.map, item, hash);
+    if (vector_set(hashmap.map, item, hash))
+    {
+        printf("Error: Hashmap cannot set kvp");
+    }
     return 0;
 }
 

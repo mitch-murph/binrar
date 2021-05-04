@@ -1,5 +1,5 @@
-#ifndef TREE_H
-#define TREE_H
+#ifndef HASHMAP_H
+#define HASHMAP_H
 
 #include "vector.h"
 

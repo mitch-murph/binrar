@@ -1,4 +1,6 @@
 #include "hashmap.h"
+#include "tree.h"
+#include "vector.h"
 #include <stdio.h>
 
 struct s
@@ -9,7 +11,6 @@ struct s
 };
 
 typedef struct s s_t;
-
 
 void func(int pos, void *value)
 {
@@ -22,6 +23,13 @@ int comp(const void *a, const void *b)
     s_t *as = (s_t *)a;
     s_t *bs = (s_t *)b;
     return as->key = bs->key;
+}
+
+int comp2(const void *a, const void *b)
+{
+    s_t *as = (s_t *)a;
+    s_t *bs = (s_t *)b;
+    return bs->value - as->value > 0;
 }
 
 int hash(const void *a)
@@ -72,17 +80,21 @@ void hash_demo()
         }
     }
 
+    fclose(ptr);
+
     vector_t v;
     init_vector(&v, 10, sizeof(s_t));
     hashmap_convert_to_vector(map, &v);
-
+    vector_sort(v, comp2);
     print_vector(v, func);
 
     free_hashmap(&map);
+    free_vector(v);
 }
 
 int main(int argc, char **argv)
 {
     hash_demo();
+
     return 0;
 }
