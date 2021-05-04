@@ -1,12 +1,5 @@
 #include "hashmap.h"
 #include <stdio.h>
-#define UNIT long int
-
-void func(int pos, void *value)
-{
-    UNIT *c = (UNIT *)(value);
-    printf("[%d] %ld\n", pos, *c);
-}
 
 struct s
 {
@@ -16,6 +9,13 @@ struct s
 };
 
 typedef struct s s_t;
+
+
+void func(int pos, void *value)
+{
+    s_t *c = (s_t *)(value);
+    printf("[%d] %02x %d\n", pos, c->key, c->value);
+}
 
 int comp(const void *a, const void *b)
 {
@@ -30,6 +30,12 @@ int hash(const void *a)
     return as->key % 0x101;
 }
 
+int exists(const void *a)
+{
+    s_t *as = (s_t *)a;
+    return as->in_use;
+}
+
 void init(const void *a)
 {
     s_t *as = (s_t *)a;
@@ -39,7 +45,7 @@ void init(const void *a)
 void hash_demo()
 {
     hashmap_t map;
-    init_hashmap(&map, sizeof(struct s), comp, hash, init);
+    init_hashmap(&map, sizeof(struct s), 0x101, comp, hash, exists, init);
 
     int buffer;
     FILE *ptr;
@@ -66,15 +72,11 @@ void hash_demo()
         }
     }
 
-    int i;
-    for (i = 0; i < map.map.capacity; i++)
-    {
-        s_t *as = (s_t *)(vector_get(map.map, i));
-        if (as->in_use)
-        {
-            printf("%p %02x: %d\n", as, as->key, as->value);
-        }
-    }
+    vector_t v;
+    init_vector(&v, 10, sizeof(s_t));
+    hashmap_convert_to_vector(map, &v);
+
+    print_vector(v, func);
 
     free_hashmap(&map);
 }

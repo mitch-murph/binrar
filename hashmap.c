@@ -1,11 +1,13 @@
 #include "hashmap.h"
 #include "vector.h"
 
-#define HASHMAP_INIT_SIZE 0x101
-
-int init_hashmap(hashmap_t *hashmap, size_t element_size, int (*compare)(const void *a, const void *b), int (*hash)(const void *a), void (*init)(const void *a))
+int init_hashmap(hashmap_t *hashmap, size_t element_size, int size,
+                 int (*compare)(const void *a, const void *b),
+                 int (*hash)(const void *a),
+                 int (*exists)(const void *a),
+                 void (*init)(const void *a))
 {
-    init_vector(&hashmap->map, HASHMAP_INIT_SIZE, element_size);
+    init_vector(&hashmap->map, size, element_size);
 
     if (init != NULL)
     {
@@ -17,6 +19,7 @@ int init_hashmap(hashmap_t *hashmap, size_t element_size, int (*compare)(const v
     }
     hashmap->compare = compare;
     hashmap->hash = hash;
+    hashmap->exists = exists;
     return 0;
 }
 
@@ -37,4 +40,19 @@ void *hashmap_get(hashmap_t hashmap, void *item)
 {
     int hash = hashmap.hash(item);
     return vector_get(hashmap.map, hash);
+}
+
+int hashmap_convert_to_vector(hashmap_t hashmap, vector_t *vector)
+{
+    int i;
+    for (i = 0; i < hashmap.map.capacity; i++)
+    {
+        void *item = vector_get(hashmap.map, i);
+        if (hashmap.exists(item))
+        {
+            vector_push_back(vector, item);
+        }
+    }
+
+    return 0;
 }
