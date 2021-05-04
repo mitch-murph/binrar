@@ -38,41 +38,13 @@ void init(const void *a)
 
 void hash_demo()
 {
-
-    hashmap_t map;
-    init_hashmap(&map, sizeof(struct s), comp, hash, init);
-
-    int i = 0;
-    for (i = 0; i < 10; i++)
-    {
-        s_t s;
-        s.key = 'A' + i;
-        s.value = i;
-        s.in_use = 1;
-        hashmap_set(map, (void *)&s);
-    }
-
-    for (i = 0; i < map.map.capacity; i++)
-    {
-        s_t *as = (s_t *)(vector_get(map.map, i));
-        if (as->in_use)
-        {
-            printf("%p %c: %d\n", as, as->key, as->value);
-        }
-    }
-
-    free_hashmap(&map);
-}
-
-int main(int argc, char **argv)
-{
     hashmap_t map;
     init_hashmap(&map, sizeof(struct s), comp, hash, init);
 
     int buffer;
     FILE *ptr;
 
-    ptr = fopen("image.png", "rb");
+    ptr = fopen("data-files/image.png", "rb");
 
     while ((buffer = fgetc(ptr)) != EOF)
     {
@@ -104,5 +76,11 @@ int main(int argc, char **argv)
         }
     }
 
+    free_hashmap(&map);
+}
+
+int main(int argc, char **argv)
+{
+    hash_demo();
     return 0;
 }
