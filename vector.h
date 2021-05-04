@@ -19,5 +19,6 @@ void print_vector(vector_t vector, void (*print_func)(int index, void* value));
 void vector_push_back(vector_t *vector, void *value);
 void* vector_get(vector_t vector, int index);
 void vector_resize(vector_t *vector, int new_capacity);
+void vector_insert(vector_t *vector, void *value, int position);
 
 #endif
