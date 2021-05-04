@@ -2,21 +2,14 @@
 
 CC = gcc
 CFLAGS = -Wall -Werror -ansi -lm
+DEPS = vector.h tree.h hashmap.h
+OBJ = main.o vector.o tree.o hashmap.o
 
-binrar.out: main.o vector.o tree.o hashmap.o
-	$(CC) $(CFLAGS) -o binrar.out main.o vector.o tree.o hashmap.o
+%.o: %.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
-main.o: main.c
-	$(CC) $(CFLAGS) -c  -o main.o main.c
-
-vector.o: vector.c vector.h 
-	$(CC) $(CFLAGS) -c  -o vector.o vector.c
-
-tree.o: tree.c tree.h 
-	$(CC) $(CFLAGS) -c  -o tree.o tree.c
-
-hashmap.o: hashmap.c hashmap.h 
-	$(CC) $(CFLAGS) -c  -o hashmap.o hashmap.c
+binrar.out: $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
-	rm hashmap.o tree.o vector.o main.o binrar.out
+	rm $(OBJ) binrar.out
