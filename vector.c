@@ -34,7 +34,7 @@ void *vector_get(vector_t vector, int index)
     return vector.vector + index * vector.element_size;
 }
 
-void vector_push_back(vector_t *vector, void *value)
+void *vector_push_back(vector_t *vector, void *value)
 {
     if (vector->size >= vector->capacity - 1)
     {
@@ -43,6 +43,7 @@ void vector_push_back(vector_t *vector, void *value)
     void *ptr = vector->vector + vector->size * vector->element_size;
     memcpy(ptr, value, vector->element_size);
     vector->size++;
+    return ptr;
 }
 
 void vector_resize(vector_t *vector, int new_capacity)

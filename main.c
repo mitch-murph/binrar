@@ -3,14 +3,16 @@
 #include "vector.h"
 #include <stdio.h>
 
+typedef struct s s_t;
+
 struct s
 {
     int in_use;
     unsigned char key;
     int value;
+    s_t *left;
+    s_t *right;
 };
-
-typedef struct s s_t;
 
 void func(int pos, void *value)
 {
@@ -29,7 +31,7 @@ int comp2(const void *a, const void *b)
 {
     s_t *as = (s_t *)a;
     s_t *bs = (s_t *)b;
-    return bs->value - as->value > 0;
+    return bs->value - as->value < 0;
 }
 
 int hash(const void *a)
@@ -48,9 +50,11 @@ void init(const void *a)
 {
     s_t *as = (s_t *)a;
     as->in_use = 0;
+    as->left = NULL;
+    as->right = NULL;
 }
 
-void prepare_compression_map(hashmap_t* map)
+void prepare_compression_map(hashmap_t *map)
 {
     init_hashmap(map, sizeof(struct s), 0x101, comp, hash, exists, init);
 
@@ -93,8 +97,40 @@ int main(int argc, char **argv)
     vector_sort(v, comp2);
     print_vector(v, func);
 
+    vector_t nodes;
+    init_vector(&nodes, v.size + 1, sizeof(s_t));
+
+    while (v.size > 1)
+    {
+        int curr = v.size - 1;
+        void *ap = vector_get(v, curr);
+        void *bp = vector_get(v, curr - 1);
+
+        ap = vector_push_back(&nodes, ap);
+        bp = vector_push_back(&nodes, bp);
+
+        vector_remove(&v, curr);
+        vector_remove(&v, curr - 1);
+
+        s_t new;
+        new.in_use = 1;
+        new.value = ((s_t *)ap)->value + ((s_t *)bp)->value;
+        new.left = ap;
+        new.right = bp;
+
+        vector_push_back(&v, &new);
+        vector_sort(v, comp2);
+    }
+    print_vector(v, func);
+
     free_hashmap(&map);
     free_vector(v);
 
     return 0;
 }
+
+int in_use;
+unsigned char key;
+int value;
+s_t *left;
+s_t *right;
