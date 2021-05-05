@@ -43,7 +43,11 @@ int hashmap_set(hashmap_t hashmap, void *item)
 void *hashmap_get(hashmap_t hashmap, void *item)
 {
     int hash = hashmap.hash(item);
-    return vector_get(hashmap.map, hash);
+    void *item_maybe = vector_get(hashmap.map, hash);
+    if (hashmap.exists(item_maybe) && hashmap.compare(item, item_maybe)){
+        return item_maybe;
+    }
+    return NULL;
 }
 
 int hashmap_convert_to_vector(hashmap_t hashmap, vector_t *vector)
