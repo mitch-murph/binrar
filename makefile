@@ -2,8 +2,8 @@
 
 CC = gcc
 CFLAGS = -Wall -Werror -ansi -lm
-DEPS = vector.h tree.h hashmap.h
-OBJ = main.o vector.o tree.o hashmap.o
+DEPS = vector.h tree.h hashmap.h compress.h
+OBJ = main.o vector.o tree.o hashmap.o compress.o
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
