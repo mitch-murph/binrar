@@ -1,19 +1,23 @@
 #include <stdio.h>
 #include "tree.h"
 
-typedef struct node node_t;
-
-struct node
+void init_node(node_t *node, void* ptr)
 {
-    void *value;
-    node_t *left;
-    node_t *right;
-};
+    node->ptr = ptr;
+    node->left = NULL;
+    node->right = NULL;
+}
 
-int init_tree(tree_t *tree, size_t element_size)
+int combine_tree(tree_t *tree, node_t *left, node_t *right)
 {
-    tree->head = NULL;
-    init_vector(&tree->nodes, 0, sizeof(node_t));
-    init_vector(&tree->values, 0, element_size);
+    /* TODO: is != null needed? */
+    if (left != NULL)
+    {
+        tree->left = left;
+    }
+    if (right != NULL)
+    {
+        tree->right = right;
+    }
     return 0;
 }

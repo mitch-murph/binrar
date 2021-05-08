@@ -4,18 +4,17 @@
 #include <stdlib.h>
 #include "vector.h"
 
-typedef struct tree tree_t;
 typedef struct node node_t;
+typedef node_t tree_t;
 
-struct tree
+struct node
 {
-    node_t *head;
-    vector_t nodes;
-    vector_t values;
+    void *ptr;
+    node_t *left;
+    node_t *right;
 };
 
-int init_tree(tree_t *tree, size_t element_size);
-
-void tree_get(vector_t vector, char pattern);
+void init_node(node_t *node, void* ptr);
+int combine_tree(tree_t *tree, node_t *left, node_t *right);
 
 #endif
