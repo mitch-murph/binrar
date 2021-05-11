@@ -50,9 +50,8 @@ void *vector_pop(vector_t *vector)
 {
     if (vector->size > 0)
     {
-        void *curr = vector_get(*vector, vector->size);
         vector->size--;
-        return curr;
+        return vector_get(*vector, vector->size);
     }
     return NULL;
 }

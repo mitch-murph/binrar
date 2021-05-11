@@ -64,7 +64,7 @@ void count_bytes(char *filename, hashmap_t *map)
 
 void func2(int pos, void *value)
 {
-    node_t *c = (node_t *)(value);
+    node_t *c = *(node_t **)(value);
     printf("%p [%d]\t%c\t%d\n", value, pos, c->key, c->value);
 }
 
@@ -77,8 +77,8 @@ int comp(const void *a, const void *b)
 
 int comp2(const void *a, const void *b)
 {
-    node_t *as = (node_t *)a;
-    node_t *bs = (node_t *)b;
+    node_t *as = *(node_t **)a;
+    node_t *bs = *(node_t **)b;
     return bs->value - as->value < 0;
 }
 
@@ -117,15 +117,61 @@ void print_tree_rec(node_t *n, int i)
     print_tree_rec(n->right, i + 1);
 }
 
-void tranverse(node_t *root)
+void tranverse2(node_t *root)
 {
     vector_t stack;
     init_vector(&stack, 10, sizeof(node_t *));
-    printf("%p\n", root);
-    vector_push_back(&stack, (void *)&root);
 
-    node_t *jp = *(node_t **)vector_get(stack, 0);
-    printf("%p\n", jp);
+    vector_push_back(&stack, (void *)&root);
+    while (stack.size > 0)
+    {
+        node_t *current = *(node_t **)vector_pop(&stack);
+        if (current->left == NULL && current->right == NULL)
+            printf("%c\n", current->key);
+        else
+            printf("%02x%02x\n", 0, 0);
+
+        if (current->left != NULL)
+            vector_push_back(&stack, (void *)&current->left);
+        if (current->right != NULL)
+            vector_push_back(&stack, (void *)&current->right);
+    }
+}
+
+void tranverse(node_t *node)
+{
+    if (node->left == NULL && node->right == NULL)
+    {
+        printf("1%c", node->key);
+    }
+    else
+    {
+        printf("0");
+        tranverse(node->right);
+        tranverse(node->left);
+    }
+}
+
+int hashmap_convert(hashmap_t hashmap, vector_t *vector)
+{
+    int i;
+    for (i = 0; i < hashmap.map.capacity; i++)
+    {
+        node_t *item = (void *)vector_get(hashmap.map, i);
+        node_t *node = (node_t *)malloc(sizeof(node_t));
+        init_node(node);
+        if (hashmap.exists(item))
+        {
+            node->in_use = item->in_use;
+            node->key = item->key;
+            node->left = item->left;
+            node->right = item->right;
+            node->value = item->value;
+            vector_push_back(vector, &node);
+        }
+    }
+
+    return 0;
 }
 
 /* PUBLIC */
@@ -135,52 +181,33 @@ void compress()
     init_hashmap(&map, sizeof(node_t), 0x101, comp, hash, exists, init_node);
     count_bytes("data-files/comp.bin", &map);
 
-    vector_t v;
-    init_vector(&v, 10, sizeof(node_t));
-    hashmap_convert_to_vector(map, &v);
-    vector_sort(v, comp2);
+    vector_t nodesp;
+    init_vector(&nodesp, 10, sizeof(node_t *));
+    hashmap_convert(map, &nodesp);
+    vector_sort(nodesp, comp2);
 
-    vector_t nodes;
-    init_vector(&nodes, 1, sizeof(node_t));
-    while (v.size > 1)
+    while (nodesp.size > 1)
     {
-        int curr = v.size - 1;
-        node_t *ap = vector_get(v, curr);
-        node_t *bp = vector_get(v, curr - 1);
+        int curr = nodesp.size - 1;
+        node_t **app = (node_t **)vector_get(nodesp, curr);
+        node_t **bpp = (node_t **)vector_get(nodesp, curr - 1);
 
-        vector_push_back(&nodes, ap);
-        int ai = nodes.size;
-        vector_push_back(&nodes, bp);
-        int bi = nodes.size;
-        
-        ap = vector_get(v, ai);
-        bp = vector_get(v, bi);
-        printf("%c\t%d\n", ap->key, ap->value);
-        printf("%c\t%d\n", bp->key, bp->value);
+        node_t *new = (node_t *)malloc(sizeof(node_t));
+        new->in_use = 1;
+        new->key = 0;
+        new->value = (*app)->value + (*bpp)->value;
+        new->left = *app;
+        new->right = *bpp;
 
-        node_t new;
-        new.in_use = 1;
-        new.key = 0;
-        new.value = ap->value + bp->value;
-        new.left = ap;
-        new.right = bp;
+        vector_remove(&nodesp, curr);
+        vector_remove(&nodesp, curr - 1);
 
-        printf("new value: %d\n", new.value);
-
-        vector_remove(&v, curr);
-        vector_remove(&v, curr - 1);
-
-        vector_push_back(&v, &new);
-        vector_sort(v, comp2);
+        vector_push_back(&nodesp, &new);
+        vector_sort(nodesp, comp2);
     }
-    print_vector(nodes, func2);
-
-/*
-    node_t *root = (node_t *)vector_get(v, 0);
-    print_tree_rec(root, 0);
-    printf("%d\n", root->value);
-    tranverse(root);*/
+    node_t *head = *(node_t **)vector_get(nodesp, 0);
+    tranverse(head);
 
     free_hashmap(&map);
-    free_vector(v);
+    free_vector(nodesp);
 }
