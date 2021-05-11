@@ -110,11 +110,37 @@ void print_tree_rec(node_t *n, int i)
         return;
     }
     print_tab(i);
-    printf("%p\n", n);
+    printf("%p [%d]\n", n, n->value);
     print_tab(i);
     printf("\t%p\t%p\n", n->left, n->right);
     print_tree_rec(n->left, i + 1);
     print_tree_rec(n->right, i + 1);
+}
+
+void tranverse(node_t *root)
+{
+    if (root == NULL)
+    {
+        return;
+    }
+    vector_t stack;
+    init_vector(&stack, 10, sizeof(node_t*));
+
+    vector_push_back(&stack, &root);
+    while (stack.size > 0)
+    {
+        node_t *node = (node_t*)vector_pop(&stack);
+        if (node == NULL) break;
+        printf("%d %p %p\n", node->key, node->right, node->left);
+        if (node->right != NULL)
+        {
+            vector_push_back(&stack, (void*)node->right);
+        }
+        if (node->left != NULL)
+        {
+            vector_push_back(&stack, (void*)node->left);
+        }
+    }
 }
 
 /* PUBLIC */
@@ -122,7 +148,7 @@ void compress()
 {
     hashmap_t map;
     init_hashmap(&map, sizeof(node_t), 0x101, comp, hash, exists, init_node);
-    count_bytes("data-files/random-file.bin", &map);
+    count_bytes("data-files/comp.bin", &map);
 
     vector_t v;
     init_vector(&v, 10, sizeof(node_t));
@@ -155,7 +181,9 @@ void compress()
     }
 
     node_t *root = (node_t *)vector_get(v, 0);
-    print_tree_rec(root, 0);
+    /*print_tree_rec(root, 0);*/
+    printf("%p\n", root->right);
+    tranverse(root);
 
     free_hashmap(&map);
     free_vector(v);

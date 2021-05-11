@@ -17,6 +17,7 @@ int init_vector(vector_t *vector, int capacity, size_t element_size);
 void free_vector(vector_t vector);
 void print_vector(vector_t vector, void (*print_func)(int index, void *value));
 void *vector_push_back(vector_t *vector, void *value);
+void *vector_pop(vector_t *vector);
 void *vector_get(vector_t vector, int index);
 void vector_resize(vector_t *vector, int new_capacity);
 int vector_insert(vector_t *vector, void *value, int position);

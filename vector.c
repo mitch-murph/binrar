@@ -46,6 +46,17 @@ void *vector_push_back(vector_t *vector, void *value)
     return ptr;
 }
 
+void *vector_pop(vector_t *vector)
+{
+    if (vector->size > 0)
+    {
+        void *curr = vector_get(*vector, vector->size);
+        vector->size--;
+        return curr;
+    }
+    return NULL;
+}
+
 void vector_resize(vector_t *vector, int new_capacity)
 {
     void *old_vector = vector->vector;
