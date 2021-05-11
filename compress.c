@@ -83,19 +83,17 @@ int exists(const void *a)
     return as->in_use;
 }
 
-void hashmap_convert_to_vector_of_nodes(hashmap_t map, vector_t *vector)
+void hashmap_convert_to_vector(hashmap_t map, vector_t *vector)
 {
     int i;
-    for (i = 0; i < hashmap.map.capacity; i++)
+    for (i = 0; i < map.map.capacity; i++)
     {
-        void *item = vector_get(hashmap.map, i);
-        if (hashmap.exists(item))
+        void *item = vector_get(map.map, i);
+        if (map.exists(item))
         {
-            vector_push_back(vector, item);
+            vector_push_back(vector, (void*)item);
         }
     }
-
-    return 0;
 }
 
 /* PUBLIC */
@@ -105,22 +103,44 @@ void compress()
     init_hashmap(&map, sizeof(kvp_t), 0x101, comp, hash, exists, init_kvp);
     count_bytes("data-files/random-file.bin", &map);
 
-    vector_t v;
-    init_vector(&v, 10, sizeof(node_t));
-    hashmap_convert_to_vector_of_nodes(map, &v);
-    vector_sort(v, comp2);
+    vector_t kvps;
+    init_vector(&kvps, 10, sizeof(kvp_t));
+    hashmap_convert_to_vector(map, &kvps);
 
-    /*
     vector_t nodes;
-    init_vector(&nodes, 1, sizeof(node_t));
-    while (v.size > 1)
+    init_vector(&nodes, 10, sizeof(node_t));
+
+    vector_t roots;
+    init_vector(&roots, 10, sizeof(node_t*));
+    int i;
+    for (i = 0; i < kvps.size; i++)
     {
-        int curr = v.size - 1;
+        node_t new;
+        init_node(&new, vector_get(kvps, i));
+        node_t* new_item = (node_t*)vector_push_back(&roots, (void*)&new);
+        vector_push_back(&roots, new_item);
+    }
+    
+    while (roots.size > 1)
+    {
+        int curr = roots.size - 1;
+        void *item = vector_get(roots, curr);
+        node_t *node = *(node_t**)item;
+        kvp_t *kvp = (kvp_t*)node->ptr;
+        printf("%p %p\n", node, kvp);
+        vector_remove(&roots, curr);
+
+
+        /*
+
         void *ap = vector_get(v, curr);
         void *bp = vector_get(v, curr - 1);
 
-        ap = vector_push_back(&nodes, ap);
-        bp = vector_push_back(&nodes, bp);
+        tree_t tree;
+        combine_tree(&tree, ap, bp);
+
+
+        ap = vector_push_back(&v, ap);
 
         vector_remove(&v, curr);
         vector_remove(&v, curr - 1);
@@ -134,12 +154,12 @@ void compress()
 
         vector_push_back(&v, &new);
         vector_sort(v, comp2);
+        */
     }
-    */
 
-    kvp_t *root = (kvp_t *)vector_get(v, 0);
-    print_tree_rec(root, 0);
+    /* kvp_t *root = (kvp_t *)vector_get(v, 0); */
+    /* print_tree_rec(root, 0); */
 
     free_hashmap(&map);
-    free_vector(v);
+    free_vector(nodes);
 }
