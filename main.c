@@ -26,26 +26,49 @@ int combine_bits(int a, int b, int s)
     return a << s | b >> (8 - s);
 }
 
+void print_bits(int c)
+{
+    int i;
+    for (i = 0; i < 8; i++)
+        printf("%d", get_bit(c, i));
+    /*printf(" [%c] [%02x]\n", c, c);*/
+}
+
 void read_bits()
 {
     FILE *fp;
     int buffer;
     int temp;
-    fp = fopen("data-files/comp2.bin", "rb");
+    fp = fopen("data-files/write.bin", "rb");
 
-    int i, count = 0;
-    while ((buffer = getc(fp)) != EOF)
+    int count = 0, flag = 1;
+    while (1)
     {
-        printf("%02x ", buffer);
-        int i;
-        for (i = 0; i < 8; i++)
+        if (flag)
+        {
+            if ((buffer = getc(fp)) == EOF)
+            {
+                break;
+            }
+        }
+        int i = 0;
+        if (!flag)
+            i = count;
+        flag = 1;
+        for (; i < 8; i++)
         {
             if (get_bit(buffer, i))
             {
+                i++;
                 temp = buffer;
                 buffer = getc(fp);
+                int c = combine_bits(temp, buffer, i);
+                printf("\n%c ", c);
+                print_bits(c);
+                flag = 0;
+                count = i;
+                break;
             }
-            count++;
         }
     }
 
@@ -54,6 +77,30 @@ void read_bits()
 
 int main(int argc, char **argv)
 {
+    compress();
+    read_bits();/*
+    int buffer = 0;
+    int count = 0;
+    buffer = (buffer << 1);
+    count++;
+    buffer = (buffer << 1);
+    count++;
+    buffer = (buffer << 1) + 1;
+    count++;
+
+
+    int key = 'A';
+    int a = key >> count;
+    buffer = buffer << 8 - count;
+    int temp = key << 8 - count;
+    buffer = buffer | a;
+
+    print_bits(buffer);
+    print_bits(key);
+    print_bits(a);
+    print_bits(temp);
+    print_bits(buffer);*/
+
     return 0;
 }
 
@@ -68,6 +115,16 @@ int main(int argc, char **argv)
 A1 10100001
 00 00000000
 
-00101000001101000011010100010101010001001010000100000000
+001 01000001 1 01000011 01 01000101 01 01000100 1 0100001 00000000
+00101000 00110100  00110101  00010101  01000100 10100001  00000000
 2834351544A100
+*/
+
+/*
+
+01 01000011 01 01000010 1 01000001 000
+C 01000011
+B 01000010
+A 01000001
+
 */

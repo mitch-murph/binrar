@@ -79,7 +79,7 @@ int comp2(const void *a, const void *b)
 {
     node_t *as = *(node_t **)a;
     node_t *bs = *(node_t **)b;
-    return bs->value - as->value < 0;
+    return as->value - bs->value < 0;
 }
 
 int hash(const void *a)
@@ -117,39 +117,80 @@ void print_tree_rec(node_t *n, int i)
     print_tree_rec(n->right, i + 1);
 }
 
-void tranverse2(node_t *root)
+void tranverse(node_t *root)
 {
+    FILE *fp;
+    int buffer = 0;
+    int temp = 0;
+    int count = 0;
+    int flag = 0;
+    fp = fopen("data-files/write.bin", "wb");
+
     vector_t stack;
     init_vector(&stack, 10, sizeof(node_t *));
 
     vector_push_back(&stack, (void *)&root);
     while (stack.size > 0)
     {
+        flag = 0;
         node_t *current = *(node_t **)vector_pop(&stack);
         if (current->left == NULL && current->right == NULL)
-            printf("%c\n", current->key);
+        {
+            buffer = (buffer << 1) + 1;
+            count++;
+            int a = current->key >> count;
+            buffer = buffer << 8 - count;
+            temp = current->key << 8 - count;
+            buffer = buffer | a;
+
+            if (current->key == 0x99)
+            {
+                printf("count: %d\n", count);
+                printf("a: ");
+                print_bits(a);
+                printf("temp: ");
+                print_bits(temp);
+                printf("\n\n");
+            }
+
+            flag = 1;
+        }
         else
-            printf("%02x%02x\n", 0, 0);
-
-        if (current->left != NULL)
+        {
+            buffer = buffer << 1;
+            count++;
             vector_push_back(&stack, (void *)&current->left);
-        if (current->right != NULL)
             vector_push_back(&stack, (void *)&current->right);
-    }
-}
+        }
 
-void tranverse(node_t *node)
-{
-    if (node->left == NULL && node->right == NULL)
-    {
-        printf("1%c", node->key);
+        if (count > 7 || flag)
+        {
+            fputc((char)buffer, fp);
+            print_bits((char)buffer);
+            if (flag)
+            {
+                buffer = temp >> 8 - count;
+                if (count > 7)
+                {
+                    fputc((char)temp, fp);
+                    print_bits((char)temp);
+                    count = 0;
+                    buffer = 0;
+                }
+            }
+            else
+            {
+                count = 0;
+            }
+        }
     }
-    else
+    if (count > 0)
     {
-        printf("0");
-        tranverse(node->right);
-        tranverse(node->left);
+        buffer = buffer << 8 - count;
+        fputc((char)buffer, fp);
+        print_bits((char)buffer);
     }
+    fclose(fp);
 }
 
 int hashmap_convert(hashmap_t hashmap, vector_t *vector)
@@ -179,7 +220,7 @@ void compress()
 {
     hashmap_t map;
     init_hashmap(&map, sizeof(node_t), 0x101, comp, hash, exists, init_node);
-    count_bytes("data-files/comp.bin", &map);
+    count_bytes("data-files/compp.bin", &map);
 
     vector_t nodesp;
     init_vector(&nodesp, 10, sizeof(node_t *));
