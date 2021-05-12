@@ -130,7 +130,7 @@ void vector_sort(vector_t vector, int (*compare)(const void *a, const void *b))
     {
         for (j = 0; j < vector.size; j++)
         {
-            if (compare(vector_get(vector, i), vector_get(vector, j)))
+            if (compare(vector_get(vector, i), vector_get(vector, j)) > 0)
             {
                 vector_swap(vector, i, j);
             }

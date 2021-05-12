@@ -1,7 +1,7 @@
 # makefile for generating binrar.out
 
 CC = gcc
-CFLAGS = -Wall -Werror -ansi -lm
+CFLAGS = -ansi -lm
 DEPS = vector.h tree.h hashmap.h compress.h
 OBJ = main.o vector.o tree.o hashmap.o compress.o
 

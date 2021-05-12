@@ -65,7 +65,7 @@ void count_bytes(char *filename, hashmap_t *map)
 void func2(int pos, void *value)
 {
     node_t *c = *(node_t **)(value);
-    printf("%p [%d]\t%c\t%d\n", value, pos, c->key, c->value);
+    printf("%d\t%p [%d]\t%c\n", c->value, value, pos, c->key);
 }
 
 int comp(const void *a, const void *b)
@@ -79,7 +79,7 @@ int comp2(const void *a, const void *b)
 {
     node_t *as = *(node_t **)a;
     node_t *bs = *(node_t **)b;
-    return as->value - bs->value < 0;
+    return bs->value - as->value < 0;
 }
 
 int hash(const void *a)
@@ -117,6 +117,34 @@ void print_tree_rec(node_t *n, int i)
     print_tree_rec(n->right, i + 1);
 }
 
+void convert_bytes(node_t *current, vector_t *addr)
+{
+    if (current->left == NULL && current->right == NULL)
+    {
+        int i;
+        for (i = 0; i < addr->size; i++)
+        {
+            int x =  *(int*)vector_get(*addr, i);
+            printf("%d", x);
+        }
+        printf(" -> %02x\n", current->key);
+    }
+    else
+    {
+        int temp;
+
+        temp = 0;
+        vector_push_back(addr, &temp);
+        convert_bytes(current->left, addr);
+        vector_pop(addr);
+
+        temp = 1;
+        vector_push_back(addr, &temp);
+        convert_bytes(current->right, addr);
+        vector_pop(addr);
+    }
+}
+
 void tranverse(node_t *root)
 {
     FILE *fp;
@@ -143,16 +171,6 @@ void tranverse(node_t *root)
             temp = current->key << 8 - count;
             buffer = buffer | a;
 
-            if (current->key == 0x99)
-            {
-                printf("count: %d\n", count);
-                printf("a: ");
-                print_bits(a);
-                printf("temp: ");
-                print_bits(temp);
-                printf("\n\n");
-            }
-
             flag = 1;
         }
         else
@@ -166,14 +184,12 @@ void tranverse(node_t *root)
         if (count > 7 || flag)
         {
             fputc((char)buffer, fp);
-            print_bits((char)buffer);
             if (flag)
             {
                 buffer = temp >> 8 - count;
                 if (count > 7)
                 {
                     fputc((char)temp, fp);
-                    print_bits((char)temp);
                     count = 0;
                     buffer = 0;
                 }
@@ -188,7 +204,6 @@ void tranverse(node_t *root)
     {
         buffer = buffer << 8 - count;
         fputc((char)buffer, fp);
-        print_bits((char)buffer);
     }
     fclose(fp);
 }
@@ -220,12 +235,13 @@ void compress()
 {
     hashmap_t map;
     init_hashmap(&map, sizeof(node_t), 0x101, comp, hash, exists, init_node);
-    count_bytes("data-files/compp.bin", &map);
+    count_bytes("data-files/comppp.bin", &map);
 
     vector_t nodesp;
     init_vector(&nodesp, 10, sizeof(node_t *));
     hashmap_convert(map, &nodesp);
     vector_sort(nodesp, comp2);
+    print_vector(nodesp, func2);
 
     while (nodesp.size > 1)
     {
@@ -248,6 +264,10 @@ void compress()
     }
     node_t *head = *(node_t **)vector_get(nodesp, 0);
     tranverse(head);
+
+    vector_t addr;
+    init_vector(&addr, 10, sizeof(int));
+    convert_bytes(head, &addr);
 
     free_hashmap(&map);
     free_vector(nodesp);

@@ -63,7 +63,7 @@ void read_bits()
                 temp = buffer;
                 buffer = getc(fp);
                 int c = combine_bits(temp, buffer, i);
-                printf("\n%c ", c);
+                printf("\n[%02x] ", (unsigned char)c);
                 print_bits(c);
                 flag = 0;
                 count = i;
@@ -78,7 +78,35 @@ void read_bits()
 int main(int argc, char **argv)
 {
     compress();
-    read_bits();/*
+    /*read_bits();*/
+    /*
+
+
+
+    FILE *fp;
+    fp = fopen("data-files/two.bin", "wb");
+    putc('A', fp);
+    putc(EOF, fp);
+    putc('B', fp);
+    putc(EOF, fp);
+    putc('C', fp);
+    putc(EOF, fp);
+    putc('D', fp);
+    fclose(fp);
+
+    fp = fopen("data-files/two.bin", "rb");
+    char c;
+    int count = 0;
+    while ((c = getc(fp)) != EOF || count < 2)
+    {
+        if (c == EOF)
+            count++;
+        printf("%c\n", c);
+    }
+    fclose(fp);
+
+    compress();
+    read_bits();
     int buffer = 0;
     int count = 0;
     buffer = (buffer << 1);
@@ -126,5 +154,21 @@ A1 10100001
 C 01000011
 B 01000010
 A 01000001
+
+
+
+
+
+01010000110101000010101000001000
+
+00000000 -> 43
+00000010 -> 42
+00000011 -> 41
+
+[43] 01000011
+[42] 01000010
+[41] 01000001
+
+
 
 */
