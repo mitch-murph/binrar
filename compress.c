@@ -235,7 +235,7 @@ void compress()
 {
     hashmap_t map;
     init_hashmap(&map, sizeof(node_t), 0x101, comp, hash, exists, init_node);
-    count_bytes("data-files/comppp.bin", &map);
+    count_bytes("data-files/24-bit.bmp", &map);
 
     vector_t nodesp;
     init_vector(&nodesp, 10, sizeof(node_t *));
