@@ -110,3 +110,12 @@ void seek_file_contents(FILE *fp)
     for (i = 0; i < file_count; i++)
         read_filename(filename, fp);
 }
+
+void copy_file(FILE *dest, FILE *src)
+{
+    int buffer;
+    while ((buffer = getc(src)) != EOF)
+    {
+        putc(buffer, dest);
+    }
+}

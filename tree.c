@@ -6,6 +6,7 @@ void init_node(const void *a)
     node_t *node = (node_t *)a;
     node->in_use = 0;
     node->value = 0;
+    node->bit_length = 0;
     node->left = NULL;
     node->right = NULL;
 }
@@ -17,6 +18,7 @@ void init_node_from_node(const void *a, const void *b)
     dest->in_use = src->in_use;
     dest->key = src->key;
     dest->value = src->value;
+    dest->bit_length = 0;
     dest->left = src->left;
     dest->right = src->right;
 }

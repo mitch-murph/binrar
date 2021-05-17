@@ -3,6 +3,7 @@
 #include "filepackager.h"
 #include <stdio.h>
 
+
 void generate_bin()
 {
     FILE *fp;
@@ -94,13 +95,13 @@ int main(int argc, char **argv)
     */
 
     /*printf("%02x\n", buffer);*/
+    
+    compress("data-files/comppp.bin", "data-files/out.bin");
 
-    compress("data-files/comp.bin", "data-files/out.bin");
-
-    printf("\n");
+    /*
     FILE *fp;
 
-    fp = fopen("data-files/tree.bin", "rb");
+    fp = fopen("data-files/out.bin", "rb");
     int c;
     while ((c = getc(fp)) != EOF)
     {
@@ -109,6 +110,7 @@ int main(int argc, char **argv)
         printf("\n");
     }
     fclose(fp);
+    */
 
     /*
     read_bits();
