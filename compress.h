@@ -1,7 +1,9 @@
 #ifndef COMPRESS_H
 #define COMPRESS_H
 
-void compress(char *input_file, char *output_file);
+#include <stdio.h>
+
+void compress(FILE *in_fp, FILE *out_fp);
 void decompress();
 
 #endif

@@ -7,13 +7,12 @@
 #include <stdio.h>
 #include <string.h>
 
-void count_bytes(char *filename, hashmap_t *map)
+#define DEBUG
+
+void count_bytes(FILE *fp, hashmap_t *map)
 {
     int buffer;
-    FILE *ptr;
-    ptr = fopen(filename, "rb");
-
-    while ((buffer = fgetc(ptr)) != EOF)
+    while ((buffer = fgetc(fp)) != EOF)
     {
         node_t node;
         node.key = buffer;
@@ -33,8 +32,6 @@ void count_bytes(char *filename, hashmap_t *map)
             hashmap_set(*map, (void *)&node);
         }
     }
-
-    fclose(ptr);
 }
 
 void func2(int pos, void *value)
@@ -99,11 +96,8 @@ int assign_tree_addr_to_node(node_t *current, vector_t *addr)
     return left_bit_size + right_bit_size;
 }
 
-int write_huffman_tree(char *out_file, node_t *root)
+int write_huffman_tree(FILE *fp, node_t *root)
 {
-    FILE *fp;
-    fp = fopen(out_file, "wb");
-
     vector_t stack;
     init_vector(&stack, 10, sizeof(node_t *));
 
@@ -127,7 +121,6 @@ int write_huffman_tree(char *out_file, node_t *root)
         }
     }
     write_bit(&buffer, &buffer_size, 0, -1, fp);
-    fclose(fp);
 
     return size;
 }
@@ -172,21 +165,17 @@ node_t *build_huffman_tree(vector_t nodes)
     return *(node_t **)vector_get(nodes, 0);
 }
 
-void write_compressed_file(char *input_file, FILE *fp, vector_t nodes)
+void write_compressed_file(FILE *in_fp, FILE *out_fp, vector_t nodes)
 {
     int i;
     for (i = 0; i < nodes.size; i++)
     {
         node_t *node = *(node_t **)vector_get(nodes, i);
-#ifdef DEBUG
-        print_bits_length(node->value, node->bit_length);
-        printf(" -> %c\n", node->key);
-#endif
+        #ifdef DEBUG
+            print_bits_length(node->value, node->bit_length);
+            printf(" -> %c\n", node->key);
+        #endif
     }
-
-    FILE *in_fp;
-    in_fp = fopen(input_file, "rb");
-    FILE *out_fp = fp;
 
     int bit_buffer = 0, bit_buffer_size = 0;
     int buffer;
@@ -208,9 +197,6 @@ void write_compressed_file(char *input_file, FILE *fp, vector_t nodes)
         write_bit(&bit_buffer, &bit_buffer_size, bits, bit_length + 1, out_fp);
     }
     write_bit(&bit_buffer, &bit_buffer_size, 0, -1, out_fp);
-
-    fclose(in_fp);
-    fclose(out_fp);
 }
 
 void read_compressed_file(char *input_file, char *output_file, node_t *root)
@@ -244,12 +230,12 @@ void read_compressed_file(char *input_file, char *output_file, node_t *root)
 }
 
 /* PUBLIC */
-void compress(char *input_file, char *output_file)
+void compress(FILE *in_fp, FILE *out_fp)
 {
     /* Count the frequency of each byte into a hashmap */
     hashmap_t map;
     init_hashmap(&map, sizeof(node_t), 0x101, comp, hash, exists, init_node);
-    count_bytes(input_file, &map);
+    count_bytes(in_fp, &map);
 
     /* Convert the hashmap into array of dynamically allocated tree nodes */
     vector_t nodes;
@@ -267,26 +253,27 @@ void compress(char *input_file, char *output_file)
     vector_t addr;
     init_vector(&addr, 10, sizeof(int));
     int compressed_size = assign_tree_addr_to_node(root, &addr);
-#ifdef DEBUG
-    printf("compressed size: %d = %d %d/8\n", compressed_size, compressed_size / 8, compressed_size % 8);
-#endif
+    #ifdef DEBUG
+        printf("compressed size: %d = %d %d/8\n", compressed_size, compressed_size / 8, compressed_size % 8);
+    #endif
 
     /* Write huffman tree */
-    char temp_file[260];
-    strcpy(temp_file, output_file);
-    strcat(temp_file, ".tmp");
-    int tree_size = write_huffman_tree(temp_file, root);
-    FILE *fp = fopen(output_file, "wb");
-    FILE *fp1 = fopen(temp_file, "rb");
-    fwrite(&tree_size, sizeof(int), 1, fp);
-    copy_file(fp, fp1);
+    int tree_size = 0;
+    fpos_t tree_size_pos, tree_end_pos;
+    fgetpos(out_fp, &tree_size_pos);
+    fwrite(&tree_size, sizeof(int), 1, out_fp);
 
-    /* Calculate compressed file size in bits */
-    /* calculate_compressed_size(nodes); */
+    tree_size = write_huffman_tree(out_fp, root);
+    
+    fgetpos(out_fp, &tree_end_pos);
+    fsetpos(out_fp, &tree_size_pos);
+    fwrite(&tree_size, sizeof(int), 1, out_fp);
+    fsetpos(out_fp, &tree_end_pos);
 
     /* Rewrite file subbing in addr for each byte */
-    fwrite(&compressed_size, sizeof(int), 1, fp);
-    write_compressed_file(input_file, fp, nodes);
+    fwrite(&compressed_size, sizeof(int), 1, out_fp);
+    rewind(in_fp);
+    write_compressed_file(in_fp, out_fp, nodes);
 
     /* 
     read_compressed_file(output_file, output_file, root);*/

@@ -62,102 +62,11 @@ void read_bits()
 
 int main(int argc, char **argv)
 {
-    /*vector_t fns;
-    init_vector(&fns, 1, sizeof(char **) * 255);
-    char *s;
-    s = "data-files/comp.bin";
-    vector_push_back(&fns, s);
-    s = "data-files/compp.bin";
-    vector_push_back(&fns, s);
-
-    combine_files(fns, "data-files/out.bin");
-    separate_files("data-files/out.bin");
-
-    FILE*fp = fopen("data-files/out.bin", "rb");
-    seek_file_contents(fp);*/
-
-    /*
-    int buffer = 0;
-    int buffer_size = 0;
-    int value = 3;
-    int size = 3;
-    write_bit(&buffer, &buffer_size, value, size);
-    value = 3;
-    size = 3;
-    write_bit(&buffer, &buffer_size, value, size);
-    value = 0;
-    size = 4;
-    write_bit(&buffer, &buffer_size, value, size);
-    value = 2;
-    size = 3;
-    write_bit(&buffer, &buffer_size, value, size);
-    write_bit(&buffer, &buffer_size, 0, -1);
-    */
-
-    /*printf("%02x\n", buffer);*/
-    
-    compress("data-files/comppp.bin", "data-files/out.bin");
-
-    /*
-    FILE *fp;
-
-    fp = fopen("data-files/out.bin", "rb");
-    int c;
-    while ((c = getc(fp)) != EOF)
-    {
-        printf("%02x ", c);
-        print_bits_length(c, 7);
-        printf("\n");
-    }
-    fclose(fp);
-    */
-
-    /*
-    read_bits();
-    */
+    FILE *fp1 = fopen("data-files/comppp.bin", "rb");
+    FILE *fp2 = fopen("data-files/out.bin", "wb");
+    compress(fp1, fp2);
+    fclose(fp1);
+    fclose(fp2);
 
     return 0;
 }
-
-/*
-001A1C01E01D1B
-
-28 00101000
-34 00110100
-35 00110101
-15 00010101
-44 01000100
-A1 10100001
-00 00000000
-
-001 01000001 1 01000011 01 01000101 01 01000100 1 01000010 0000000
-00101000 00110100  00110101  00010101  01000100 10100001  00000000
-2834351544A100
-
-A = 01000001
-*/
-
-/*
-
-01 01000011 01 01000010 1 01000001 000
-C 01000011
-B 01000010
-A 01000001
-
-
-
-
-
-01010000110101000010101000001000
-
-00000000 -> 43
-00000010 -> 42
-00000011 -> 41
-
-[43] 01000011
-[42] 01000010
-[41] 01000001
-
-
-
-*/
