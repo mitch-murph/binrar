@@ -1,5 +1,6 @@
 #include "compress.h"
 #include "bit_array.h"
+#include "filepackager.h"
 #include <stdio.h>
 
 void generate_bin()
@@ -60,22 +61,46 @@ void read_bits()
 
 int main(int argc, char **argv)
 {
-    compress("data-files/comp.bin", "data-files/out.bin");
-    /*read_bits();*/
+    /*vector_t fns;
+    init_vector(&fns, 1, sizeof(char **) * 255);
+    char *s;
+    s = "data-files/comp.bin";
+    vector_push_back(&fns, s);
+    s = "data-files/compp.bin";
+    vector_push_back(&fns, s);
+
+    combine_files(fns, "data-files/out.bin");
+    separate_files("data-files/out.bin");
+
+    FILE*fp = fopen("data-files/out.bin", "rb");
+    seek_file_contents(fp);*/
+
     /*
+    int buffer = 0;
+    int buffer_size = 0;
+    int value = 3;
+    int size = 3;
+    write_bit(&buffer, &buffer_size, value, size);
+    value = 3;
+    size = 3;
+    write_bit(&buffer, &buffer_size, value, size);
+    value = 0;
+    size = 4;
+    write_bit(&buffer, &buffer_size, value, size);
+    value = 2;
+    size = 3;
+    write_bit(&buffer, &buffer_size, value, size);
+    write_bit(&buffer, &buffer_size, 0, -1);
+    */
+    
 
+   
+    /*printf("%02x\n", buffer);*/
 
+    compress("data-files/comp.bin", "data-files/out.bin");
 
-    FILE *fp;
-    fp = fopen("data-files/two.bin", "wb");
-    putc('A', fp);
-    putc(EOF, fp);
-    putc('B', fp);
-    putc(EOF, fp);
-    putc('C', fp);
-    putc(EOF, fp);
-    putc('D', fp);
-    fclose(fp);
+    /*
+    read_bits();
 
     fp = fopen("data-files/two.bin", "rb");
     char c;

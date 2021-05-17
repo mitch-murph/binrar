@@ -94,7 +94,7 @@ void assign_tree_addr_to_node(node_t *current, vector_t *addr)
 {
     if (current->left == NULL && current->right == NULL)
     {
-        current->bit_length = addr->size;
+        current->bit_length = addr->size - 1;
         current->value = convert_vector_to_bit_array(*addr);
     }
     else
@@ -216,6 +216,76 @@ node_t *build_huffman_tree(vector_t nodes)
     return *(node_t **)vector_get(nodes, 0);
 }
 
+void write_compressed_file(char *input_file, char *output_file, vector_t nodes)
+{
+    int i;
+    for (i = 0; i < nodes.size; i++)
+    {
+        node_t *node = *(node_t **)vector_get(nodes, i);
+        print_bits_length(node->value, node->bit_length);
+        printf(" -> %c\n", node->key);
+    }
+
+    FILE *in_fp;
+    in_fp = fopen(input_file, "rb");
+    FILE *out_fp;
+    out_fp = fopen(output_file, "wb");
+
+    int bit_buffer = 0, bit_buffer_size = 0;
+    int buffer;
+    while ((buffer = fgetc(in_fp)) != EOF)
+    {
+        int bits = 0;
+        int bit_length = 0;
+        int i;
+        for (i = 0; i < nodes.size; i++)
+        {
+            node_t *node = *(node_t **)vector_get(nodes, i);
+            if (node->key == buffer)
+            {
+                bits = node->value;
+                bit_length = node->bit_length;
+                break;
+            }
+        }
+        write_bit(&bit_buffer, &bit_buffer_size, bits, bit_length + 1, out_fp);
+    }
+    write_bit(&bit_buffer, &bit_buffer_size, 0, -1, out_fp);
+
+    fclose(in_fp);
+    fclose(out_fp);
+}
+
+void read_compressed_file(char *input_file, char *output_file, node_t *root)
+{
+    FILE *in_fp;
+    in_fp = fopen(input_file, "rb");
+
+    node_t *curr = root;
+
+    int buffer;
+    while ((buffer = fgetc(in_fp)) != EOF)
+    {
+        int i;
+        for (i = 7; i >= 0; i--)
+        {
+            int bit = get_bit(buffer, i);
+            if (bit)
+                curr = curr->right;
+            else
+                curr = curr->left;
+
+            if (curr->right == NULL && curr->left == NULL)
+            {
+                printf("%c", curr->key);
+                curr = root;
+            }
+        }
+    }
+
+    fclose(in_fp);
+}
+
 /* PUBLIC */
 void compress(char *input_file, char *output_file)
 {
@@ -236,20 +306,28 @@ void compress(char *input_file, char *output_file)
     node_t *root = build_huffman_tree(nodes_copy);
     /* free_vector(nodes); */
 
+    print_vector(nodes, func2);
     /* Tranverse the tree to find the address of each byte */
     vector_t addr;
     init_vector(&addr, 10, sizeof(int));
     assign_tree_addr_to_node(root, &addr);
 
-    /*  */
+    /* Write huffman tree
+    write_huffman_tree(output_file, root); */
 
-    int i;
+    /* Rewrite file subbing in addr for each byte */
+    write_compressed_file(input_file, output_file, nodes);
+
+    /* Rewrite file subbing in addr for each byte */
+    read_compressed_file(output_file, output_file, root);
+
+    /*     int i;
     for (i = 0; i < nodes.size; i++)
     {
         node_t *node = *(node_t **)vector_get(nodes, i);
         print_bits_length(node->value, node->bit_length);
         printf(" -> %02x\n", node->key);
-    }
+    } */
 
     /*
     tranverse(root);

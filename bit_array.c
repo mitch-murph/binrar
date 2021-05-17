@@ -39,3 +39,25 @@ int convert_vector_to_bit_array(vector_t vector)
     }
     return bits;
 }
+
+void write_bit(int *buffer, int *buffer_size, int value, int size, FILE *fp)
+{
+    if (size == -1)
+    {
+        value = 0;
+        size = (8 - *buffer_size);
+    }
+
+    int i;
+    for (i = size - 1; i >= 0; i--)
+    {
+        *buffer = (*buffer << 1) + get_bit(value, i);
+        (*buffer_size)++;
+        if (*buffer_size == 8)
+        {
+            fputc(*buffer, fp);
+            *buffer = 0;
+            *buffer_size = 0;
+        }
+    }
+}
