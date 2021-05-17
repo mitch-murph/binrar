@@ -1,19 +1,22 @@
 #include <stdio.h>
 #include "tree.h"
 
-typedef struct node node_t;
-
-struct node
+void init_node(const void *a)
 {
-    void *value;
-    node_t *left;
-    node_t *right;
-};
+    node_t *node = (node_t *)a;
+    node->in_use = 0;
+    node->value = 0;
+    node->left = NULL;
+    node->right = NULL;
+}
 
-int init_tree(tree_t *tree, size_t element_size)
+void init_node_from_node(const void *a, const void *b)
 {
-    tree->head = NULL;
-    init_vector(&tree->nodes, 0, sizeof(node_t));
-    init_vector(&tree->values, 0, element_size);
-    return 0;
+    node_t *dest = (node_t *)a;
+    node_t *src = (node_t *)b;
+    dest->in_use = src->in_use;
+    dest->key = src->key;
+    dest->value = src->value;
+    dest->left = src->left;
+    dest->right = src->right;
 }

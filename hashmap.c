@@ -35,7 +35,7 @@ int hashmap_set(hashmap_t hashmap, void *item)
     int hash = hashmap.hash(item);
     if (vector_set(hashmap.map, item, hash))
     {
-        printf("Error: Hashmap cannot set kvp");
+        printf("Error: Hashmap cannot set");
     }
     return 0;
 }

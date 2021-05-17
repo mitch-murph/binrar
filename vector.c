@@ -12,6 +12,22 @@ int init_vector(vector_t *vector, int capacity, size_t element_size)
     return 0;
 }
 
+int copy_vector(vector_t *dest, const vector_t src)
+{
+    dest->size = src.size;
+    dest->capacity = src.capacity;
+    dest->element_size = src.element_size;
+    dest->vector = malloc(dest->capacity * dest->element_size);
+
+    int i;
+    for (i = 0; i < src.size; i++)
+    {
+        vector_set(*dest, vector_get(src, i), i);
+    }
+
+    return 0;
+}
+
 void free_vector(vector_t vector)
 {
     free(vector.vector);

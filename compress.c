@@ -1,37 +1,9 @@
 #include "compress.h"
 #include "hashmap.h"
 #include "vector.h"
+#include "tree.h"
+#include "bit_array.h"
 #include <stdio.h>
-
-/* PRIVATE */
-typedef struct node node_t;
-
-struct node
-{
-    int in_use;
-    unsigned char key;
-    int value;
-    node_t *left;
-    node_t *right;
-};
-
-void init_node(const void *a)
-{
-    node_t *node = (node_t *)a;
-    node->in_use = 0;
-    node->value = 0;
-    node->left = NULL;
-    node->right = NULL;
-}
-
-void init_node2(const void *a)
-{
-    node_t *node = (node_t *)a;
-    node->in_use = 1;
-    node->value = 0;
-    node->left = NULL;
-    node->right = NULL;
-}
 
 void count_bytes(char *filename, hashmap_t *map)
 {
@@ -44,15 +16,16 @@ void count_bytes(char *filename, hashmap_t *map)
         node_t node;
         node.key = buffer;
 
-        node_t *node_maybe = (node_t *)hashmap_get(*map, (void *)&node);
-        if (node_maybe != NULL)
+        node_t *maybe_node = (node_t *)hashmap_get(*map, (void *)&node);
+        if (maybe_node != NULL)
         {
-            node_maybe->value++;
-            hashmap_set(*map, (void *)node_maybe);
+            maybe_node->value++;
+            hashmap_set(*map, (void *)maybe_node);
         }
         else
         {
-            init_node2(&node);
+            init_node(&node);
+            node.in_use = 1;
             node.value++;
 
             hashmap_set(*map, (void *)&node);
@@ -117,17 +90,12 @@ void print_tree_rec(node_t *n, int i)
     print_tree_rec(n->right, i + 1);
 }
 
-void convert_bytes(node_t *current, vector_t *addr)
+void assign_tree_addr_to_node(node_t *current, vector_t *addr)
 {
     if (current->left == NULL && current->right == NULL)
     {
-        int i;
-        for (i = 0; i < addr->size; i++)
-        {
-            int x =  *(int*)vector_get(*addr, i);
-            printf("%d", x);
-        }
-        printf(" -> %02x\n", current->key);
+        current->bit_length = addr->size;
+        current->value = convert_vector_to_bit_array(*addr);
     }
     else
     {
@@ -135,12 +103,12 @@ void convert_bytes(node_t *current, vector_t *addr)
 
         temp = 0;
         vector_push_back(addr, &temp);
-        convert_bytes(current->left, addr);
+        assign_tree_addr_to_node(current->left, addr);
         vector_pop(addr);
 
         temp = 1;
         vector_push_back(addr, &temp);
-        convert_bytes(current->right, addr);
+        assign_tree_addr_to_node(current->right, addr);
         vector_pop(addr);
     }
 }
@@ -208,46 +176,30 @@ void tranverse(node_t *root)
     fclose(fp);
 }
 
-int hashmap_convert(hashmap_t hashmap, vector_t *vector)
+void hashmap_convert(hashmap_t hashmap, vector_t *vector)
 {
     int i;
     for (i = 0; i < hashmap.map.capacity; i++)
     {
         node_t *item = (void *)vector_get(hashmap.map, i);
-        node_t *node = (node_t *)malloc(sizeof(node_t));
-        init_node(node);
         if (hashmap.exists(item))
         {
-            node->in_use = item->in_use;
-            node->key = item->key;
-            node->left = item->left;
-            node->right = item->right;
-            node->value = item->value;
+            node_t *node = (node_t *)malloc(sizeof(node_t));
+            init_node(node);
+            init_node_from_node(node, item);
             vector_push_back(vector, &node);
         }
     }
-
-    return 0;
 }
 
-/* PUBLIC */
-void compress()
+node_t *build_huffman_tree(vector_t nodes)
 {
-    hashmap_t map;
-    init_hashmap(&map, sizeof(node_t), 0x101, comp, hash, exists, init_node);
-    count_bytes("data-files/24-bit.bmp", &map);
-
-    vector_t nodesp;
-    init_vector(&nodesp, 10, sizeof(node_t *));
-    hashmap_convert(map, &nodesp);
-    vector_sort(nodesp, comp2);
-    print_vector(nodesp, func2);
-
-    while (nodesp.size > 1)
+    while (nodes.size > 1)
     {
-        int curr = nodesp.size - 1;
-        node_t **app = (node_t **)vector_get(nodesp, curr);
-        node_t **bpp = (node_t **)vector_get(nodesp, curr - 1);
+        vector_sort(nodes, comp2);
+        int curr = nodes.size - 1;
+        node_t **app = (node_t **)vector_get(nodes, curr);
+        node_t **bpp = (node_t **)vector_get(nodes, curr - 1);
 
         node_t *new = (node_t *)malloc(sizeof(node_t));
         new->in_use = 1;
@@ -256,19 +208,58 @@ void compress()
         new->left = *app;
         new->right = *bpp;
 
-        vector_remove(&nodesp, curr);
-        vector_remove(&nodesp, curr - 1);
+        vector_remove(&nodes, curr);
+        vector_remove(&nodes, curr - 1);
 
-        vector_push_back(&nodesp, &new);
-        vector_sort(nodesp, comp2);
+        vector_push_back(&nodes, &new);
     }
-    node_t *head = *(node_t **)vector_get(nodesp, 0);
-    tranverse(head);
+    return *(node_t **)vector_get(nodes, 0);
+}
 
+/* PUBLIC */
+void compress(char *input_file, char *output_file)
+{
+    /* Count the frequency of each byte into a hashmap */
+    hashmap_t map;
+    init_hashmap(&map, sizeof(node_t), 0x101, comp, hash, exists, init_node);
+    count_bytes(input_file, &map);
+
+    /* Convert the hashmap into array of dynamically allocated tree nodes */
+    vector_t nodes;
+    init_vector(&nodes, 10, sizeof(node_t *));
+    hashmap_convert(map, &nodes);
+    free_hashmap(&map);
+
+    /* Turn the vector of nodes into a huffman tree */
+    vector_t nodes_copy;
+    copy_vector(&nodes_copy, nodes);
+    node_t *root = build_huffman_tree(nodes_copy);
+    /* free_vector(nodes); */
+
+    /* Tranverse the tree to find the address of each byte */
     vector_t addr;
     init_vector(&addr, 10, sizeof(int));
-    convert_bytes(head, &addr);
+    assign_tree_addr_to_node(root, &addr);
 
-    free_hashmap(&map);
-    free_vector(nodesp);
+    /*  */
+
+    int i;
+    for (i = 0; i < nodes.size; i++)
+    {
+        node_t *node = *(node_t **)vector_get(nodes, i);
+        print_bits_length(node->value, node->bit_length);
+        printf(" -> %02x\n", node->key);
+    }
+
+    /*
+    tranverse(root);
+
+
+    int i;
+    for (i = 0; i < nodesp.size; i++)
+    {
+        node_t **node = (node_t **)vector_get(nodesp, i);
+        free(*node);
+    }
+    */
 }

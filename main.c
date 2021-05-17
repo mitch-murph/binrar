@@ -1,4 +1,5 @@
 #include "compress.h"
+#include "bit_array.h"
 #include <stdio.h>
 
 void generate_bin()
@@ -14,24 +15,6 @@ void generate_bin()
     }
 
     fclose(fp);
-}
-
-int get_bit(int v, int i)
-{
-    return (v >> (7 - i)) & 1;
-}
-
-int combine_bits(int a, int b, int s)
-{
-    return a << s | b >> (8 - s);
-}
-
-void print_bits(int c)
-{
-    int i;
-    for (i = 0; i < 8; i++)
-        printf("%d", get_bit(c, i));
-    /*printf(" [%c] [%02x]\n", c, c);*/
 }
 
 void read_bits()
@@ -77,7 +60,7 @@ void read_bits()
 
 int main(int argc, char **argv)
 {
-    compress();
+    compress("data-files/comp.bin", "data-files/out.bin");
     /*read_bits();*/
     /*
 
