@@ -113,67 +113,37 @@ void assign_tree_addr_to_node(node_t *current, vector_t *addr)
     }
 }
 
-void tranverse(node_t *root)
+int write_huffman_tree(char *out, node_t *root)
 {
     FILE *fp;
-    int buffer = 0;
-    int temp = 0;
-    int count = 0;
-    int flag = 0;
-    fp = fopen("data-files/write.bin", "wb");
+    fp = fopen("data-files/tree.bin", "wb");
 
     vector_t stack;
     init_vector(&stack, 10, sizeof(node_t *));
 
     vector_push_back(&stack, (void *)&root);
+    int buffer = 0, buffer_size = 0, size = 0;
     while (stack.size > 0)
     {
-        flag = 0;
         node_t *current = *(node_t **)vector_pop(&stack);
         if (current->left == NULL && current->right == NULL)
         {
-            buffer = (buffer << 1) + 1;
-            count++;
-            int a = current->key >> count;
-            buffer = buffer << 8 - count;
-            temp = current->key << 8 - count;
-            buffer = buffer | a;
-
-            flag = 1;
+            write_bit(&buffer, &buffer_size, 1, 1, fp);
+            write_bit(&buffer, &buffer_size, current->key, 8, fp);
+            size += 9;
         }
         else
         {
-            buffer = buffer << 1;
-            count++;
+            write_bit(&buffer, &buffer_size, 0, 1, fp);
+            size++;
             vector_push_back(&stack, (void *)&current->left);
             vector_push_back(&stack, (void *)&current->right);
         }
-
-        if (count > 7 || flag)
-        {
-            fputc((char)buffer, fp);
-            if (flag)
-            {
-                buffer = temp >> 8 - count;
-                if (count > 7)
-                {
-                    fputc((char)temp, fp);
-                    count = 0;
-                    buffer = 0;
-                }
-            }
-            else
-            {
-                count = 0;
-            }
-        }
     }
-    if (count > 0)
-    {
-        buffer = buffer << 8 - count;
-        fputc((char)buffer, fp);
-    }
+    write_bit(&buffer, &buffer_size, 0, -1, fp);
     fclose(fp);
+
+    return size;
 }
 
 void hashmap_convert(hashmap_t hashmap, vector_t *vector)
@@ -312,32 +282,12 @@ void compress(char *input_file, char *output_file)
     init_vector(&addr, 10, sizeof(int));
     assign_tree_addr_to_node(root, &addr);
 
-    /* Write huffman tree
-    write_huffman_tree(output_file, root); */
+    /* Write huffman tree */
+    int tree_size = write_huffman_tree(output_file, root);
 
     /* Rewrite file subbing in addr for each byte */
     write_compressed_file(input_file, output_file, nodes);
 
-    /* Rewrite file subbing in addr for each byte */
-    read_compressed_file(output_file, output_file, root);
-
-    /*     int i;
-    for (i = 0; i < nodes.size; i++)
-    {
-        node_t *node = *(node_t **)vector_get(nodes, i);
-        print_bits_length(node->value, node->bit_length);
-        printf(" -> %02x\n", node->key);
-    } */
-
-    /*
-    tranverse(root);
-
-
-    int i;
-    for (i = 0; i < nodesp.size; i++)
-    {
-        node_t **node = (node_t **)vector_get(nodesp, i);
-        free(*node);
-    }
-    */
+    /* 
+    read_compressed_file(output_file, output_file, root);*/
 }

@@ -92,50 +92,27 @@ int main(int argc, char **argv)
     write_bit(&buffer, &buffer_size, value, size);
     write_bit(&buffer, &buffer_size, 0, -1);
     */
-    
 
-   
     /*printf("%02x\n", buffer);*/
 
     compress("data-files/comp.bin", "data-files/out.bin");
 
-    /*
-    read_bits();
+    printf("\n");
+    FILE *fp;
 
-    fp = fopen("data-files/two.bin", "rb");
-    char c;
-    int count = 0;
-    while ((c = getc(fp)) != EOF || count < 2)
+    fp = fopen("data-files/tree.bin", "rb");
+    int c;
+    while ((c = getc(fp)) != EOF)
     {
-        if (c == EOF)
-            count++;
-        printf("%c\n", c);
+        printf("%02x ", c);
+        print_bits_length(c, 7);
+        printf("\n");
     }
     fclose(fp);
 
-    compress();
+    /*
     read_bits();
-    int buffer = 0;
-    int count = 0;
-    buffer = (buffer << 1);
-    count++;
-    buffer = (buffer << 1);
-    count++;
-    buffer = (buffer << 1) + 1;
-    count++;
-
-
-    int key = 'A';
-    int a = key >> count;
-    buffer = buffer << 8 - count;
-    int temp = key << 8 - count;
-    buffer = buffer | a;
-
-    print_bits(buffer);
-    print_bits(key);
-    print_bits(a);
-    print_bits(temp);
-    print_bits(buffer);*/
+    */
 
     return 0;
 }
@@ -151,9 +128,11 @@ int main(int argc, char **argv)
 A1 10100001
 00 00000000
 
-001 01000001 1 01000011 01 01000101 01 01000100 1 0100001 00000000
+001 01000001 1 01000011 01 01000101 01 01000100 1 01000010 0000000
 00101000 00110100  00110101  00010101  01000100 10100001  00000000
 2834351544A100
+
+A = 01000001
 */
 
 /*
