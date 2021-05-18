@@ -167,10 +167,16 @@ void outputFile(char *output_file)
 void viewPackage()
 {
 }
+
 void Package(vector_t filenames, char *output_file)
 {
+    char key[255];
+    printf("Enter password to encrypt with>");
+    scanf("%s", key);
+
     printf("filenames:\n");
     print_vector(filenames, print_filenames);
     printf("output file: %s\n", output_file);
 
+    combine_files(filenames, output_file);
 }
