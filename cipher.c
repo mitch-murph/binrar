@@ -1,43 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "cipher.h"
 
-int XORcipher(FILE *);
-int cipher(void);
-
-int cipher(void)
-{
-    FILE *fp;
-    int encrypt;
-
-    char fileName[25];
-
-    printf("File to encrypt:");
-    scanf("%s", fileName);
-
-    fp = fopen(fileName, "rb+");
-
-    if (fp == NULL)
-    {
-        printf("Failed to open file.\n");
-        return -1;
-    }
-
-    encrypt = XORcipher(fp);
-
-    return encrypt;
-}
-int XORcipher(FILE *filep)
+int XORcipher(FILE *filep, char *key)
 {
     int i;
     unsigned long int fileSize; /*holds number of bytes in file*/
-    int keyLen;
+    int keyLen = strlen(key);
     char *buffer = NULL;
-    char key[25];
-
-    printf("Enter a password: ");
-    scanf("%s", key);
-    keyLen = strlen(key);
 
     fseek(filep, 0, SEEK_END); /*Moves pointer to EOF*/
     fileSize = ftell(filep);   /*saves the location to find file size*/

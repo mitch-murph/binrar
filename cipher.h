@@ -1,8 +1,8 @@
 #ifndef cipher_h
 #define cipher_h
 
-int XORcipher(FILE *);
+#include <stdio.h>
 
-int cipher(void);
+int XORcipher(FILE *filep, char *key);
 
 #endif
