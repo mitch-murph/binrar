@@ -2,8 +2,8 @@
 
 CC = gcc
 CFLAGS = -ansi -lm
-DEPS = vector.h tree.h hashmap.h compress.h bit_array.h filepackager.h cipher.h
-OBJ = main.o vector.o tree.o hashmap.o compress.o bit_array.o filepackager.o cipher.o
+DEPS = vector.h tree.h hashmap.h compress.h bit_array.h filepackager.h cipher.h shift_encrypt.h
+OBJ = main.o vector.o tree.o hashmap.o compress.o bit_array.o filepackager.o cipher.o shift_encrypt.o
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
