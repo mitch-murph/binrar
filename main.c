@@ -1,6 +1,7 @@
 #include "compress.h"
 #include "bit_array.h"
 #include "filepackager.h"
+#include "cipher.h"
 #include <stdio.h>
 
 void read_bits()
@@ -58,16 +59,20 @@ int main(int argc, char **argv)
     fclose(fp3);
     */
 
-    FILE *fp1 = fopen("data-files/comp.bin", "rb");
-    FILE *fp2 = fopen("data-files/out.bin", "wb");
-    compress(fp1, fp2);
+    FILE *fp1 = fopen("data-files/o.bin", "rb");
+    FILE *fp2 = fopen("data-files/o.bin", "rb+");
+    /* compress(fp1, fp2); */
+
+    XORcipher(fp1, fp2, "test");
+
+
     fclose(fp1);
     fclose(fp2);
 
 
-    FILE *fp3 = fopen("data-files/out.bin", "rb");
+    /* FILE *fp3 = fopen("data-files/out.bin", "rb");
     decompress(fp3, fp3);
-    fclose(fp3);
+    fclose(fp3); */
     return 0;
 }
 
