@@ -5,106 +5,135 @@
 #include "shift_encrypt.h"
 #include <stdio.h>
 
-void read_bits()
+int main(void)
 {
-    FILE *fp;
-    int buffer;
-    int temp;
-    fp = fopen("data-files/write.bin", "rb");
-
-    int count = 0, flag = 1;
-    while (1)
-    {
-        if (flag)
-        {
-            if ((buffer = getc(fp)) == EOF)
-            {
-                break;
-            }
-        }
-        int i = 0;
-        if (!flag)
-            i = count;
-        flag = 1;
-        for (; i < 8; i++)
-        {
-            if (get_bit(buffer, i))
-            {
-                i++;
-                temp = buffer;
-                buffer = getc(fp);
-                int c = combine_bits(temp, buffer, i);
-                printf("\n[%02x] ", (unsigned char)c);
-                print_bits(c);
-                flag = 0;
-                count = i;
-                break;
-            }
-        }
-    }
-
-    fclose(fp);
-}
-
-int main(int argc, char **argv)
-{
-
-    /*
-    FILE *fp3 = fopen("data-files/comp.bin", "rb");
-    int i;
-    int buffer = 0, buffer_count = 0;
-    for (i = 0; i < 8; i++)
-    {
-        printf("[%d]\t%d %d\n", i, buffer_count, read_n_bit(&buffer, &buffer_count, 7, fp3));
-    }
-    fclose(fp3);
-    */
-
-    FILE *fp1 = fopen("data-files/o.bin", "rb");
-    FILE *fp2 = fopen("data-files/o1.bin", "wb");
-    /* compress(fp1, fp2); */
-
-    shift_encrypt(fp1, fp2);
-
-    fclose(fp1);
-    fclose(fp2);
-
-    fp1 = fopen("data-files/o1.bin", "rb");
-    fp2 = fopen("data-files/o2.bin", "wb");
-
-    shift_decrypt(fp1, fp2);
-
-
-    fclose(fp1);
-    fclose(fp2);
-
-
-    /* FILE *fp3 = fopen("data-files/out.bin", "rb");
-    decompress(fp3, fp3);
-    fclose(fp3); */
+    mainMenu();
     return 0;
 }
 
-/*
-001A1C01E01D1B
+void mainMenu()
+{
+    char choice;
+    printMenu();
+    scanf("%d", &choice);
 
-28 00101000
-34 00110100
-35 00110101
-15 00010101
-44 01000100
-A1 10100001
-00 00000000
+    while (choice != 8)
+    {
+        switch (choice)
+        {
+        case 1:
+            addFile();
+            break;
 
-28 00101000
-34 00110100
-35 00110101
-15 00010101
-44 01000100
-a1 10100001
-00 00000000
+        case 2:
+            removeFile();
+            break;
 
-001 01000001 1 01000011 01 01000101 01 01000100 1 0100001 00000000
-00101000 00110100  00110101  00010101  01000100 10100001  00000000
-2834351544A100
+        case 3:
+            encDec();
+            break;
+
+        case 4:
+            comDecomp();
+            break;
+
+        case 5:
+            outputFile();
+            break;
+
+        case 6:
+            unPackage();
+            break;
+
+        case 7:
+            viewPackage();
+            break;
+
+        default:
+            printf("Invalid choice.\n");
+        }
+        printMenu();
+        scanf("%d", &choice);
+    }
+}
+void printMenu()
+{
+    printf("\n1. Add files\n"
+           "2. Remove files\n"
+           "3. Encrypt - XOR/Shift\n"
+           "4. Compress \n"
+           "5. Output file\n"
+           "6. Unpackage\n"
+           "7. View Package\n"
+           "8. EXIT\n"
+           "Enter your choice>");
+}
+void addFile()
+{
+    printf("add file\n Enter filename> ");
+    getchar();
+    /* 1Add files
+    - myfile1.txt
+    - myfile2.txt
+    - myfile3.txt
+    */
+}
+void removeFile()
+{
+    printf("add file\n Enter filename> ");
+    getchar();
+}
+void encDec()
+{
+    int ch;
+    printf("1.Encrypt\n  2.decrypt?\n Your choice>");
+    scanf("%d", &ch);
+    while (ch != 3)
+    {
+        switch (ch)
+        {
+        case 1:
+            printf("1.XOR\n  2.shift?\n Your choice>");
+            scanf("%d", &ch);
+
+        case 2:
+            printf("1.XOR\n  2.shift?\n Your choice>");
+            scanf("%d", &ch);
+
+        default:
+            printf("ok");
+        }
+    }
+}
+
+void comDecomp()
+{
+    printf("add here");
+    getchar();
+}
+
+void outputFile()
+{
+    printf("add here");
+    getchar();
+    /*
+    4Output file
+    Enter filename>
+    */
+}
+void viewPackage()
+{
+    printf("add here");
+    getchar();
+}
+void unPackage()
+{
+    printf("add here");
+    getchar();
+    /*
+    6Unpackage
+    Enter filename of the package>
+    password>
+    Enter output directory>
 */
+}
