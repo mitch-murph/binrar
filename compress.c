@@ -199,11 +199,8 @@ void write_compressed_file(FILE *in_fp, FILE *out_fp, vector_t nodes)
     write_bit(&bit_buffer, &bit_buffer_size, 0, -1, out_fp);
 }
 
-void read_compressed_file(char *input_file, char *output_file, node_t *root)
+void read_compressed_file(FILE *in_fp, FILE *out_fp, node_t *root)
 {
-    FILE *in_fp;
-    in_fp = fopen(input_file, "rb");
-
     node_t *curr = root;
 
     int buffer;
@@ -225,8 +222,6 @@ void read_compressed_file(char *input_file, char *output_file, node_t *root)
             }
         }
     }
-
-    fclose(in_fp);
 }
 
 /* PUBLIC */
@@ -297,13 +292,8 @@ node_t *read_huffman_tree(FILE *fp)
         node_t *curr = *(node_t **)vector_pop(&stack);
         if (read_bit(&buffer, &buffer_size, fp))
         {
-            int temp = (char)getc(fp);
-            buffer = buffer << (8 - buffer_size);
-            buffer = buffer | (temp >> buffer_size);
-            print_bits_length(buffer, 7);
-            printf(" -> %c\n", buffer);
-            curr->value = buffer;
-            buffer = temp;
+            curr->key = read_n_bit(&buffer, &buffer_size, 8, fp);
+            printf("Read value: %c\n", curr->key);
         }
         else
         {
@@ -317,25 +307,12 @@ node_t *read_huffman_tree(FILE *fp)
     return root;
 }
 
-/* node_t *read_node(FILE *fp, int buffer, int buffer_size)
-{
-    if (reader.ReadBit() == 1)
-    {
-        return init_node(reader.ReadByte(), null, null);
-    }
-    else
-    {
-        node_t *leftChild = read_node(fp, buffer, buffer_size);
-        node_t *rightChild = read_node(fp, buffer, buffer_size);
-        return init_node(0, leftChild, rightChild);
-    }
-} */
-
 void decompress(FILE *in_fp, FILE *out_fp)
 {
     /* Read the tree */
     node_t *root = read_huffman_tree(in_fp);
-
-    /* 
-    read_compressed_file(output_file, output_file, root);*/
+    int compressed_size;
+    fread(&compressed_size, sizeof(int), 1, in_fp);
+    printf("compressed size: %d\n", compressed_size);
+    read_compressed_file(in_fp, out_fp, root);
 }
