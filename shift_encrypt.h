@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-void shift_encrypt(char *input_file, char *output_file);
-void shift_decrypt(char *input_file, char *output_file);
+void shift_encrypt(FILE *fd1, FILE *fd2);
+void shift_decrypt(FILE *fd1, FILE *fd2)
 
 #endif
