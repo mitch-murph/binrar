@@ -92,13 +92,47 @@ int unpackage_test()
     separate_files(output_file, "out/");
 }
 
+long int secure_hash(char *string)
+{
+    long int hash = 123456789;
+    long int magic = 34598734;
+    hash = hash * hash * magic;
+    char out[255];
+    int l = strlen(string);
+    int i;
+    for (i = 0; i < l; i++)
+    {
+        hash = hash ^ (string[i]);
+        hash = hash * magic;
+    }
+    return hash;
+}
+
 int main(void)
 {
+    long int h = secure_hash("ASDASd");
+    int i, n = sizeof(long long int);
+    unsigned char hash[n + 1];
+    printf("%lx\n", h);
+    for (i = 0; i < n; i++)
+    {
+        unsigned char c = h >> (i * 8);
+        hash[i] = c;
+        printf("%02x", c);
+    }
+    hash[n] = '\0';
+
+    FILE *fp1 = fopen("out.bin", "wb");
+    fwrite(hash, sizeof(char), n, fp1);
+    printf("\n%s\n", hash);
+
+    /*
     compress_test();
     printf("Hit enter to unpackage");
     getchar();
     getchar();
     unpackage_test();
+    */
 
     return 0;
 }
