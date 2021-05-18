@@ -2,6 +2,7 @@
 #include "bit_array.h"
 #include "filepackager.h"
 #include "cipher.h"
+#include "shift_encrypt.h"
 #include <stdio.h>
 
 void read_bits()
@@ -60,10 +61,18 @@ int main(int argc, char **argv)
     */
 
     FILE *fp1 = fopen("data-files/o.bin", "rb");
-    FILE *fp2 = fopen("data-files/o.bin", "rb+");
+    FILE *fp2 = fopen("data-files/o1.bin", "wb");
     /* compress(fp1, fp2); */
 
-    XORcipher(fp1, fp2, "test");
+    shift_encrypt(fp1, fp2);
+
+    fclose(fp1);
+    fclose(fp2);
+
+    fp1 = fopen("data-files/o1.bin", "rb");
+    fp2 = fopen("data-files/o2.bin", "wb");
+
+    shift_decrypt(fp1, fp2);
 
 
     fclose(fp1);
