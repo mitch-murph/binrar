@@ -45,22 +45,60 @@ void compress_test()
     vector_t filenames;
     init_vector(&filenames, 10, sizeof(char) * 255);
     addFile(&filenames);
-    
 
     char output_file[255];
     printf("Enter output filename>");
     scanf("%s", output_file);
 
+    Package(filenames, output_file);
 
+    /*
     char key[255];
     printf("Enter password to encrypt with>");
     scanf("%s", key);
 
-    Package(filenames, output_file);
+    FILE *fp1 = fopen(output_file, "rb");
+
+    FILE *fp2 = fopen(output_file, "rb+");
+
+    XORcipher(fp1, fp2, key);
+
+    fclose(fp1);
+    fclose(fp2);
+    */
+}
+
+int unpackage_test()
+{
+    char output_file[255];
+    printf("Enter package filename>");
+    scanf("%s", output_file);
+
+    /*
+    char key[255];
+    printf("Enter password to encrypt with>");
+    scanf("%s", key);
+
+    FILE *fp1 = fopen(output_file, "rb");
+    FILE *fp2 = fopen(output_file, "rb+");
+
+    XORcipher(fp1, fp2, key);
+
+
+    fclose(fp1);
+    fclose(fp2);
+    */
+
+    separate_files(output_file);
 }
 
 int main(void)
 {
     compress_test();
+    printf("Hit enter to unpackage");
+    getchar();
+    getchar();
+    unpackage_test();
+
     return 0;
 }
