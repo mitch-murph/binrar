@@ -52,7 +52,6 @@ void compress_test()
 
     Package(filenames, output_file);
 
-    /*
     char key[255];
     printf("Enter password to encrypt with>");
     scanf("%s", key);
@@ -65,7 +64,6 @@ void compress_test()
 
     fclose(fp1);
     fclose(fp2);
-    */
 }
 
 int unpackage_test()
@@ -74,7 +72,7 @@ int unpackage_test()
     printf("Enter package filename>");
     scanf("%s", output_file);
 
-    /*
+    
     char key[255];
     printf("Enter password to encrypt with>");
     scanf("%s", key);
@@ -87,7 +85,6 @@ int unpackage_test()
 
     fclose(fp1);
     fclose(fp2);
-    */
 
     separate_files(output_file, "out/");
 }
