@@ -1,88 +1,96 @@
-#include "hashmap.h"
+#include "compress.h"
+#include "bit_array.h"
+#include "filepackager.h"
 #include <stdio.h>
 
-struct s
+void read_bits()
 {
-    int in_use;
-    unsigned char key;
-    int value;
-};
-
-typedef struct s s_t;
-
-
-void func(int pos, void *value)
-{
-    s_t *c = (s_t *)(value);
-    printf("[%d] %02x %d\n", pos, c->key, c->value);
-}
-
-int comp(const void *a, const void *b)
-{
-    s_t *as = (s_t *)a;
-    s_t *bs = (s_t *)b;
-    return as->key = bs->key;
-}
-
-int hash(const void *a)
-{
-    s_t *as = (s_t *)a;
-    return as->key % 0x101;
-}
-
-int exists(const void *a)
-{
-    s_t *as = (s_t *)a;
-    return as->in_use;
-}
-
-void init(const void *a)
-{
-    s_t *as = (s_t *)a;
-    as->in_use = 0;
-}
-
-void hash_demo()
-{
-    hashmap_t map;
-    init_hashmap(&map, sizeof(struct s), 0x101, comp, hash, exists, init);
-
+    FILE *fp;
     int buffer;
-    FILE *ptr;
+    int temp;
+    fp = fopen("data-files/write.bin", "rb");
 
-    ptr = fopen("data-files/image.png", "rb");
-
-    while ((buffer = fgetc(ptr)) != EOF)
+    int count = 0, flag = 1;
+    while (1)
     {
-        /*printf("%02x\n", buffer);*/
-        s_t s;
-        s.key = buffer;
-
-        s_t *sMaybe = (s_t *)hashmap_get(map, (void *)&s);
-        if (sMaybe->in_use)
+        if (flag)
         {
-            sMaybe->value++;
-            hashmap_set(map, (void *)sMaybe);
+            if ((buffer = getc(fp)) == EOF)
+            {
+                break;
+            }
         }
-        else
+        int i = 0;
+        if (!flag)
+            i = count;
+        flag = 1;
+        for (; i < 8; i++)
         {
-            s.value = 1;
-            s.in_use = 1;
-            hashmap_set(map, (void *)&s);
+            if (get_bit(buffer, i))
+            {
+                i++;
+                temp = buffer;
+                buffer = getc(fp);
+                int c = combine_bits(temp, buffer, i);
+                printf("\n[%02x] ", (unsigned char)c);
+                print_bits(c);
+                flag = 0;
+                count = i;
+                break;
+            }
         }
     }
 
-    vector_t v;
-    init_vector(&v, 10, sizeof(s_t));
-    hashmap_convert_to_vector(map, &v);
-
-    print_vector(v, func);
-
-    free_hashmap(&map);
+    fclose(fp);
 }
 
 int main(int argc, char **argv)
 {
-    hash_demo();
+
+    /*
+    FILE *fp3 = fopen("data-files/comp.bin", "rb");
+    int i;
+    int buffer = 0, buffer_count = 0;
+    for (i = 0; i < 8; i++)
+    {
+        printf("[%d]\t%d %d\n", i, buffer_count, read_n_bit(&buffer, &buffer_count, 7, fp3));
+    }
+    fclose(fp3);
+    */
+
+    FILE *fp1 = fopen("data-files/comp.bin", "rb");
+    FILE *fp2 = fopen("data-files/out.bin", "wb");
+    compress(fp1, fp2);
+    fclose(fp1);
+    fclose(fp2);
+
+
+    FILE *fp3 = fopen("data-files/out.bin", "rb");
+    decompress(fp3, fp3);
+    fclose(fp3);
     return 0;
 }
+
+/*
+001A1C01E01D1B
+
+28 00101000
+34 00110100
+35 00110101
+15 00010101
+44 01000100
+A1 10100001
+00 00000000
+
+28 00101000
+34 00110100
+35 00110101
+15 00010101
+44 01000100
+a1 10100001
+00 00000000
+
+001 01000001 1 01000011 01 01000101 01 01000100 1 0100001 00000000
+00101000 00110100  00110101  00010101  01000100 10100001  00000000
+2834351544A100
+*/
