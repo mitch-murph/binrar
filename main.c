@@ -19,7 +19,6 @@ void print_filenames(int index, void *value)
 
 void addFile(vector_t *filenames)
 {
-    getchar();
     char buffer[255] = "PLACEHOLDER";
     while (1)
     {
@@ -35,18 +34,33 @@ void addFile(vector_t *filenames)
 
 void Package(vector_t filenames, char *output_file)
 {
+    printf("filenames:\n");
+    print_vector(filenames, print_filenames);
+    printf("output file: %s\n", output_file);
+    combine_files(filenames, output_file);
+}
+
+void compress_test()
+{
+    vector_t filenames;
+    init_vector(&filenames, 10, sizeof(char) * 255);
+    addFile(&filenames);
+    
+
+    char output_file[255];
+    printf("Enter output filename>");
+    scanf("%s", output_file);
+
+
     char key[255];
     printf("Enter password to encrypt with>");
     scanf("%s", key);
 
-    printf("filenames:\n");
-    print_vector(filenames, print_filenames);
-    printf("output file: %s\n", output_file);
-
-    combine_files(filenames, output_file);
+    Package(filenames, output_file);
 }
 
 int main(void)
 {
+    compress_test();
     return 0;
 }
