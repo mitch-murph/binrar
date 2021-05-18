@@ -3,6 +3,6 @@
 
 #include <stdio.h>
 
-int XORcipher(FILE *filep, char *key);
+int XORcipher(FILE *in_file, FILE *out_file, char *key);
 
 #endif
