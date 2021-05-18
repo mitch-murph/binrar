@@ -1,14 +1,6 @@
 #include <stdio.h>
 #include "shift_encrypt.h"
 
-int main(void)
-{
-    shift_encrypt("image.jpg", "encryptImage.jpg");
-    shift_encrypt("text.txt", "encrypt.txt");
-    shift_decrypt("encryptImage.jpg", "decryptImage.jpg");
-    shift_decrypt("encrypt.txt", "decrypt.txt");
-}
-
 void shift_encrypt(char *input_file, char *output_file)
 {
     int shiftCode;
