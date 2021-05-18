@@ -14,7 +14,7 @@ int queue_array[MAX];
 int rear = -1;
 int front = -1;
 
-int main()
+int main2()
 {
   int choice;
   while (1)

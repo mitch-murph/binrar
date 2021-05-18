@@ -1,9 +1,10 @@
-#include "compress.h"
-#include "bit_array.h"
-#include "filepackager.h"
-#include "cipher.h"
-#include "shift_encrypt.h"
-#include "secure_hash.h"
+#include "src/compress.h"
+#include "src/bit_array.h"
+#include "src/filepackager.h"
+#include "src/cipher.h"
+#include "src/shift_encrypt.h"
+#include "src/secure_hash.h"
+#include "src/vector.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -13,10 +14,7 @@ void printFill()
     printf("\n\n\n\n\n\n\n\n\n\n\n\n");
 }
 
-void print_filenames(int index, void *value)
-{
-    printf("[%d] %s\n", index, (char *)value);
-}
+void print_filenames(int index, void *value);
 
 void addFile(vector_t *filenames)
 {

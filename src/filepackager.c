@@ -3,7 +3,10 @@
 #include "filepackager.h"
 #include "vector.h"
 
-void print_filenames(int index, void *value);
+void print_filenames(int index, void *value)
+{
+    printf("[%d] %s\n", index, (char *)value);
+}
 
 int write_filename(char *filename, FILE *out_fp)
 {

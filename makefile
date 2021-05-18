@@ -2,14 +2,26 @@
 
 CC = gcc
 CFLAGS = -ansi -lm
-DEPS = vector.h tree.h hashmap.h compress.h bit_array.h filepackager.h cipher.h shift_encrypt.h secure_hash.h
-OBJ = main.o vector.o tree.o hashmap.o compress.o bit_array.o filepackager.o cipher.o shift_encrypt.o secure_hash.o
+SRCDIR = src
+OBJDIR = obj
+EXE = binrar.out
+SRC = $(wildcard $(SRCDIR)/*.c)
+DEPS = $(wildcard $(SRCDIR)/*.h)
+OBJ = $(SRC:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 
-%.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+all: $(EXE)
 
-binrar.out: $(OBJ)
+$(EXE): $(OBJ) $(OBJDIR)/main.o
 	$(CC) -o $@ $^ $(CFLAGS)
 
+$(OBJDIR)/main.o: main.c
+	$(CC) -c -o $@ $^ $(CFLAGS)
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.c | $(OBJDIR)
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+$(OBJDIR):
+	mkdir -p $@
+
 clean:
-	rm $(OBJ) binrar.out
+	@$(RM) -rv $(OBJDIR) $(EXE)
