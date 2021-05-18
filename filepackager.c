@@ -3,6 +3,8 @@
 #include "filepackager.h"
 #include "vector.h"
 
+void print_filenames(int index, void *value);
+
 int write_filename(char *filename, FILE *out_fp)
 {
     /* TODO: force filename size */
@@ -63,8 +65,12 @@ int read_filename(char *filename, FILE *in_fp)
     return 0;
 }
 
-int separate_files(char *in_file)
+int separate_files(char *in_file, char * dir)
 {
+    vector_t filenames;
+    init_vector(&filenames, 10, sizeof(char) * 255);
+
+
     FILE *in_fp;
     in_fp = fopen(in_file, "rb");
 
@@ -78,24 +84,39 @@ int separate_files(char *in_file)
     {
         /* TODO: DEFINE filename_size */
         char filename[255];
+        /*char new_[300];
+        strcpy(new_, dir);*/
         read_filename(filename, in_fp);
-        printf("READ Filename is: %s\n", filename);
+        printf("cat filename: %s\n", filename);
+        vector_push_back(&filenames, filename);
     }
+
+    print_vector(filenames, print_filenames);
 
     for (i = 0; i < file_count; i++)
     {
         long file_size;
         fread(&file_size, sizeof(long), 1, in_fp);
+        
+        char fn[300];
+        strcpy(fn, (char*)vector_get(filenames, i));
+        strcat(fn, ".out");
 
-        printf("READ File size: %ld\n", file_size);
-
+        printf("READ %s size: %ld\n", fn, file_size);
+        FILE *newp = fopen(fn, "wb");
+        if (newp == NULL)
+        {
+            printf("error opening file\n");
+        }
         int buffer;
         for (; file_size > 0; file_size--)
         {
             buffer = fgetc(in_fp);
+            fputc(buffer, newp);
             printf("%02x ", buffer);
         }
         printf("\n");
+        fclose(newp);
     }
 
     fclose(in_fp);

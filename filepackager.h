@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 int combine_files(vector_t filenames, char *out_file);
-int separate_files(char *in_file);
+int separate_files(char *in_file, char *dir);
 void seek_file_contents(FILE *fp);
 void copy_file(FILE *dest, FILE *src);
 

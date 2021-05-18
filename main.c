@@ -89,7 +89,7 @@ int unpackage_test()
     fclose(fp2);
     */
 
-    separate_files(output_file);
+    separate_files(output_file, "out/");
 }
 
 int main(void)
