@@ -4,6 +4,18 @@
 #include "cipher.h"
 #include "shift_encrypt.h"
 #include <stdio.h>
+#include <string.h>
+
+void mainMenu();
+void printFill();
+void printMenu();
+void addFile(vector_t *filenames);
+void removeFile(vector_t *filenames);
+void encDec();
+void comDecomp();
+void outputFile(char *output_file);
+void Package(vector_t filenames, char *output_file);
+void viewPackage();
 
 int main(void)
 {
@@ -13,20 +25,21 @@ int main(void)
 
 void mainMenu()
 {
-    char choice;
-    printMenu();
-    scanf("%d", &choice);
+    vector_t filenames;
+    init_vector(&filenames, 10, sizeof(char) * 255);
+    char output_file[255];
 
-    while (choice != 8)
+    int choice;
+    while ((choice = scanMenu()) != 8)
     {
         switch (choice)
         {
         case 1:
-            addFile();
+            addFile(&filenames);
             break;
 
         case 2:
-            removeFile();
+            removeFile(&filenames);
             break;
 
         case 3:
@@ -38,11 +51,11 @@ void mainMenu()
             break;
 
         case 5:
-            outputFile();
+            outputFile(output_file);
             break;
 
         case 6:
-            unPackage();
+            Package(filenames, output_file);
             break;
 
         case 7:
@@ -51,11 +64,26 @@ void mainMenu()
 
         default:
             printf("Invalid choice.\n");
+            break;
         }
-        printMenu();
-        scanf("%d", &choice);
     }
 }
+
+int scanMenu()
+{
+    printFill();
+    printMenu();
+    int choice;
+    scanf("%d", &choice);
+    return choice;
+}
+
+void printFill()
+{
+    printf("\n\n\n\n\n\n\n\n\n\n\n\n");
+    printf("\n\n\n\n\n\n\n\n\n\n\n\n");
+}
+
 void printMenu()
 {
     printf("\n1. Add files\n"
@@ -63,25 +91,46 @@ void printMenu()
            "3. Encrypt - XOR/Shift\n"
            "4. Compress \n"
            "5. Output file\n"
-           "6. Unpackage\n"
+           "6. Package\n"
            "7. View Package\n"
            "8. EXIT\n"
            "Enter your choice>");
 }
-void addFile()
+
+void print_filenames(int index, void *value)
 {
-    printf("add file\n Enter filename> ");
-    getchar();
-    /* 1Add files
-    - myfile1.txt
-    - myfile2.txt
-    - myfile3.txt
-    */
+    printf("[%d] %s\n", index, (char *)value);
 }
-void removeFile()
+
+void addFile(vector_t *filenames)
 {
-    printf("add file\n Enter filename> ");
     getchar();
+    char buffer[255] = "PLACEHOLDER";
+    while (1)
+    {
+        printFill();
+        print_vector(*filenames, print_filenames);
+        printf("add file\n Enter filename> ");
+        scanf("%s", buffer);
+        if (!strcmp(buffer, "-1"))
+            break;
+        vector_push_back(filenames, buffer);
+    }
+}
+void removeFile(vector_t *filenames)
+{
+    getchar();
+    int buffer;
+    while (1)
+    {
+        printFill();
+        print_vector(*filenames, print_filenames);
+        printf("remove file\n Enter filename> ");
+        scanf("%d", &buffer);
+        if (buffer == -1)
+            break;
+        vector_remove(filenames, buffer);
+    }
 }
 void encDec()
 {
@@ -108,32 +157,20 @@ void encDec()
 
 void comDecomp()
 {
-    printf("add here");
-    getchar();
 }
 
-void outputFile()
+void outputFile(char *output_file)
 {
-    printf("add here");
-    getchar();
-    /*
-    4Output file
-    Enter filename>
-    */
+    printf("Enter output filename>");
+    scanf("%s", output_file);
 }
 void viewPackage()
 {
-    printf("add here");
-    getchar();
 }
-void unPackage()
+void Package(vector_t filenames, char *output_file)
 {
-    printf("add here");
-    getchar();
-    /*
-    6Unpackage
-    Enter filename of the package>
-    password>
-    Enter output directory>
-*/
+    printf("filenames:\n");
+    print_vector(filenames, print_filenames);
+    printf("output file: %s\n", output_file);
+
 }
