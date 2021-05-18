@@ -61,3 +61,40 @@ void write_bit(int *buffer, int *buffer_size, int value, int size, FILE *fp)
         }
     }
 }
+
+int read_bit(int *buffer, int *buffer_size, FILE *fp)
+{
+
+    if (*buffer_size == 0)
+    {
+        *buffer = fgetc(fp);
+        *buffer_size = 7;
+    }
+    else
+    {
+        (*buffer_size)--;
+    }
+    return get_bit(*buffer, *buffer_size);
+}
+
+
+/*
+
+int temp = (char)getc(fp);
+buffer = buffer << (8 - buffer_size);
+buffer = buffer | (temp >> buffer_size);
+print_bits_length(buffer, 7);
+printf(" -> %c\n", buffer);
+curr->value = buffer;
+buffer = temp;
+            
+*/
+int read_n_bit(int *buffer, int *buffer_size, int n, FILE *fp)
+{
+    int temp = 0;
+    while (n--){
+        int a = read_bit(buffer, buffer_size, fp);
+        temp = (temp << 1) + a;
+    }
+    return temp;
+}

@@ -171,10 +171,10 @@ void write_compressed_file(FILE *in_fp, FILE *out_fp, vector_t nodes)
     for (i = 0; i < nodes.size; i++)
     {
         node_t *node = *(node_t **)vector_get(nodes, i);
-        #ifdef DEBUG
-            print_bits_length(node->value, node->bit_length);
-            printf(" -> %c\n", node->key);
-        #endif
+#ifdef DEBUG
+        print_bits_length(node->value, node->bit_length);
+        printf(" -> %c\n", node->key);
+#endif
     }
 
     int bit_buffer = 0, bit_buffer_size = 0;
@@ -253,9 +253,9 @@ void compress(FILE *in_fp, FILE *out_fp)
     vector_t addr;
     init_vector(&addr, 10, sizeof(int));
     int compressed_size = assign_tree_addr_to_node(root, &addr);
-    #ifdef DEBUG
-        printf("compressed size: %d = %d %d/8\n", compressed_size, compressed_size / 8, compressed_size % 8);
-    #endif
+#ifdef DEBUG
+    printf("compressed size: %d = %d %d/8\n", compressed_size, compressed_size / 8, compressed_size % 8);
+#endif
 
     /* Write huffman tree */
     int tree_size = 0;
@@ -264,7 +264,10 @@ void compress(FILE *in_fp, FILE *out_fp)
     fwrite(&tree_size, sizeof(int), 1, out_fp);
 
     tree_size = write_huffman_tree(out_fp, root);
-    
+#ifdef DEBUG
+    printf("huffman tree size: %d = %d %d/8\n", tree_size, tree_size / 8, tree_size % 8);
+#endif
+
     fgetpos(out_fp, &tree_end_pos);
     fsetpos(out_fp, &tree_size_pos);
     fwrite(&tree_size, sizeof(int), 1, out_fp);
@@ -274,6 +277,64 @@ void compress(FILE *in_fp, FILE *out_fp)
     fwrite(&compressed_size, sizeof(int), 1, out_fp);
     rewind(in_fp);
     write_compressed_file(in_fp, out_fp, nodes);
+}
+
+node_t *read_huffman_tree(FILE *fp)
+{
+    int tree_size;
+    fread(&tree_size, sizeof(int), 1, fp);
+    printf("tree size: %d\n", tree_size);
+
+    vector_t stack;
+    init_vector(&stack, 10, sizeof(node_t *));
+
+    node_t *root = (node_t *)malloc(sizeof(node_t));
+    vector_push_back(&stack, &root);
+    int buffer = 0, buffer_size = 0;
+    int bit = 0;
+    while (stack.size > 0)
+    {
+        node_t *curr = *(node_t **)vector_pop(&stack);
+        if (read_bit(&buffer, &buffer_size, fp))
+        {
+            int temp = (char)getc(fp);
+            buffer = buffer << (8 - buffer_size);
+            buffer = buffer | (temp >> buffer_size);
+            print_bits_length(buffer, 7);
+            printf(" -> %c\n", buffer);
+            curr->value = buffer;
+            buffer = temp;
+        }
+        else
+        {
+            curr->left = (node_t *)malloc(sizeof(node_t));
+            vector_push_back(&stack, &curr->left);
+            curr->right = (node_t *)malloc(sizeof(node_t));
+            vector_push_back(&stack, &curr->right);
+        }
+    }
+
+    return root;
+}
+
+/* node_t *read_node(FILE *fp, int buffer, int buffer_size)
+{
+    if (reader.ReadBit() == 1)
+    {
+        return init_node(reader.ReadByte(), null, null);
+    }
+    else
+    {
+        node_t *leftChild = read_node(fp, buffer, buffer_size);
+        node_t *rightChild = read_node(fp, buffer, buffer_size);
+        return init_node(0, leftChild, rightChild);
+    }
+} */
+
+void decompress(FILE *in_fp, FILE *out_fp)
+{
+    /* Read the tree */
+    node_t *root = read_huffman_tree(in_fp);
 
     /* 
     read_compressed_file(output_file, output_file, root);*/
