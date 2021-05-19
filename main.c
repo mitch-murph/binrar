@@ -121,9 +121,7 @@ void encryption_example()
 
 int main(void)
 {
-    /* compress_test();
-    
-    vector_t filenames; */
+    compress_test();
     unpackage_database_files("out", "test");
     return 0;
 }

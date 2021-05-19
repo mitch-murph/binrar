@@ -167,6 +167,7 @@ int encrypt_compress_database(FILE *database_fp, long start_pos, char bit_flag)
         copy_file(database_fp, temp_fp);
 
         fclose(temp_fp);
+        remove("encrypted.bin.tmp");
     }
 
     /* If user has opted shift encryption, encrypt database */
@@ -293,7 +294,7 @@ int unpackage_database_files(char *database_file, char *dir)
            This will tell us if the user has entered
            The correct password. */
         char hashed_key[HASH_SIZE];
-        int t = secure_hash_password_check(key, hashed_key);
+        secure_hash_password_check(key, hashed_key);
         unsigned char stored_hash_key[HASH_SIZE];
         fread(stored_hash_key, sizeof(unsigned char), HASH_SIZE, files_fp);
 
@@ -306,7 +307,7 @@ int unpackage_database_files(char *database_file, char *dir)
 
         /* Decrypt the database to a temp file.
            Using the hashed encrypt password. */
-        secure_hash_password_check(key, hashed_key);
+        secure_hash_encrypt(key, hashed_key);
         XOR_cipher(files_fp, temp_fp, hashed_key);
 
         fclose(files_fp);
