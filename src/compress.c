@@ -199,27 +199,31 @@ void write_compressed_file(FILE *in_fp, FILE *out_fp, vector_t nodes)
     write_bit(&bit_buffer, &bit_buffer_size, 0, -1, out_fp);
 }
 
-void read_compressed_file(FILE *in_fp, FILE *out_fp, node_t *root)
+void read_compressed_file(FILE *in_fp, FILE *out_fp, node_t *root, int compressed_size)
 {
     node_t *curr = root;
 
-    int buffer;
-    while ((buffer = fgetc(in_fp)) != EOF)
+    int buffer = 0;
+    int i;
+    for (i = 0; i < compressed_size; i++)
     {
-        int i;
-        for (i = 7; i >= 0; i--)
-        {
-            int bit = get_bit(buffer, i);
-            if (bit)
-                curr = curr->right;
-            else
-                curr = curr->left;
+        int i_bit = 7 - (i % 8);
+        if (i_bit == 7)
+            buffer = fgetc(in_fp);
 
-            if (curr->right == NULL && curr->left == NULL)
-            {
+        int bit = get_bit(buffer, i_bit);
+        if (bit)
+            curr = curr->right;
+        else
+            curr = curr->left;
+
+        if (curr->right == NULL && curr->left == NULL)
+        {
+            fputc(curr->key, out_fp);
+            #ifdef DEBUG
                 printf("%c", curr->key);
-                curr = root;
-            }
+            #endif
+            curr = root;
         }
     }
 }
@@ -314,5 +318,5 @@ void decompress(FILE *in_fp, FILE *out_fp)
     int compressed_size;
     fread(&compressed_size, sizeof(int), 1, in_fp);
     printf("compressed size: %d\n", compressed_size);
-    read_compressed_file(in_fp, out_fp, root);
+    read_compressed_file(in_fp, out_fp, root, compressed_size);
 }

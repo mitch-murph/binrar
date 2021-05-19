@@ -91,7 +91,7 @@ int unpackage_test()
     separate_files(output_file, "out/");
 }
 
-int main(void)
+void password_hash_example()
 {
     unsigned char out[HASH_SIZE];
     int i;
@@ -107,14 +107,38 @@ int main(void)
         printf("%02x ", out[i]);
     }
     printf("\n%s ", out);
+}
 
-    /*
+void compression_example()
+{
+    FILE *in_fp = fopen("1", "rb");
+    FILE *out_fp = fopen("compressed", "wb");
+
+    compress(in_fp, out_fp);
+
+    fclose(in_fp);
+    fclose(out_fp);
+
+    in_fp = fopen("compressed", "rb");
+    out_fp = fopen("uncompressed", "wb");
+
+    decompress(in_fp, out_fp);
+
+    fclose(in_fp);
+    fclose(out_fp);
+}
+
+void example_from_class()
+{
     compress_test();
     printf("Hit enter to unpackage");
     getchar();
     getchar();
     unpackage_test();
-    */
+}
+
+int main(void)
+{
 
     return 0;
 }
