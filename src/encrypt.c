@@ -35,5 +35,4 @@ void XOR_cipher(FILE *in_file, FILE *out_file, char *key)
         buffer = buffer ^ key[i++ % keyLen];
         fputc(buffer, out_file);
     }
-    return 0;
 }

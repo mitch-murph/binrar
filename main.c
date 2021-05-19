@@ -2,7 +2,6 @@
 #include "src/bit_array.h"
 #include "src/database.h"
 #include "src/encrypt.h"
-#include "src/shift_encrypt.h"
 #include "src/secure_hash.h"
 #include "src/vector.h"
 #include <stdio.h>
@@ -31,14 +30,6 @@ void addFile(vector_t *filenames)
     }
 }
 
-void Package(vector_t filenames, char *output_file)
-{
-    printf("filenames:\n");
-    print_vector(filenames, print_filenames);
-    printf("output file: %s\n", output_file);
-    combine_files(filenames, output_file, 0);
-}
-
 void compress_test()
 {
     vector_t filenames;
@@ -49,22 +40,7 @@ void compress_test()
     printf("Enter output filename>");
     scanf("%s", output_file);
 
-    Package(filenames, output_file);
-
-    /*
-    char key[255];
-    printf("Enter password to encrypt with>");
-    scanf("%s", key);
-
-    FILE *fp1 = fopen(output_file, "rb");
-
-    FILE *fp2 = fopen(output_file, "rb+");
-
-    XOR_cipher(fp1, fp2, key);
-
-    fclose(fp1);
-    fclose(fp2);
-    */
+    write_database(filenames, output_file, XOR_ENCRYPT);
 }
 
 int unpackage_test()
@@ -72,21 +48,6 @@ int unpackage_test()
     char output_file[255];
     printf("Enter package filename>");
     scanf("%s", output_file);
-
-    /*
-    char key[255];
-    printf("Enter password to encrypt with>");
-    scanf("%s", key);
-
-    FILE *fp1 = fopen(output_file, "rb");
-    FILE *fp2 = fopen(output_file, "rb+");
-
-    XORcipher(fp1, fp2, key);
-
-
-    fclose(fp1);
-    fclose(fp2);
-    */
 
     separate_files(output_file, "out/");
 }
@@ -144,7 +105,7 @@ void encryption_example()
 
     char key[] = "password";
 
-    XORcipher(in_fp, out_fp, key);
+    XOR_cipher(in_fp, out_fp, key);
 
     fclose(in_fp);
     fclose(out_fp);
@@ -152,23 +113,17 @@ void encryption_example()
     in_fp = fopen("encrypted", "rb");
     out_fp = fopen("decrypted.png", "wb");
 
-    XORcipher(in_fp, out_fp, key);
+    XOR_cipher(in_fp, out_fp, key);
 
     fclose(in_fp);
     fclose(out_fp);
 }
 
-void example_from_class()
-{
-    compress_test();
-    printf("Hit enter to unpackage");
-    getchar();
-    getchar();
-    unpackage_test();
-}
-
 int main(void)
 {
-    example_from_class();
+    /* compress_test();
+    
+    vector_t filenames; */
+    unpackage_database_files("out", "test");
     return 0;
 }
