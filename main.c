@@ -1,7 +1,7 @@
 #include "src/compress.h"
 #include "src/bit_array.h"
 #include "src/database.h"
-#include "src/cipher.h"
+#include "src/encrypt.h"
 #include "src/shift_encrypt.h"
 #include "src/secure_hash.h"
 #include "src/vector.h"
@@ -60,7 +60,7 @@ void compress_test()
 
     FILE *fp2 = fopen(output_file, "rb+");
 
-    XORcipher(fp1, fp2, key);
+    XOR_cipher(fp1, fp2, key);
 
     fclose(fp1);
     fclose(fp2);
