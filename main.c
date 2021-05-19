@@ -1,6 +1,6 @@
 #include "src/compress.h"
 #include "src/bit_array.h"
-#include "src/filepackager.h"
+#include "src/database.h"
 #include "src/cipher.h"
 #include "src/shift_encrypt.h"
 #include "src/secure_hash.h"
@@ -36,7 +36,7 @@ void Package(vector_t filenames, char *output_file)
     printf("filenames:\n");
     print_vector(filenames, print_filenames);
     printf("output file: %s\n", output_file);
-    combine_files(filenames, output_file);
+    combine_files(filenames, output_file, 0);
 }
 
 void compress_test()
@@ -169,6 +169,6 @@ void example_from_class()
 
 int main(void)
 {
-    encryption_example();
+    example_from_class();
     return 0;
 }

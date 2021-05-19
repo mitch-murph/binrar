@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include "filepackager.h"
+#include "database.h"
 #include "vector.h"
 
 void print_filenames(int index, void *value)
@@ -38,7 +38,7 @@ int write_file_contents(char *filename, FILE *out_fp)
     fclose(fp);
 }
 
-int combine_files(vector_t filenames, char *out_file)
+int combine_files(vector_t filenames, char *out_file, char bit_flag)
 {
     FILE *out_fp;
     out_fp = fopen(out_file, "wb");
@@ -50,6 +50,8 @@ int combine_files(vector_t filenames, char *out_file)
     {
         write_filename(vector_get(filenames, i), out_fp);
     }
+
+    fwrite(&bit_flag, sizeof(char), 1, out_fp);
 
     for (i = 0; i < filenames.size; i++)
     {
@@ -95,6 +97,8 @@ int separate_files(char *in_file, char * dir)
     }
 
     print_vector(filenames, print_filenames);
+    char bit_flag;
+    fread(&bit_flag, sizeof(char), 1, in_fp);
 
     for (i = 0; i < file_count; i++)
     {
