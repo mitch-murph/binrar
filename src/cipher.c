@@ -5,9 +5,9 @@
 
 int XORcipher(FILE *in_file, FILE *out_file, char *key)
 {
-    int i;
+    int i = 0;
     int keyLen = strlen(key);
-    char buffer;
+    int buffer;
     while ((buffer = fgetc(in_file)) != EOF)
     {
         buffer = buffer ^ key[i++ % keyLen];

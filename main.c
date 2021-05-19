@@ -128,6 +128,36 @@ void compression_example()
     fclose(out_fp);
 }
 
+void encryption_example()
+{
+    printf("encryption_example\n");
+    FILE *in_fp = fopen("data-files/opera.jpeg", "rb");
+    if (in_fp == NULL)
+    {
+        printf("Error reading file\n");
+    }
+    FILE *out_fp = fopen("encrypted", "wb");
+    if (out_fp == NULL)
+    {
+        printf("Error reading file\n");
+    }
+
+    char key[] = "password";
+
+    XORcipher(in_fp, out_fp, key);
+
+    fclose(in_fp);
+    fclose(out_fp);
+
+    in_fp = fopen("encrypted", "rb");
+    out_fp = fopen("decrypted.png", "wb");
+
+    XORcipher(in_fp, out_fp, key);
+
+    fclose(in_fp);
+    fclose(out_fp);
+}
+
 void example_from_class()
 {
     compress_test();
@@ -139,6 +169,6 @@ void example_from_class()
 
 int main(void)
 {
-
+    encryption_example();
     return 0;
 }
