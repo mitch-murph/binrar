@@ -172,7 +172,29 @@ int encrypt_compress_database(FILE *database_fp, long start_pos, char bit_flag)
 
     /* If user has opted shift encryption, encrypt database */
     if (bit_flag & SHIFT_ENCRYPT)
-        ;
+    {
+        FILE *temp_fp;
+        temp_fp = fopen("encrypted.bin.tmp", "wb+");
+        if (temp_fp == NULL)
+        {
+            printf("Error creating temp file");
+            return 0;
+        }
+
+        /* Goto where the database files begin */
+        fseek(database_fp, start_pos, SEEK_SET);
+
+        /* Encrypt database to a temp file */
+        shift_encrypt(database_fp, temp_fp);
+
+        /* Now copy the encrypted temp database files to the database */
+        fseek(database_fp, start_pos, SEEK_SET);
+        fseek(temp_fp, 0, SEEK_SET);
+        copy_file(database_fp, temp_fp);
+
+        fclose(temp_fp);
+        remove("encrypted.bin.tmp");
+    }
 
     /* If user has opted huffman compress, compress database */
     if (bit_flag & HUFFMAN_COMPRESS)
@@ -309,6 +331,30 @@ int unpackage_database_files(char *database_file, char *dir)
            Using the hashed encrypt password. */
         secure_hash_encrypt(key, hashed_key);
         XOR_cipher(files_fp, temp_fp, hashed_key);
+
+        fclose(files_fp);
+        remove(files);
+        files_fp = temp_fp;
+        rename(new_name, files);
+    }
+
+    /* If user has opted shift encryption, unencrypt database */
+    if (bit_flag & SHIFT_ENCRYPT)
+    {
+        FILE *temp_fp;
+        char new_name[] = "decrypt.bin.tmp";
+        temp_fp = fopen(new_name, "wb+");
+        if (temp_fp == NULL)
+        {
+            printf("Error creating temp file");
+            return 0;
+        }
+
+        /* Goto where the database files begin */
+        fseek(files_fp, 0, SEEK_SET);
+
+        /* Decrypt the database to a temp file. */
+        shift_decrypt(files_fp, temp_fp);
 
         fclose(files_fp);
         remove(files);
