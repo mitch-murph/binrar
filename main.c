@@ -30,7 +30,7 @@ void addFile(vector_t *filenames)
     }
 }
 
-void compress_test()
+void compress_test(int a)
 {
     vector_t filenames;
     init_vector(&filenames, 10, sizeof(char) * 255);
@@ -40,7 +40,7 @@ void compress_test()
     printf("Enter output filename>");
     scanf("%s", output_file);
 
-    write_database(filenames, output_file, HUFFMAN_COMPRESS);
+    write_database(filenames, output_file, a);
 }
 
 int unpackage_test()
@@ -72,16 +72,16 @@ void password_hash_example()
 
 void compression_example()
 {
-    FILE *in_fp = fopen("1", "rb");
-    FILE *out_fp = fopen("compressed", "wb");
+    FILE *in_fp = fopen("ooo", "rb");
+    FILE *out_fp = fopen("r", "wb");
 
-    compress(in_fp, out_fp);
+    /* compress(in_fp, out_fp);
 
     fclose(in_fp);
     fclose(out_fp);
 
     in_fp = fopen("compressed", "rb");
-    out_fp = fopen("uncompressed", "wb");
+    out_fp = fopen("uncompressed", "wb"); */
 
     decompress(in_fp, out_fp);
 
@@ -121,7 +121,40 @@ void encryption_example()
 
 int main(void)
 {
-    compress_test();
+    compress_test(4);
+    printf("compression completed\n");
     unpackage_database_files("out", "test");
+
+    return 0;
+
+    FILE *in_fp = fopen("out", "rb");
+    FILE *out_fp = fopen("compressed", "wb");
+
+    vector_t temp;
+    init_vector(&temp, 10, sizeof(char) * 255);
+    read_header(in_fp, &temp);
+    char bit_flag;
+    fread(&bit_flag, sizeof(char), 1, in_fp);
+    compress(in_fp, out_fp);
+
+    fclose(in_fp);
+    fclose(out_fp);
+
+    in_fp = fopen("compressed", "rb");
+    out_fp = fopen("uncompressed", "wb");
+
+    decompress(in_fp, out_fp);
+    /* int buffer;
+    int i = 19;
+    while (i--)
+    {
+        buffer = fgetc(in_fp);
+        print_bits_length(buffer, 7);
+        printf("\n");
+    }*/
+
+    fclose(in_fp);
+    fclose(out_fp);
+
     return 0;
 }
