@@ -234,7 +234,9 @@ void compress(FILE *in_fp, FILE *out_fp)
     /* Count the frequency of each byte into a hashmap */
     hashmap_t map;
     init_hashmap(&map, sizeof(node_t), 0x101, comp, hash, exists, init_node);
+    long in_file_start = ftell(in_fp);
     count_bytes(in_fp, &map);
+    fseek(in_fp, in_file_start, SEEK_SET);
 
     /* Convert the hashmap into array of dynamically allocated tree nodes */
     vector_t nodes;
@@ -274,7 +276,6 @@ void compress(FILE *in_fp, FILE *out_fp)
 
     /* Rewrite file subbing in addr for each byte */
     fwrite(&compressed_size, sizeof(int), 1, out_fp);
-    rewind(in_fp);
     write_compressed_file(in_fp, out_fp, nodes);
 }
 
