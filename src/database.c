@@ -302,7 +302,7 @@ int separate_files(FILE *database_fp, vector_t filenames, char *dir)
         while (file_size--)
         {
             buffer = fgetc(database_fp);
-            /* fputc(buffer, file_fp); */
+            fputc(buffer, file_fp);
         }
         fclose(file_fp);
     }
