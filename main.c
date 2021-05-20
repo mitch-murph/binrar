@@ -1,110 +1,160 @@
-#include "compress.h"
-#include "bit_array.h"
-#include "filepackager.h"
-#include "cipher.h"
-#include "shift_encrypt.h"
+#include "src/compress.h"
+#include "src/bit_array.h"
+#include "src/database.h"
+#include "src/encrypt.h"
+#include "src/secure_hash.h"
+#include "src/vector.h"
 #include <stdio.h>
+#include <string.h>
 
-void read_bits()
+void printFill()
 {
-    FILE *fp;
-    int buffer;
-    int temp;
-    fp = fopen("data-files/write.bin", "rb");
+    printf("\n\n\n\n\n\n\n\n\n\n\n\n");
+    printf("\n\n\n\n\n\n\n\n\n\n\n\n");
+}
 
-    int count = 0, flag = 1;
+void print_filenames(int index, void *value);
+
+void addFile(vector_t *filenames)
+{
+    char buffer[255] = "PLACEHOLDER";
     while (1)
     {
-        if (flag)
-        {
-            if ((buffer = getc(fp)) == EOF)
-            {
-                break;
-            }
-        }
-        int i = 0;
-        if (!flag)
-            i = count;
-        flag = 1;
-        for (; i < 8; i++)
-        {
-            if (get_bit(buffer, i))
-            {
-                i++;
-                temp = buffer;
-                buffer = getc(fp);
-                int c = combine_bits(temp, buffer, i);
-                printf("\n[%02x] ", (unsigned char)c);
-                print_bits(c);
-                flag = 0;
-                count = i;
-                break;
-            }
-        }
+        printFill();
+        print_vector(*filenames, print_filenames);
+        printf("add file\n Enter filename> ");
+        scanf("%s", buffer);
+        if (!strcmp(buffer, "-1"))
+            break;
+        vector_push_back(filenames, buffer);
     }
-
-    fclose(fp);
 }
 
-int main(int argc, char **argv)
+void compress_test(int a)
 {
+    vector_t filenames;
+    init_vector(&filenames, 10, sizeof(char) * 255);
+    addFile(&filenames);
 
-    /*
-    FILE *fp3 = fopen("data-files/comp.bin", "rb");
+    char output_file[255];
+    printf("Enter output filename>");
+    scanf("%s", output_file);
+
+    write_database(filenames, output_file, a);
+}
+
+int unpackage_test()
+{
+    char output_file[255];
+    printf("Enter package filename>");
+    scanf("%s", output_file);
+
+    separate_files(output_file, "out/");
+}
+
+void password_hash_example()
+{
+    unsigned char out[HASH_SIZE];
     int i;
-    int buffer = 0, buffer_count = 0;
-    for (i = 0; i < 8; i++)
+    secure_hash_password_check("B", out);
+    for (i = 0; i < HASH_SIZE - 1; i++)
     {
-        printf("[%d]\t%d %d\n", i, buffer_count, read_n_bit(&buffer, &buffer_count, 7, fp3));
+        printf("%02x ", out[i]);
     }
-    fclose(fp3);
-    */
+    printf("\n");
+    secure_hash_encrypt("B", out);
+    for (i = 0; i < HASH_SIZE - 1; i++)
+    {
+        printf("%02x ", out[i]);
+    }
+    printf("\n%s ", out);
+}
 
-    FILE *fp1 = fopen("data-files/o.bin", "rb");
-    FILE *fp2 = fopen("data-files/o1.bin", "wb");
-    /* compress(fp1, fp2); */
+void compression_example()
+{
+    FILE *in_fp = fopen("ooo", "rb");
+    FILE *out_fp = fopen("r", "wb");
 
-    shift_encrypt(fp1, fp2);
+    /* compress(in_fp, out_fp);
 
-    fclose(fp1);
-    fclose(fp2);
+    fclose(in_fp);
+    fclose(out_fp);
 
-    fp1 = fopen("data-files/o1.bin", "rb");
-    fp2 = fopen("data-files/o2.bin", "wb");
+    in_fp = fopen("compressed", "rb");
+    out_fp = fopen("uncompressed", "wb"); */
 
-    shift_decrypt(fp1, fp2);
+    decompress(in_fp, out_fp);
 
+    fclose(in_fp);
+    fclose(out_fp);
+}
 
-    fclose(fp1);
-    fclose(fp2);
+void encryption_example()
+{
+    printf("encryption_example\n");
+    FILE *in_fp = fopen("data-files/opera.jpeg", "rb");
+    if (in_fp == NULL)
+    {
+        printf("Error reading file\n");
+    }
+    FILE *out_fp = fopen("encrypted", "wb");
+    if (out_fp == NULL)
+    {
+        printf("Error reading file\n");
+    }
 
+    char key[] = "password";
 
-    /* FILE *fp3 = fopen("data-files/out.bin", "rb");
-    decompress(fp3, fp3);
-    fclose(fp3); */
+    XOR_cipher(in_fp, out_fp, key);
+
+    fclose(in_fp);
+    fclose(out_fp);
+
+    in_fp = fopen("encrypted", "rb");
+    out_fp = fopen("decrypted.png", "wb");
+
+    XOR_cipher(in_fp, out_fp, key);
+
+    fclose(in_fp);
+    fclose(out_fp);
+}
+
+int main(void)
+{
+    compress_test(4);
+    printf("compression completed\n");
+    unpackage_database_files("out", "test");
+
+    return 0;
+
+    FILE *in_fp = fopen("out", "rb");
+    FILE *out_fp = fopen("compressed", "wb");
+
+    vector_t temp;
+    init_vector(&temp, 10, sizeof(char) * 255);
+    read_header(in_fp, &temp);
+    char bit_flag;
+    fread(&bit_flag, sizeof(char), 1, in_fp);
+    compress(in_fp, out_fp);
+
+    fclose(in_fp);
+    fclose(out_fp);
+
+    in_fp = fopen("compressed", "rb");
+    out_fp = fopen("uncompressed", "wb");
+
+    decompress(in_fp, out_fp);
+    /* int buffer;
+    int i = 19;
+    while (i--)
+    {
+        buffer = fgetc(in_fp);
+        print_bits_length(buffer, 7);
+        printf("\n");
+    }*/
+
+    fclose(in_fp);
+    fclose(out_fp);
+
     return 0;
 }
-
-/*
-001A1C01E01D1B
-
-28 00101000
-34 00110100
-35 00110101
-15 00010101
-44 01000100
-A1 10100001
-00 00000000
-
-28 00101000
-34 00110100
-35 00110101
-15 00010101
-44 01000100
-a1 10100001
-00 00000000
-
-001 01000001 1 01000011 01 01000101 01 01000100 1 0100001 00000000
-00101000 00110100  00110101  00010101  01000100 10100001  00000000
-2834351544A100
-*/

@@ -3,7 +3,7 @@
 #include "vector.h"
 #include "tree.h"
 #include "bit_array.h"
-#include "filepackager.h"
+#include "database.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -199,27 +199,31 @@ void write_compressed_file(FILE *in_fp, FILE *out_fp, vector_t nodes)
     write_bit(&bit_buffer, &bit_buffer_size, 0, -1, out_fp);
 }
 
-void read_compressed_file(FILE *in_fp, FILE *out_fp, node_t *root)
+void read_compressed_file(FILE *in_fp, FILE *out_fp, node_t *root, int compressed_size)
 {
     node_t *curr = root;
 
-    int buffer;
-    while ((buffer = fgetc(in_fp)) != EOF)
+    int buffer = 0;
+    int i;
+    for (i = 0; i < compressed_size; i++)
     {
-        int i;
-        for (i = 7; i >= 0; i--)
-        {
-            int bit = get_bit(buffer, i);
-            if (bit)
-                curr = curr->right;
-            else
-                curr = curr->left;
+        int i_bit = 7 - (i % 8);
+        if (i_bit == 7)
+            buffer = fgetc(in_fp);
 
-            if (curr->right == NULL && curr->left == NULL)
-            {
+        int bit = get_bit(buffer, i_bit);
+        if (bit)
+            curr = curr->right;
+        else
+            curr = curr->left;
+
+        if (curr->right == NULL && curr->left == NULL)
+        {
+            fputc(curr->key, out_fp);
+            #ifdef DEBUG
                 printf("%c", curr->key);
-                curr = root;
-            }
+            #endif
+            curr = root;
         }
     }
 }
@@ -230,7 +234,9 @@ void compress(FILE *in_fp, FILE *out_fp)
     /* Count the frequency of each byte into a hashmap */
     hashmap_t map;
     init_hashmap(&map, sizeof(node_t), 0x101, comp, hash, exists, init_node);
+    long in_file_start = ftell(in_fp);
     count_bytes(in_fp, &map);
+    fseek(in_fp, in_file_start, SEEK_SET);
 
     /* Convert the hashmap into array of dynamically allocated tree nodes */
     vector_t nodes;
@@ -270,7 +276,6 @@ void compress(FILE *in_fp, FILE *out_fp)
 
     /* Rewrite file subbing in addr for each byte */
     fwrite(&compressed_size, sizeof(int), 1, out_fp);
-    rewind(in_fp);
     write_compressed_file(in_fp, out_fp, nodes);
 }
 
@@ -314,5 +319,5 @@ void decompress(FILE *in_fp, FILE *out_fp)
     int compressed_size;
     fread(&compressed_size, sizeof(int), 1, in_fp);
     printf("compressed size: %d\n", compressed_size);
-    read_compressed_file(in_fp, out_fp, root);
+    read_compressed_file(in_fp, out_fp, root, compressed_size);
 }
