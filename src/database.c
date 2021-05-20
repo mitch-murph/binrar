@@ -3,7 +3,10 @@
 #include "database.h"
 #include "vector.h"
 #include "encrypt.h"
+#include "compress.h"
 #include "secure_hash.h"
+
+void read_header(FILE *database_fp, vector_t *filenames);
 
 void print_filenames(int index, void *value)
 {
@@ -114,6 +117,27 @@ void copy_file(FILE *dest, FILE *src)
     }
 }
 
+void copy_header(FILE *dest, FILE *src)
+{
+    /* Seek the end of the header */
+    vector_t temp;
+    read_header(src, &temp);
+    free_vector(temp);
+    char bit_flag;
+    fread(&bit_flag, sizeof(char), 1, src);
+
+    /* Get where header ends */
+    long pos = ftell(src);
+    fseek(src, 0, SEEK_SET);
+
+    /* Copy over the header */
+    int buffer;
+    while ((buffer = getc(src)) != EOF && pos--)
+    {
+        putc(buffer, dest);
+    }
+}
+
 void write_header(FILE *out_fp, vector_t filenames)
 {
     /* Write number of files */
@@ -198,7 +222,40 @@ int encrypt_compress_database(FILE *database_fp, long start_pos, char bit_flag)
 
     /* If user has opted huffman compress, compress database */
     if (bit_flag & HUFFMAN_COMPRESS)
-        ;
+    {
+        FILE *temp_fp;
+        temp_fp = fopen("compressed.bin.tmp", "wb+");
+        if (temp_fp == NULL)
+        {
+            printf("Error creating temp file");
+            return 0;
+        }
+
+        /* Goto where the database files begin */
+        fseek(database_fp, 0, SEEK_SET);
+        copy_header(temp_fp, database_fp);
+
+        char ss[255];
+        scanf("%s", ss);
+
+        /* Goto where the database files begin */
+        fseek(database_fp, start_pos, SEEK_SET);
+        fseek(temp_fp, start_pos, SEEK_SET);
+
+        /* Encrypt database to a temp file */
+        compress(database_fp, temp_fp);
+
+        /* Now copy the encrypted temp database files to the database */
+        /*fseek(database_fp, start_pos, SEEK_SET);
+        fseek(temp_fp, 0, SEEK_SET);
+        copy_file(database_fp, temp_fp);*/
+
+        fclose(database_fp);
+        database_fp = temp_fp;
+        remove("out");
+        rename("compressed.bin.tmp", "out");
+        fclose(temp_fp);
+    }
 
     /* If user has opted run length compress, compress database */
     if (bit_flag & RUN_COMPRESS)
@@ -236,6 +293,7 @@ int read_filename(char *filename, FILE *in_fp)
     fread(&len, sizeof(unsigned char), 1, in_fp);
     /* TODO: Read name size */
     fread(filename, sizeof(char), len, in_fp);
+    filename[len] = '\0';
     return 0;
 }
 
@@ -355,6 +413,30 @@ int unpackage_database_files(char *database_file, char *dir)
 
         /* Decrypt the database to a temp file. */
         shift_decrypt(files_fp, temp_fp);
+
+        fclose(files_fp);
+        remove(files);
+        files_fp = temp_fp;
+        rename(new_name, files);
+    }
+
+    /* If user has opted huffman compression, decompress database */
+    if (bit_flag & HUFFMAN_COMPRESS)
+    {
+        FILE *temp_fp;
+        char new_name[] = "decompress.bin.tmp";
+        temp_fp = fopen(new_name, "wb+");
+        if (temp_fp == NULL)
+        {
+            printf("Error creating temp file");
+            return 0;
+        }
+
+        /* Goto where the database files begin */
+        fseek(files_fp, 0, SEEK_SET);
+
+        /* Decrypt the database to a temp file. */
+        decompress(files_fp, temp_fp);
 
         fclose(files_fp);
         remove(files);

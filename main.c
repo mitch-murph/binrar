@@ -40,7 +40,7 @@ void compress_test()
     printf("Enter output filename>");
     scanf("%s", output_file);
 
-    write_database(filenames, output_file, XOR_ENCRYPT);
+    write_database(filenames, output_file, HUFFMAN_COMPRESS);
 }
 
 int unpackage_test()
