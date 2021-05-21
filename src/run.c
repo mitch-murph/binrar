@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "compress.h"
 
-int compress(FILE *in_fp, FILE *out_fp)
+int run_length_compress(FILE *in_fp, FILE *out_fp)
 {
     int a = 0;
     int c = 1;
@@ -41,7 +42,7 @@ int compress(FILE *in_fp, FILE *out_fp)
     return a;
 }
 
-int decompress(FILE *in_fp, FILE *out_fp)
+int run_length_decompress(FILE *in_fp, FILE *out_fp)
 {
     int frequency;
     while ((frequency = fgetc(in_fp)) != EOF)
@@ -51,17 +52,4 @@ int decompress(FILE *in_fp, FILE *out_fp)
         for (i = 0; i < frequency; i++)
             fputc(value, out_fp);
     }
-}
-
-int main()
-{
-
-    FILE *in_fp = fopen("out", "rb");
-    FILE *out_fp = fopen("outout", "wb");
-
-    decompress(in_fp, out_fp);
-
-    fclose(in_fp);
-    fclose(out_fp);
-    return 0;
 }
