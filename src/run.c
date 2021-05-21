@@ -41,13 +41,25 @@ int compress(FILE *in_fp, FILE *out_fp)
     return a;
 }
 
+int decompress(FILE *in_fp, FILE *out_fp)
+{
+    int frequency;
+    while ((frequency = fgetc(in_fp)) != EOF)
+    {
+        int value = fgetc(in_fp);
+        int i;
+        for (i = 0; i < frequency; i++)
+            fputc(value, out_fp);
+    }
+}
+
 int main()
 {
 
-    FILE *in_fp = fopen("in", "rb");
-    FILE *out_fp = fopen("out", "wb");
+    FILE *in_fp = fopen("out", "rb");
+    FILE *out_fp = fopen("outout", "wb");
 
-    compress(in_fp, out_fp);
+    decompress(in_fp, out_fp);
 
     fclose(in_fp);
     fclose(out_fp);
