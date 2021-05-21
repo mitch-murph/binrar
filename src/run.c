@@ -5,7 +5,6 @@
 int compress(FILE *in_fp, FILE *out_fp)
 {
     int a = 0;
-    int b = 0;
     int c = 1;
 
     int prev;
@@ -27,13 +26,18 @@ int compress(FILE *in_fp, FILE *out_fp)
             }
             else
             {
-                printf("%d%c", c, prev);
+                fputc(c, out_fp);
+                fputc(prev, out_fp);
                 c = 0;
             }
         }
         a++;
     }
-    printf("%d%c", c, prev);
+    if (a > 0)
+    {
+        fputc(c, out_fp);
+        fputc(prev, out_fp);
+    }
     return a;
 }
 
