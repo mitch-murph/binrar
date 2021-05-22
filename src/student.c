@@ -12,6 +12,9 @@ int hasStudentId(const void *a, const void *b)
 
 void initStudent(student_t *student)
 {
+    student->studentId = 0;
+    student->firstName[0] = '\0';
+    student->lastName[0] = '\0';
     init_vector(&student->assessments, 10, sizeof(assessment_t));
 }
 
@@ -27,4 +30,21 @@ student_t *searchStudent(const vector_t studentList, int studentId)
     if (maybeStudent != -1)
         return vector_get(studentList, maybeStudent);
     return NULL;
+}
+
+void getAllAssessments(const vector_t student_list, vector_t *assessment_list)
+{
+    init_vector(assessment_list, 10, sizeof(assessment_student_t));
+    int i, j;
+    for (i = 0; i < student_list.size; i++)
+    {
+        student_t *student = (student_t *)vector_get(student_list, i);
+        for (j = 0; j < student->assessments.size; j++)
+        {
+            assessment_student_t assessment;
+            assessment.studentp = student;
+            assessment.assessmentp = vector_get(student->assessments, i);
+            vector_push_back(assessment_list, &assessment);
+        }
+    }
 }

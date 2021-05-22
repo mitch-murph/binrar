@@ -9,8 +9,8 @@
 #include "vector.h"
 #include <stdio.h>
 
-int write_database(vector_t filenames, char *out_file, char bit_flag);
-int read_database(char *database_file, vector_t *filenames);
+int write_database(vector_t studentList, char *out_file, char bit_flag);
+int read_database(char *database_file, vector_t *studentList);
 int unpackage_database_files(char *database_file, char *dir);
 int checkIfFileExists(char *filename);
 int createEmptyDatabase(char *filename);
