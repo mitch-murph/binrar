@@ -48,3 +48,18 @@ void getAllAssessments(const vector_t student_list, vector_t *assessment_list)
         }
     }
 }
+
+void getAllFilenames(const vector_t student_list, vector_t *filenames)
+{
+    init_vector(filenames, 10, sizeof(char) * MAX_FILENAME_SIZE);
+    int i, j;
+    for (i = 0; i < student_list.size; i++)
+    {
+        student_t *student = (student_t *)vector_get(student_list, i);
+        for (j = 0; j < student->assessments.size; j++)
+        {
+            assessment_t *assessment = vector_get(student->assessments, j);
+            vector_push_back(filenames, assessment->filename);
+        }
+    }
+}

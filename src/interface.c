@@ -22,33 +22,34 @@ void displayStudent(const vector_t student_list);
 void findStudent(const vector_t student_list);
 void addAssessment(student_t *student);
 void saveStudents(const vector_t student_list);
-void loadStudents(vector_t *student_list);
+void loadStudents(vector_t *student_list, char *databaseFile);
 void displayAllAssessments(vector_t student_list);
 void displayAssessments(vector_t assessment_list);
+void extractAllFiles(vector_t student_list, char *databaseFile);
 
 void addTestData(vector_t *student_list)
 {
     student_t new_student;
     initStudent(&new_student);
-    new_student.studentId = 101;
+    new_student.studentId = 104;
     strcpy(new_student.firstName, "John");
     strcpy(new_student.lastName, "Smith");
     vector_push_back(student_list, &new_student);
 
-    new_student.studentId = 102;
     initStudent(&new_student);
+    new_student.studentId = 103;
     strcpy(new_student.firstName, "Mary");
     strcpy(new_student.lastName, "Jane");
     vector_push_back(student_list, &new_student);
 
-    new_student.studentId = 103;
     initStudent(&new_student);
+    new_student.studentId = 102;
     strcpy(new_student.firstName, "Mark");
     strcpy(new_student.lastName, "Lewis");
     vector_push_back(student_list, &new_student);
 
-    new_student.studentId = 104;
     initStudent(&new_student);
+    new_student.studentId = 101;
     strcpy(new_student.firstName, "A very long nam");
     strcpy(new_student.lastName, "Lewis");
     vector_push_back(student_list, &new_student);
@@ -149,11 +150,12 @@ void mainMenu(void)
 {
     vector_t student_list;
     init_vector(&student_list, 10, sizeof(student_t));
+    char databaseFile[MAX_FILENAME_SIZE];
 
-    /* addTestData(&student_list); */
+    addTestData(&student_list);
 
     int choice;
-    while ((choice = scanMenu()) != 9)
+    while ((choice = scanMenu()) != 10)
     {
         switch (choice)
         {
@@ -176,7 +178,10 @@ void mainMenu(void)
             saveStudents(student_list);
             break;
         case 8:
-            loadStudents(&student_list);
+            loadStudents(&student_list, databaseFile);
+            break;
+        case 9:
+            extractAllFiles(student_list, databaseFile);
             break;
         default:
             printf("Invalid choice.\n");
@@ -208,7 +213,8 @@ void printMainMenu(void)
            "6. search for assessment\n"
            "7. save to database\n"
            "8. load database\n"
-           "9. exit the program\n");
+           "9. extract all files\n"
+           "10. exit the program\n");
 }
 
 int read_string_fix_length(char *str, int length)
@@ -465,9 +471,8 @@ void saveStudents(const vector_t studentList)
     }
 }
 
-void loadStudents(vector_t *student_list)
+void loadStudents(vector_t *student_list, char *filename)
 {
-    char filename[MAX_FILENAME_SIZE];
     printf("Enter the database file name>");
     int exceedLength = read_string_fix_length(filename,
                                               MAX_FILENAME_SIZE);
@@ -517,4 +522,29 @@ void displayAllAssessments(vector_t student_list)
     }
     wait_for_enter();
     free_vector(assessments);
+}
+
+void extractAllFiles(vector_t student_list, char *databaseFile)
+{
+    char dir[MAX_FILENAME_SIZE];
+    printf("Enter the directory you would like to extract to>");
+    int exceedLength = read_string_fix_length(dir,
+                                              MAX_FILENAME_SIZE);
+    if (exceedLength)
+    {
+        printf("\n\nDirectory name size exceed.\n"
+               "The max length is %d.\n"
+               "You will be returned to the menu.\n",
+               MAX_FILENAME_SIZE);
+        wait_for_enter();
+        return;
+    }
+    if (unpackage_database_files(databaseFile, dir))
+    {
+        printf("\n\nCannot read database file %s.\n"
+               "You will be returned to the menu\n",
+               databaseFile);
+        wait_for_enter();
+        return;
+    }
 }

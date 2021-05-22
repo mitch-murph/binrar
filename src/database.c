@@ -399,7 +399,7 @@ int read_database(char *database_file, vector_t *filenames)
     return 0;
 }
 
-int separate_files(FILE *database_fp, vector_t filenames, char *dir)
+int separate_files(FILE *database_fp, vector_t filenames, char *suffix)
 {
     int i;
     for (i = 0; i < filenames.size; i++)
@@ -409,17 +409,15 @@ int separate_files(FILE *database_fp, vector_t filenames, char *dir)
 
         printf("file size: %ld\n", file_size);
 
-        char new_filename[300];
-        strcpy(new_filename, dir);
-        char filename[255];
+        char filename[MAX_FILENAME_SIZE + 10];
         strcpy(filename, (char *)vector_get(filenames, i));
-        strcat(new_filename, filename);
+        strcat(filename, suffix);
 
 #ifndef DEBUG
         printf("READ %s size: %ld\n", filename, file_size);
 #endif
 
-        FILE *file_fp = fopen(new_filename, "wb");
+        FILE *file_fp = fopen(filename, "wb+");
         if (file_fp == NULL)
         {
             printf("error opening file\n");
@@ -438,8 +436,11 @@ int unpackage_database_files(char *database_file, char *dir)
 {
     FILE *database_fp;
     database_fp = fopen(database_file, "rb");
+    vector_t student_list;
+    read_database_fp(database_fp, &student_list);
     vector_t filenames;
-    read_database_fp(database_fp, &filenames);
+    getAllFilenames(student_list, &filenames);
+    print_vector(filenames, print_filenames);
 
     /* Read the bit flag */
     char bit_flag;
