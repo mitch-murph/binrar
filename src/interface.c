@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include "interface.h"
 #include "student.h"
 #include "vector.h"
@@ -20,6 +21,8 @@ void deleteStudent(vector_t *student_list);
 void displayStudent(const vector_t student_list);
 void findStudent(const vector_t student_list);
 void addAssessment(student_t *student);
+void saveStudents(const vector_t student_list);
+void loadStudents(vector_t *student_list);
 
 void addTestData(vector_t *student_list)
 {
@@ -163,6 +166,9 @@ void mainMenu(void)
             break;
         case 4:
             findStudent(student_list);
+            break;
+        case 5:
+            saveStudents(student_list);
             break;
         default:
             printf("Invalid choice.\n");
@@ -386,4 +392,69 @@ void addAssessment(student_t *student)
     getchar();
 
     vector_push_back(&student->assessments, &newAssessment);
+}
+
+char setBitFlag(char *filename)
+{
+    char bitFlag = 0;
+    while (1)
+    {
+        printf("\n\nDatabase file: %s\n", filename);
+        printf("Please toggle the options you would\n"
+               "like configured for your database.\n"
+               "By selecting each number and then\n"
+               "press 5 to execute.\n");
+        printf("1. XOR Exncrypt: %d\n"
+               "2. Shift Exncrypt: %d\n"
+               "3. Huffman Compress: %d\n"
+               "4. Run Length Compress: %d\n"
+               "5. Execute\n",
+               !!(bitFlag & XOR_ENCRYPT),
+               !!(bitFlag & SHIFT_ENCRYPT),
+               !!(bitFlag & HUFFMAN_COMPRESS),
+               !!(bitFlag & RUN_COMPRESS));
+        printf("Enter your choice>");
+        int option;
+        scanf("%d", &option);
+        /* Consume trailing newline */
+        getchar();
+        if (0 < option && option <= 4)
+            bitFlag = bitFlag | (char)pow(2, option - 1);
+        else if (option == 5)
+            return bitFlag;
+        else
+            printf("Invalid option.");
+    }
+}
+
+void saveStudents(const vector_t studentList)
+{
+    char filename[MAX_FILENAME_SIZE];
+    printf("Enter the new database file name>");
+    int exceedLength = read_string_fix_length(filename,
+                                              MAX_FILENAME_SIZE);
+    if (exceedLength)
+    {
+        printf("\n\nFilename size exceed. Please use a different name.\n"
+               "The max length is %d.\n"
+               "You will be returned to the menu.\n",
+               MAX_FILENAME_SIZE);
+        wait_for_enter();
+        return;
+    }
+
+    char bitFlag = setBitFlag(filename);
+
+    if (write_database(studentList, filename, bitFlag))
+    {
+        printf("\n\nCannot create database file %s.\n"
+               "You will be returned to the menu\n",
+               filename);
+        wait_for_enter();
+        return;
+    }
+}
+
+void loadStudents(vector_t *student_list)
+{
 }
