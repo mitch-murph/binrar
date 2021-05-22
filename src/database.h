@@ -12,5 +12,6 @@
 int write_database(vector_t filenames, char *out_file, char bit_flag);
 int read_database(char *database_file, vector_t *filenames);
 int unpackage_database_files(char *database_file, char *dir);
+int checkIfFileExists(char *filename);
 
 #endif

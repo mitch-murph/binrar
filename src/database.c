@@ -429,3 +429,14 @@ int unpackage_database_files(char *database_file, char *dir)
 
     fclose(files_fp);
 }
+
+int checkIfFileExists(char *filename)
+{
+    FILE *filep;
+    if ((filep = fopen(filename, "r")))
+    {
+        fclose(filep);
+        return 1;
+    }
+    return 0;
+}

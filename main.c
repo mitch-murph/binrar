@@ -4,6 +4,9 @@
 #include "src/encrypt.h"
 #include "src/secure_hash.h"
 #include "src/vector.h"
+#include "src/interface.h"
+#include "src/sort.h"
+#include "src/search.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -119,8 +122,17 @@ void encryption_example()
     fclose(out_fp);
 }
 
+int comp5(const void *a)
+{
+    int *ap = (int *)a;
+    return *ap == 111;
+}
+
 int main(void)
 {
+    mainMenu();
+    return 0;
+
     compress_test(4);
     printf("compression completed\n");
     unpackage_database_files("out", "test");
