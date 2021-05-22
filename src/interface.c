@@ -6,6 +6,9 @@
 #include "search.h"
 #include "database.h"
 
+int scanDatabaseFilename(char *filename);
+void wait_for_enter();
+void launchWithDatabaseFile(char *database);
 void mainMenu(void);
 void studentMainMenu(student_t *student);
 int scanMenu(void);
@@ -46,6 +49,97 @@ void addTestData(vector_t *student_list)
     vector_push_back(student_list, &new_student);
 }
 
+void launchTeacher()
+{
+    while (1)
+    {
+        printf("Welcome to the assessment database.\n"
+               "Would you like to create a new database or use an existing?\n"
+               "1. Use an existing.\n"
+               "2. Create a new database.\n");
+        printf("Enter your choice>");
+
+        int option;
+        scanf("%d", &option);
+        /* Consume trailing newline */
+        getchar();
+
+        if (option == 1)
+        {
+            char filename[MAX_FILENAME_SIZE];
+            if (!scanDatabaseFilename(filename))
+            {
+                launchWithDatabaseFile(filename);
+                break;
+            }
+        }
+        if (option == 2)
+        {
+            char filename[MAX_FILENAME_SIZE];
+            if (!createNewDatabase(filename))
+            {
+                launchWithDatabaseFile(filename);
+                break;
+            }
+        }
+        printf("Invalid choice.\n");
+    }
+}
+
+int scanDatabaseFilename(char *filename)
+{
+    printf("Enter the database file name>");
+    int exceedLength = read_string_fix_length(filename,
+                                              MAX_FILENAME_SIZE);
+    if (exceedLength)
+    {
+        printf("\n\nFilename size exceed. Please rename the file.\n"
+               "The max length is %d.\n"
+               "You will be returned to the menu.\n",
+               MAX_FILENAME_SIZE);
+        wait_for_enter();
+        return 1;
+    }
+    if (!checkIfFileExists(filename))
+    {
+        printf("\n\nCannot find file %s.\n"
+               "You will be returned to the menu\n",
+               filename);
+        wait_for_enter();
+        return 1;
+    }
+    return 0;
+}
+
+int createNewDatabase(char *filename)
+{
+    printf("Enter the new database file name>");
+    int exceedLength = read_string_fix_length(filename,
+                                              MAX_FILENAME_SIZE);
+    if (exceedLength)
+    {
+        printf("\n\nFilename size exceed. Please rename the file.\n"
+               "The max length is %d.\n"
+               "You will be returned to the menu.\n",
+               MAX_FILENAME_SIZE);
+        wait_for_enter();
+        return 1;
+    }
+    if (createEmptyDatabase(filename))
+    {
+        printf("\n\nCannot create database file %s.\n"
+               "You will be returned to the menu\n",
+               filename);
+        wait_for_enter();
+        return 1;
+    }
+    return 0;
+}
+
+void launchWithDatabaseFile(char *database)
+{
+}
+
 void mainMenu(void)
 {
     vector_t student_list;
@@ -61,19 +155,15 @@ void mainMenu(void)
         case 1:
             addStudent(&student_list);
             break;
-
         case 2:
             deleteStudent(&student_list);
             break;
-
         case 3:
             displayStudent(student_list);
             break;
-
         case 4:
             findStudent(student_list);
             break;
-
         default:
             printf("Invalid choice.\n");
         }
@@ -100,8 +190,9 @@ void printMainMenu(void)
            "2. delete student\n"
            "3. display student list\n"
            "4. search for student\n"
-           "5. read the student list from the database\n"
-           "6. exit the program\n");
+           "5. save to database\n"
+           "6. load database\n"
+           "7. exit the program\n");
 }
 
 int read_string_fix_length(char *str, int length)

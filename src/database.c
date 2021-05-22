@@ -440,3 +440,17 @@ int checkIfFileExists(char *filename)
     }
     return 0;
 }
+
+int createEmptyDatabase(char *filename)
+{
+
+    FILE *filep;
+    if ((filep = fopen(filename, "wb")))
+    {
+        int size = 0;
+        fwrite(&size, sizeof(int), 1, filep);
+        fclose(filep);
+        return 0;
+    }
+    return 1;
+}

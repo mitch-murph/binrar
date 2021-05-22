@@ -1,6 +1,6 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-void mainMenu();
+void launchTeacher(void);
 
 #endif
