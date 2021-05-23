@@ -23,7 +23,6 @@ int write_database(vector_t student_list, char *out_file, char bit_flag, vector_
 int read_database(char *database_file, vector_t *studentList);
 int unpackage_database_files(char *database_file, char *dir);
 int checkIfFileExists(char *filename);
-int createEmptyDatabase(char *filename);
 int read_database_to_memory(char *database_file, vector_t *files);
 
 #endif
