@@ -209,7 +209,7 @@ int xor_encrypt_database(FILE *database_fp, long start_pos)
     /* Get the hashed key for encrypting the 
            database using encrypt initial conditions */
     char hashed_key[HASH_SIZE];
-    secure_hash_encrypt(key, hashed_key);
+    secureHashEncrypt(key, hashed_key);
 
     /* encrypt database to a temp file */
     XOR_cipher(database_fp, temp_fp, hashed_key);
@@ -219,7 +219,7 @@ int xor_encrypt_database(FILE *database_fp, long start_pos)
 
     /* Get and write the hashed password 
            using password check initial conditions */
-    secure_hash_password_check(key, hashed_key);
+    secureHashPasswordCheck(key, hashed_key);
     fwrite(hashed_key, sizeof(char), HASH_SIZE, database_fp);
 
     /* Now copy the encrypted temp database files to the database */
@@ -566,7 +566,7 @@ int unpackage_database_files_contents(FILE *database_fp, char *files)
            This will tell us if the user has entered
            The correct password. */
         char hashed_key[HASH_SIZE];
-        secure_hash_password_check(key, hashed_key);
+        secureHashPasswordCheck(key, hashed_key);
         char stored_hash_key[HASH_SIZE];
         fread(stored_hash_key, sizeof(unsigned char), HASH_SIZE, files_fp);
 
@@ -579,7 +579,7 @@ int unpackage_database_files_contents(FILE *database_fp, char *files)
 
         /* Decrypt the database to a temp file.
            Using the hashed encrypt password. */
-        secure_hash_encrypt(key, hashed_key);
+        secureHashEncrypt(key, hashed_key);
         XOR_cipher(files_fp, temp_fp, hashed_key);
 
         fclose(files_fp);
