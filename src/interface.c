@@ -389,6 +389,7 @@ void saveStudents(const vector_t studentList, char *databaseFile)
         printf("%s\n", file->filename);
     }
 
+    /* TODO: the new file name needs to go into databaseFile (the param) */
     char filename[MAX_FILENAME_SIZE];
     printf("Enter the new database file name>");
     int exceedLength = readStringFixLength(filename,
