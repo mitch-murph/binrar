@@ -34,7 +34,7 @@ int convert_vector_to_bit_array(vector_t vector)
     int i, bits = 0;
     for (i = 0; i < vector.size; i++)
     {
-        int x = *(int *)vector_get(vector, i);
+        int x = *(int *)vectorGet(vector, i);
         bits = (bits << 1) + x;
     }
     return bits;

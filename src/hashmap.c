@@ -15,7 +15,7 @@ int init_hashmap(hashmap_t *hashmap, size_t element_size, int size,
         int i;
         for (i = 0; i < hashmap->map.capacity; i++)
         {
-            init(vector_get(hashmap->map, i));
+            init(vectorGet(hashmap->map, i));
         }
     }
     hashmap->compare = compare;
@@ -26,14 +26,14 @@ int init_hashmap(hashmap_t *hashmap, size_t element_size, int size,
 
 int free_hashmap(hashmap_t *hashmap)
 {
-    free_vector(hashmap->map);
+    freeVector(hashmap->map);
     return 0;
 }
 
 int hashmap_set(hashmap_t hashmap, void *item)
 {
     int hash = hashmap.hash(item);
-    if (vector_set(hashmap.map, item, hash))
+    if (vectorSet(hashmap.map, item, hash))
     {
         printf("Error: Hashmap cannot set");
     }
@@ -43,7 +43,7 @@ int hashmap_set(hashmap_t hashmap, void *item)
 void *hashmap_get(hashmap_t hashmap, void *item)
 {
     int hash = hashmap.hash(item);
-    void *item_maybe = vector_get(hashmap.map, hash);
+    void *item_maybe = vectorGet(hashmap.map, hash);
     if (hashmap.exists(item_maybe) && hashmap.compare(item, item_maybe)){
         return item_maybe;
     }
@@ -55,10 +55,10 @@ int hashmap_convert_to_vector(hashmap_t hashmap, vector_t *vector)
     int i;
     for (i = 0; i < hashmap.map.capacity; i++)
     {
-        void *item = vector_get(hashmap.map, i);
+        void *item = vectorGet(hashmap.map, i);
         if (hashmap.exists(item))
         {
-            vector_push_back(vector, item);
+            vectorPushBack(vector, item);
         }
     }
 

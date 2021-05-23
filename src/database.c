@@ -30,7 +30,7 @@ void copy_header(FILE *dest, FILE *src)
     vector_t temp;
     initVector(&temp, sizeof(char) * 255);
     read_header(src, &temp);
-    free_vector(temp);
+    freeVector(temp);
     char bit_flag;
     fread(&bit_flag, sizeof(char), 1, src);
 
@@ -72,7 +72,7 @@ void write_student_assessment(student_t *student, FILE *out_fp)
     int i;
     for (i = 0; i < student->assessments.size; i++)
     {
-        write_assessment(vector_get(student->assessments, i), out_fp);
+        write_assessment(vectorGet(student->assessments, i), out_fp);
     }
 }
 
@@ -144,12 +144,12 @@ int write_files(FILE *out_fp, vector_t student_list, vector_t existingFiles)
     int i, j;
     for (i = 0; i < student_list.size; i++)
     {
-        student_t *student = vector_get(student_list, i);
+        student_t *student = vectorGet(student_list, i);
         for (j = 0; j < student->assessments.size; j++)
         {
 
             char filename[MAX_FILENAME_SIZE];
-            assessment_t *assessment = vector_get(student->assessments, j);
+            assessment_t *assessment = vectorGet(student->assessments, j);
             strcpy(filename, assessment->filename);
 
 #ifdef DEBUG
@@ -163,7 +163,7 @@ int write_files(FILE *out_fp, vector_t student_list, vector_t existingFiles)
                 write_file_contents(filename, out_fp);
             else
             {
-                file_t *file = vector_get(existingFiles, pos);
+                file_t *file = vectorGet(existingFiles, pos);
                 write_file_t_contents(*file, out_fp);
             }
         }
@@ -183,7 +183,7 @@ void write_header(FILE *out_fp, vector_t student_list)
     int i;
     for (i = 0; i < student_list.size; i++)
     {
-        write_student(vector_get(student_list, i), out_fp);
+        write_student(vectorGet(student_list, i), out_fp);
     }
 }
 
@@ -359,7 +359,7 @@ void read_student_assessment(student_t *student, FILE *in_fp)
         printf("READ assessment file: %s\n", assessment.filename);
 #endif
 
-        vector_push_back(&student->assessments, &assessment);
+        vectorPushBack(&student->assessments, &assessment);
     }
 }
 
@@ -404,7 +404,7 @@ void read_header(FILE *database_fp, vector_t *student_list)
         printf("READ Student ID: %d\n", student.studentId);
 #endif
 
-        vector_push_back(student_list, &student);
+        vectorPushBack(student_list, &student);
     }
 }
 
@@ -420,7 +420,6 @@ int read_database(char *database_file, vector_t *filenames)
     FILE *database_fp;
     database_fp = fopen(database_file, "rb");
     read_database_fp(database_fp, filenames);
-    /* print_vector(*filenames, print_filenames); */
 
     return 0;
 }
@@ -456,7 +455,7 @@ int separate_files_to_memory(FILE *database_fp, vector_t filenames, vector_t *fi
 
         printf("To memory file size: %ld\n", file.size);
 
-        strcpy(file.filename, (char *)vector_get(filenames, i));
+        strcpy(file.filename, (char *)vectorGet(filenames, i));
 
 #ifdef DEBUG
         printf("To memory READ %s size: %ld\n", file.filename, file.size);
@@ -478,7 +477,7 @@ int separate_files(FILE *database_fp, vector_t filenames)
         printf("file size: %ld\n", file_size);
 
         char filename[MAX_FILENAME_SIZE];
-        strcpy(filename, (char *)vector_get(filenames, i));
+        strcpy(filename, (char *)vectorGet(filenames, i));
 
 #ifdef DEBUG
         printf("READ %s size: %ld\n", filename, file_size);
@@ -507,7 +506,6 @@ int unpackage_database_files(char *database_file, char *dir)
     read_database_fp(database_fp, &student_list);
     vector_t filenames;
     getAllFilenames(student_list, &filenames);
-    print_vector(filenames, print_filenames);
 
     unpackage_database_files_contents(database_fp, "database.bin.tmp");
 

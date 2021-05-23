@@ -84,14 +84,14 @@ int assign_tree_addr_to_node(node_t *current, vector_t *addr)
         int temp;
 
         temp = 0;
-        vector_push_back(addr, &temp);
+        vectorPushBack(addr, &temp);
         left_bit_size = assign_tree_addr_to_node(current->left, addr);
-        vector_pop(addr);
+        vectorPop(addr);
 
         temp = 1;
-        vector_push_back(addr, &temp);
+        vectorPushBack(addr, &temp);
         right_bit_size = assign_tree_addr_to_node(current->right, addr);
-        vector_pop(addr);
+        vectorPop(addr);
     }
     return left_bit_size + right_bit_size;
 }
@@ -101,11 +101,11 @@ int write_huffman_tree(FILE *fp, node_t *root)
     vector_t stack;
     initVector(&stack, sizeof(node_t *));
 
-    vector_push_back(&stack, (void *)&root);
+    vectorPushBack(&stack, (void *)&root);
     int buffer = 0, buffer_size = 0, size = 0;
     while (stack.size > 0)
     {
-        node_t *current = *(node_t **)vector_pop(&stack);
+        node_t *current = *(node_t **)vectorPop(&stack);
         if (current->left == NULL && current->right == NULL)
         {
             write_bit(&buffer, &buffer_size, 1, 1, fp);
@@ -116,8 +116,8 @@ int write_huffman_tree(FILE *fp, node_t *root)
         {
             write_bit(&buffer, &buffer_size, 0, 1, fp);
             size++;
-            vector_push_back(&stack, (void *)&current->left);
-            vector_push_back(&stack, (void *)&current->right);
+            vectorPushBack(&stack, (void *)&current->left);
+            vectorPushBack(&stack, (void *)&current->right);
         }
     }
     write_bit(&buffer, &buffer_size, 0, -1, fp);
@@ -130,13 +130,13 @@ void hashmap_convert(hashmap_t hashmap, vector_t *vector)
     int i;
     for (i = 0; i < hashmap.map.capacity; i++)
     {
-        node_t *item = (void *)vector_get(hashmap.map, i);
+        node_t *item = (void *)vectorGet(hashmap.map, i);
         if (hashmap.exists(item))
         {
             node_t *node = (node_t *)malloc(sizeof(node_t));
             init_node(node);
             init_node_from_node(node, item);
-            vector_push_back(vector, &node);
+            vectorPushBack(vector, &node);
         }
     }
 }
@@ -147,8 +147,8 @@ node_t *build_huffman_tree(vector_t nodes)
     {
         vector_sort(nodes, comp2);
         int curr = nodes.size - 1;
-        node_t **app = (node_t **)vector_get(nodes, curr);
-        node_t **bpp = (node_t **)vector_get(nodes, curr - 1);
+        node_t **app = (node_t **)vectorGet(nodes, curr);
+        node_t **bpp = (node_t **)vectorGet(nodes, curr - 1);
 
         node_t *new = (node_t *)malloc(sizeof(node_t));
         new->in_use = 1;
@@ -157,12 +157,12 @@ node_t *build_huffman_tree(vector_t nodes)
         new->left = *app;
         new->right = *bpp;
 
-        vector_remove(&nodes, curr);
-        vector_remove(&nodes, curr - 1);
+        vectorRemove(&nodes, curr);
+        vectorRemove(&nodes, curr - 1);
 
-        vector_push_back(&nodes, &new);
+        vectorPushBack(&nodes, &new);
     }
-    return *(node_t **)vector_get(nodes, 0);
+    return *(node_t **)vectorGet(nodes, 0);
 }
 
 void write_compressed_file(FILE *in_fp, FILE *out_fp, vector_t nodes)
@@ -170,7 +170,7 @@ void write_compressed_file(FILE *in_fp, FILE *out_fp, vector_t nodes)
     int i;
     for (i = 0; i < nodes.size; i++)
     {
-        node_t *node = *(node_t **)vector_get(nodes, i);
+        node_t *node = *(node_t **)vectorGet(nodes, i);
 #ifdef DEBUG
         print_bits_length(node->value, node->bit_length);
         printf(" -> %c\n", node->key);
@@ -186,7 +186,7 @@ void write_compressed_file(FILE *in_fp, FILE *out_fp, vector_t nodes)
         int i;
         for (i = 0; i < nodes.size; i++)
         {
-            node_t *node = *(node_t **)vector_get(nodes, i);
+            node_t *node = *(node_t **)vectorGet(nodes, i);
             if (node->key == buffer)
             {
                 bits = node->value;
@@ -246,9 +246,9 @@ void compress(FILE *in_fp, FILE *out_fp)
 
     /* Turn the vector of nodes into a huffman tree */
     vector_t nodes_copy;
-    copy_vector(&nodes_copy, nodes);
+    copyVector(&nodes_copy, nodes);
     node_t *root = build_huffman_tree(nodes_copy);
-    /* free_vector(nodes); */
+    /* freeVector(nodes); */
 
     /* Tranverse the tree to find the address of each byte */
     vector_t addr;
@@ -289,12 +289,12 @@ node_t *read_huffman_tree(FILE *fp)
     initVector(&stack, sizeof(node_t *));
 
     node_t *root = (node_t *)malloc(sizeof(node_t));
-    vector_push_back(&stack, &root);
+    vectorPushBack(&stack, &root);
     int buffer = 0, buffer_size = 0;
     int bit = 0;
     while (stack.size > 0)
     {
-        node_t *curr = *(node_t **)vector_pop(&stack);
+        node_t *curr = *(node_t **)vectorPop(&stack);
         if (read_bit(&buffer, &buffer_size, fp))
         {
             curr->key = read_n_bit(&buffer, &buffer_size, 8, fp);
@@ -303,9 +303,9 @@ node_t *read_huffman_tree(FILE *fp)
         else
         {
             curr->left = (node_t *)malloc(sizeof(node_t));
-            vector_push_back(&stack, &curr->left);
+            vectorPushBack(&stack, &curr->left);
             curr->right = (node_t *)malloc(sizeof(node_t));
-            vector_push_back(&stack, &curr->right);
+            vectorPushBack(&stack, &curr->right);
         }
     }
 

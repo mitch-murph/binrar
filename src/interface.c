@@ -83,6 +83,14 @@ void waitForEnter()
         ;
 }
 
+/*****************************************************************************
+ * This function prints a message stating to press the enter key.
+ * It then pauses the program until it is pressed.
+ * Input:
+ *   None
+ * Return:
+ *   None
+*****************************************************************************/
 void mainMenu(void)
 {
     vector_t studentList;
@@ -172,7 +180,7 @@ void addStudent(vector_t *studentList)
     readStringFixLength(new_student.lastName, MAX_NAME_SIZE);
     /* scanf("%[^\n]%*c", new_student.lastName); */
 
-    vector_push_back(studentList, &new_student);
+    vectorPushBack(studentList, &new_student);
 }
 
 void deleteStudent(vector_t *studentList)
@@ -181,9 +189,9 @@ void deleteStudent(vector_t *studentList)
     if (index == -1)
         return;
 
-    student_t *student = vector_get(*studentList, index);
+    student_t *student = vectorGet(*studentList, index);
     int studentId = student->studentId;
-    vector_remove(studentList, index);
+    vectorRemove(studentList, index);
     printf("%d has been deleted.\n", studentId);
     waitForEnter();
 }
@@ -204,7 +212,7 @@ void displayStudent(const vector_t studentList)
         printf("-------------------------------------------------\n");
         while (size--)
         {
-            student_t *student = vector_get(studentList, size);
+            student_t *student = vectorGet(studentList, size);
             printf("|%-15d", student->studentId);
             printf("|%-15s", student->firstName);
             printf("|%-15s|\n", student->lastName);
@@ -238,7 +246,7 @@ void findStudent(const vector_t studentList)
     if (index == -1)
         return;
 
-    student_t *maybeStudent = vector_get(studentList, index);
+    student_t *maybeStudent = vectorGet(studentList, index);
     studentMainMenu(maybeStudent);
 }
 
@@ -331,7 +339,7 @@ void addAssessment(student_t *student)
     /* Consume trailing newline */
     getchar();
 
-    vector_push_back(&student->assessments, &newAssessment);
+    vectorPushBack(&student->assessments, &newAssessment);
 }
 
 char setBitFlag(char *filename)
@@ -378,7 +386,7 @@ void saveStudents(const vector_t studentList, char *databaseFile)
     int jj;
     for (jj = 0; jj < existingFiles.size; jj++)
     {
-        file_t *file = vector_get(existingFiles, jj);
+        file_t *file = vectorGet(existingFiles, jj);
         printf("%s\n", file->filename);
     }
 
@@ -450,7 +458,7 @@ void displayAllAssessments(vector_t studentList)
         printf("-------------------------------------------------\n");
         while (size--)
         {
-            assessment_student_t *assessment = vector_get(assessments, size);
+            assessment_student_t *assessment = vectorGet(assessments, size);
             printf("|%-15d", assessment->studentp->studentId);
             printf("|%-15s", assessment->assessmentp->subject);
             printf("|%-15d|\n", assessment->assessmentp->mark);
@@ -458,7 +466,7 @@ void displayAllAssessments(vector_t studentList)
         printf("-------------------------------------------------\n");
     }
     waitForEnter();
-    free_vector(assessments);
+    freeVector(assessments);
 }
 
 void extractAllFiles(vector_t studentList, char *databaseFile)
