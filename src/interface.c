@@ -166,21 +166,20 @@ void printMainMenu(void)
 
 void addStudent(vector_t *studentList)
 {
-    student_t new_student;
+    student_t newStudent;
+    initStudent(&newStudent);
     printf("Enter student ID>");
-    scanf("%d", &new_student.studentId);
+    scanf("%d", &newStudent.studentId);
     /* Consume trailing newline */
     getchar();
 
     printf("Enter first name>");
-    readStringFixLength(new_student.firstName, MAX_NAME_SIZE);
-    /* scanf("%[^\n]%*c", new_student.firstName); */
+    readStringFixLength(newStudent.firstName, MAX_NAME_SIZE);
 
     printf("Enter last name>");
-    readStringFixLength(new_student.lastName, MAX_NAME_SIZE);
-    /* scanf("%[^\n]%*c", new_student.lastName); */
+    readStringFixLength(newStudent.lastName, MAX_NAME_SIZE);
 
-    vectorPushBack(studentList, &new_student);
+    vectorPushBack(studentList, &newStudent);
 }
 
 void deleteStudent(vector_t *studentList)

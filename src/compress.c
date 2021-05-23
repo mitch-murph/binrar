@@ -4,6 +4,7 @@
 #include "tree.h"
 #include "bit_array.h"
 #include "database.h"
+#include "sort.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -145,7 +146,7 @@ node_t *build_huffman_tree(vector_t nodes)
 {
     while (nodes.size > 1)
     {
-        vector_sort(nodes, comp2);
+        sort(nodes, comp2);
         int curr = nodes.size - 1;
         node_t **app = (node_t **)vectorGet(nodes, curr);
         node_t **bpp = (node_t **)vectorGet(nodes, curr - 1);

@@ -115,18 +115,3 @@ void vectorSwap(vector_t vector, int a, int b)
     memcpy(bp, temp, vector.element_size);
     free(temp);
 }
-
-void vector_sort(vector_t vector, int (*compare)(const void *a, const void *b))
-{
-    int i, j;
-    for (i = 0; i < vector.size; i++)
-    {
-        for (j = 0; j < vector.size; j++)
-        {
-            if (compare(vectorGet(vector, i), vectorGet(vector, j)) > 0)
-            {
-                vectorSwap(vector, i, j);
-            }
-        }
-    }
-}
