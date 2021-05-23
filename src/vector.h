@@ -24,6 +24,7 @@ void vector_resize(vector_t *vector, int new_capacity);
 int vector_insert(vector_t *vector, void *value, int position);
 int vector_remove(vector_t *vector, int position);
 int vector_set(vector_t vector, void *value, int position);
+void vector_swap(vector_t vector, int a, int b);
 void vector_sort(vector_t vector, int (*compare)(const void *a, const void *b));
 
 #endif

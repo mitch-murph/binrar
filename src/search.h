@@ -3,7 +3,7 @@
 
 #include "vector.h"
 
-void linear_search(vector_t vector, int (*compare)(const void *a, const void *b));
-void binary_search(vector_t vector, int (*compare)(const void *a, const void *b));
+int linearSearch(vector_t vector, int (*compare)(const void *a, const void *b), const void *item);
+int binary_search(vector_t vector, int (*compare)(const void *a, const void *b), const void *item);
 
 #endif
