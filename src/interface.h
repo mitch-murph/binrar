@@ -1,6 +1,9 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-void launchTeacher(void);
+/*******************************************************************************
+ * Public function prototypes
+*******************************************************************************/
+void mainMenu(void);
 
 #endif

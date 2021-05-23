@@ -28,7 +28,7 @@ void copy_header(FILE *dest, FILE *src)
 {
     /* Seek the end of the header */
     vector_t temp;
-    init_vector(&temp, sizeof(char) * 255);
+    initVector(&temp, sizeof(char) * 255);
     read_header(src, &temp);
     free_vector(temp);
     char bit_flag;
@@ -411,7 +411,7 @@ void read_header(FILE *database_fp, vector_t *student_list)
 int read_database_fp(FILE *database_fp, vector_t *filenames)
 {
     /* Read all the database information */
-    init_vector(filenames, sizeof(char) * 255);
+    initVector(filenames, sizeof(char) * 255);
     read_header(database_fp, filenames);
 }
 

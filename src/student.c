@@ -15,7 +15,7 @@ void initStudent(student_t *student)
     student->studentId = 0;
     student->firstName[0] = '\0';
     student->lastName[0] = '\0';
-    init_vector(&student->assessments, sizeof(assessment_t));
+    initVector(&student->assessments, sizeof(assessment_t));
 }
 
 void freeStudent(student_t *student)
@@ -39,7 +39,7 @@ int searchStudentIndex(const vector_t studentList, int studentId)
 
 void getAllAssessments(const vector_t student_list, vector_t *assessment_list)
 {
-    init_vector(assessment_list, sizeof(assessment_student_t));
+    initVector(assessment_list, sizeof(assessment_student_t));
     int i, j;
     for (i = 0; i < student_list.size; i++)
     {
@@ -56,7 +56,7 @@ void getAllAssessments(const vector_t student_list, vector_t *assessment_list)
 
 void getAllFilenames(const vector_t student_list, vector_t *filenames)
 {
-    init_vector(filenames, sizeof(char) * MAX_FILENAME_SIZE);
+    initVector(filenames, sizeof(char) * MAX_FILENAME_SIZE);
     int i, j;
     for (i = 0; i < student_list.size; i++)
     {

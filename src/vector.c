@@ -5,13 +5,13 @@
 
 #define DEFAULT_CAPACITY 10
 
-int init_vector(vector_t *vector, size_t element_size)
+int initVector(vector_t *vector, size_t element_size)
 {
-    init_vector_cap(vector, DEFAULT_CAPACITY, element_size);
+    initVectorCap(vector, DEFAULT_CAPACITY, element_size);
     return 0;
 }
 
-int init_vector_cap(vector_t *vector, int capacity, size_t element_size)
+int initVectorCap(vector_t *vector, int capacity, size_t element_size)
 {
     vector->size = 0;
     vector->capacity = capacity;
