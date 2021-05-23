@@ -13,7 +13,8 @@ struct vector
 
 typedef struct vector vector_t;
 
-int init_vector(vector_t *vector, int capacity, size_t element_size);
+int init_vector(vector_t *vector, size_t element_size);
+int init_vector_cap(vector_t *vector, int capacity, size_t element_size);
 int copy_vector(vector_t *dest, const vector_t src);
 void free_vector(vector_t vector);
 void print_vector(vector_t vector, void (*print_func)(int index, void *value));

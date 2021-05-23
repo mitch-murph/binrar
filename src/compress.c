@@ -99,7 +99,7 @@ int assign_tree_addr_to_node(node_t *current, vector_t *addr)
 int write_huffman_tree(FILE *fp, node_t *root)
 {
     vector_t stack;
-    init_vector(&stack, 10, sizeof(node_t *));
+    init_vector(&stack, sizeof(node_t *));
 
     vector_push_back(&stack, (void *)&root);
     int buffer = 0, buffer_size = 0, size = 0;
@@ -240,7 +240,7 @@ void compress(FILE *in_fp, FILE *out_fp)
 
     /* Convert the hashmap into array of dynamically allocated tree nodes */
     vector_t nodes;
-    init_vector(&nodes, 10, sizeof(node_t *));
+    init_vector(&nodes, sizeof(node_t *));
     hashmap_convert(map, &nodes);
     free_hashmap(&map);
 
@@ -252,7 +252,7 @@ void compress(FILE *in_fp, FILE *out_fp)
 
     /* Tranverse the tree to find the address of each byte */
     vector_t addr;
-    init_vector(&addr, 10, sizeof(int));
+    init_vector(&addr, sizeof(int));
     int compressed_size = assign_tree_addr_to_node(root, &addr);
 #ifdef DEBUG
     printf("compressed size: %d = %d %d/8\n", compressed_size, compressed_size / 8, compressed_size % 8);
@@ -286,7 +286,7 @@ node_t *read_huffman_tree(FILE *fp)
     printf("tree size: %d\n", tree_size);
 
     vector_t stack;
-    init_vector(&stack, 10, sizeof(node_t *));
+    init_vector(&stack, sizeof(node_t *));
 
     node_t *root = (node_t *)malloc(sizeof(node_t));
     vector_push_back(&stack, &root);

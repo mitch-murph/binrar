@@ -28,7 +28,7 @@ void copy_header(FILE *dest, FILE *src)
 {
     /* Seek the end of the header */
     vector_t temp;
-    init_vector(&temp, 10, sizeof(char) * 255);
+    init_vector(&temp, sizeof(char) * 255);
     read_header(src, &temp);
     free_vector(temp);
     char bit_flag;
@@ -411,7 +411,7 @@ void read_header(FILE *database_fp, vector_t *student_list)
 int read_database_fp(FILE *database_fp, vector_t *filenames)
 {
     /* Read all the database information */
-    init_vector(filenames, 10, sizeof(char) * 255);
+    init_vector(filenames, sizeof(char) * 255);
     read_header(database_fp, filenames);
 }
 
@@ -511,11 +511,9 @@ int unpackage_database_files(char *database_file, char *dir)
 
     unpackage_database_files_contents(database_fp, "database.bin.tmp");
 
-    /* 
-    FILE* files_fp = fopen...
-    separate_files(files_fp, filenames, dir);
-    fclose()...
-    */
+    FILE* files_fp = fopen("database.bin.tmp", "rb");
+    separate_files(files_fp, filenames);
+    fclose(files_fp);
 }
 
 int unpackage_database_files_contents(FILE *database_fp, char *files)

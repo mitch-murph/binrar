@@ -8,7 +8,7 @@ int init_hashmap(hashmap_t *hashmap, size_t element_size, int size,
                  int (*exists)(const void *a),
                  void (*init)(const void *a))
 {
-    init_vector(&hashmap->map, size, element_size);
+    init_vector_cap(&hashmap->map, size, element_size);
 
     if (init != NULL)
     {
