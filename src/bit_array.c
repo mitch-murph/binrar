@@ -68,7 +68,7 @@ int convertVectorToBitArray(vector_t vector)
  * This function buffers and writes bits to a file as a char.
  * Input:
  *   bufferp - Pointer to the buffer of bits
- *   buffer_sizep - Number of bits in the current buffer.
+ *   bufferSizep - Number of bits in the current buffer.
  *   value - The new bits to either write or store in the buffer.
  *   size - The number of new bits.
  *   filep - Pointer to the file to write the bits.
@@ -113,7 +113,7 @@ void writeBit(int *bufferp, int *bufferSizep,
  * This function buffers and reads bits from a file as a char.
  * Input:
  *   bufferp - Pointer to the buffer of bits
- *   buffer_sizep - Number of bits in the current buffer.
+ *   bufferSizep - Number of bits in the current buffer.
  *   filep - The file pointer to read bits from.
  * Return:
  *   The next bit in the buffer or file.
@@ -142,7 +142,7 @@ int readBit(int *bufferp, int *bufferSizep, FILE *filep)
  * This function buffers and reads a number of bits from a file as a char.
  * Input:
  *   bufferp - Pointer to the buffer of bits
- *   buffer_sizep - Number of bits in the current buffer.
+ *   bufferSizep - Number of bits in the current buffer.
  *   n - The number of bits to read.
  *   filep - The file pointer to read bits from.
  * Return:

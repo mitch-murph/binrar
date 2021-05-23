@@ -21,6 +21,5 @@ int init_hashmap(hashmap_t *hashmap, size_t element_size, int size,
 int free_hashmap(hashmap_t *hashmap);
 int hashmap_set(hashmap_t hashmap, void *item);
 void *hashmap_get(hashmap_t hashmap, void *item);
-int hashmap_convert_to_vector(hashmap_t hashmap, vector_t *vector);
 
 #endif

@@ -11,14 +11,16 @@ struct node
     int in_use;
     unsigned char key;
     int value;
-    int bit_length;
+    int bitLength;
     node_t *left;
     node_t *right;
 };
 
 typedef node_t tree_t;
 
-void init_node(const void *node);
-void init_node_from_node(const void *dest, const void *src);
+void initNode(const void *node);
+void initNodeFromNode(const void *dest, const void *src);
+int compareNodeValue(const void *a, const void *b);
+int compareNodeKey(const void *a, const void *b);
 
 #endif

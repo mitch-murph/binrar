@@ -277,7 +277,7 @@ int huffman_compress_database(FILE **database_fp, long start_pos, char *out_file
     fseek(temp_fp, start_pos, SEEK_SET);
 
     /* Encrypt database to a temp file */
-    compress(*database_fp, temp_fp);
+    huffmanCompress(*database_fp, temp_fp);
 
     /* Now swap the compressed database with the existing database */
     fclose(*database_fp);
@@ -628,7 +628,7 @@ int unpackage_database_files_contents(FILE *database_fp, char *files)
         fseek(files_fp, 0, SEEK_SET);
 
         /* Decompress the database to a temp file. */
-        decompress(files_fp, temp_fp);
+        huffmanDecompress(files_fp, temp_fp);
 
         fclose(files_fp);
         remove(files);

@@ -49,18 +49,3 @@ void *hashmap_get(hashmap_t hashmap, void *item)
     }
     return NULL;
 }
-
-int hashmap_convert_to_vector(hashmap_t hashmap, vector_t *vector)
-{
-    int i;
-    for (i = 0; i < hashmap.map.capacity; i++)
-    {
-        void *item = vectorGet(hashmap.map, i);
-        if (hashmap.exists(item))
-        {
-            vectorPushBack(vector, item);
-        }
-    }
-
-    return 0;
-}
