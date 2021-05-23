@@ -137,7 +137,7 @@ int compare_filenames(const void *ap, const void *bp)
 
 int write_files(FILE *out_fp, vector_t student_list, vector_t existingFiles)
 {
-#ifndef DEBUG
+#ifdef DEBUG
     printf("Start write files\n");
 #endif
 
@@ -152,7 +152,7 @@ int write_files(FILE *out_fp, vector_t student_list, vector_t existingFiles)
             assessment_t *assessment = vector_get(student->assessments, j);
             strcpy(filename, assessment->filename);
 
-#ifndef DEBUG
+#ifdef DEBUG
             printf("Writing file: %s\n", filename);
 #endif
 
@@ -172,7 +172,7 @@ int write_files(FILE *out_fp, vector_t student_list, vector_t existingFiles)
 
 void write_header(FILE *out_fp, vector_t student_list)
 {
-#ifndef DEBUG
+#ifdef DEBUG
     printf("Start write header\n");
 #endif
 
@@ -282,7 +282,7 @@ int huffman_compress_database(FILE **database_fp, long start_pos, char *out_file
 
 int write_database(vector_t student_list, char *out_file, char bit_flag, vector_t existingFiles)
 {
-#ifndef DEBUG
+#ifdef DEBUG
     printf("Start write database\n");
 #endif
 
@@ -355,7 +355,7 @@ void read_student_assessment(student_t *student, FILE *in_fp)
         /* TODO: initAssessment... initStudent(&student); */
         read_assessment(&assessment, in_fp);
 
-#ifndef DEBUG
+#ifdef DEBUG
         printf("READ assessment file: %s\n", assessment.filename);
 #endif
 
@@ -389,7 +389,7 @@ void read_header(FILE *database_fp, vector_t *student_list)
     unsigned char num_students;
     fread(&num_students, sizeof(unsigned char), 1, database_fp);
 
-#ifndef DEBUG
+#ifdef DEBUG
     printf("READ File count: %d\n", num_students);
 #endif
 
@@ -400,7 +400,7 @@ void read_header(FILE *database_fp, vector_t *student_list)
         initStudent(&student);
         read_student(&student, database_fp);
 
-#ifndef DEBUG
+#ifdef DEBUG
         printf("READ Student ID: %d\n", student.studentId);
 #endif
 
@@ -458,7 +458,7 @@ int separate_files_to_memory(FILE *database_fp, vector_t filenames, vector_t *fi
 
         strcpy(file.filename, (char *)vector_get(filenames, i));
 
-#ifndef DEBUG
+#ifdef DEBUG
         printf("To memory READ %s size: %ld\n", file.filename, file.size);
 #endif
 
@@ -480,7 +480,7 @@ int separate_files(FILE *database_fp, vector_t filenames)
         char filename[MAX_FILENAME_SIZE];
         strcpy(filename, (char *)vector_get(filenames, i));
 
-#ifndef DEBUG
+#ifdef DEBUG
         printf("READ %s size: %ld\n", filename, file_size);
 #endif
 
@@ -524,7 +524,7 @@ int unpackage_database_files_contents(FILE *database_fp, char *files)
     char bit_flag;
     fread(&bit_flag, sizeof(char), 1, database_fp);
 
-#ifndef DEBUG
+#ifdef DEBUG
     printf("bit_flag: %d\n", bit_flag);
 #endif
 
