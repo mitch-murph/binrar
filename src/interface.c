@@ -21,7 +21,7 @@ void deleteStudent(vector_t *student_list);
 void displayStudent(const vector_t student_list);
 void findStudent(const vector_t student_list);
 void addAssessment(student_t *student);
-void saveStudents(const vector_t student_list);
+void saveStudents(const vector_t student_list, char *databaseFile);
 void loadStudents(vector_t *student_list, char *databaseFile);
 void displayAllAssessments(vector_t student_list);
 void displayAssessments(vector_t assessment_list);
@@ -151,6 +151,7 @@ void mainMenu(void)
     vector_t student_list;
     init_vector(&student_list, 10, sizeof(student_t));
     char databaseFile[MAX_FILENAME_SIZE];
+    databaseFile[0] = 0;
 
     addTestData(&student_list);
 
@@ -175,7 +176,7 @@ void mainMenu(void)
             displayAllAssessments(student_list);
             break;
         case 7:
-            saveStudents(student_list);
+            saveStudents(student_list, databaseFile);
             break;
         case 8:
             loadStudents(&student_list, databaseFile);
@@ -443,8 +444,21 @@ char setBitFlag(char *filename)
     }
 }
 
-void saveStudents(const vector_t studentList)
+void saveStudents(const vector_t studentList, char *databaseFile)
 {
+    vector_t existingFiles;
+    init_vector(&existingFiles, 10, sizeof(file_t));
+    if (databaseFile[0] != 0)
+    {
+        read_database_to_memory(databaseFile, &existingFiles);
+    }
+    int jj;
+    for (jj = 0; jj < existingFiles.size; jj++)
+    {
+        file_t *file = vector_get(existingFiles, jj);
+        printf("%s\n", file->filename);
+    }
+
     char filename[MAX_FILENAME_SIZE];
     printf("Enter the new database file name>");
     int exceedLength = read_string_fix_length(filename,
@@ -461,7 +475,7 @@ void saveStudents(const vector_t studentList)
 
     char bitFlag = setBitFlag(filename);
 
-    if (write_database(studentList, filename, bitFlag))
+    if (write_database(studentList, filename, bitFlag, existingFiles))
     {
         printf("\n\nCannot create database file %s.\n"
                "You will be returned to the menu\n",

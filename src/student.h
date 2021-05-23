@@ -2,9 +2,9 @@
 #define STUDENT_H
 
 #define MAX_NAME_SIZE 15
-#define MAX_FILENAME_SIZE 255
 
 #include "vector.h"
+#include "database.h"
 
 struct student
 {
