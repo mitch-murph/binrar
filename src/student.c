@@ -48,7 +48,7 @@ void getAllAssessments(const vector_t student_list, vector_t *assessment_list)
         {
             assessment_student_t assessment;
             assessment.studentp = student;
-            assessment.assessmentp = vector_get(student->assessments, i);
+            assessment.assessmentp = vector_get(student->assessments, j);
             vector_push_back(assessment_list, &assessment);
         }
     }
