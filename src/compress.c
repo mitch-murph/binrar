@@ -4,8 +4,7 @@
  * Functions for compressing files using huffman compression and run
  * length compression.
 *****************************************************************************/
-#include <stdio.h> /* printf, fputc, fgetc, fseek */
-#include <string.h>
+#include <stdio.h> /* printf, fputc, fgetc, fseek, fgetpos, fsetpos */
 #include "compress.h"
 #include "hashmap.h"
 #include "vector.h"
