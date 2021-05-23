@@ -12,7 +12,6 @@
 *****************************************************************************/
 int readStringFixLength(char *str, int length);
 void waitForEnter();
-
 int scanMenu(void);
 void printMainMenu(void);
 void addStudent(vector_t *studentList);
@@ -24,6 +23,7 @@ void searchAllAssessments(vector_t assessmentList);
 void saveStudents(const vector_t studentList, char *databaseFile);
 void loadStudents(vector_t *studentList, char *databaseFile);
 void extractAllFiles(vector_t studentList, char *databaseFile);
+int scanFindStudent(const vector_t studentList);
 
 void studentMainMenu(student_t *student);
 int scanStudentMenu(student_t *student);

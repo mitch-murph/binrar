@@ -42,7 +42,7 @@ int run_length_compress(FILE *in_fp, FILE *out_fp)
     return a;
 }
 
-int run_length_decompress(FILE *in_fp, FILE *out_fp)
+void run_length_decompress(FILE *in_fp, FILE *out_fp)
 {
     int frequency;
     while ((frequency = fgetc(in_fp)) != EOF)

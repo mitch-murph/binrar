@@ -1,5 +1,5 @@
+#include <stdio.h> /* printf, fputc, fgetc */
 #include "bit_array.h"
-#include <stdio.h>
 
 int get_bit(int v, int i)
 {
@@ -77,18 +77,6 @@ int read_bit(int *buffer, int *buffer_size, FILE *fp)
     return get_bit(*buffer, *buffer_size);
 }
 
-
-/*
-
-int temp = (char)getc(fp);
-buffer = buffer << (8 - buffer_size);
-buffer = buffer | (temp >> buffer_size);
-print_bits_length(buffer, 7);
-printf(" -> %c\n", buffer);
-curr->value = buffer;
-buffer = temp;
-            
-*/
 int read_n_bit(int *buffer, int *buffer_size, int n, FILE *fp)
 {
     int temp = 0;

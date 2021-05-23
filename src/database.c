@@ -9,6 +9,8 @@
 #include "search.h"
 
 void read_header(FILE *database_fp, vector_t *filenames);
+int unpackage_database_files_contents(FILE *database_fp, char *files);
+void separate_files_to_memory(FILE *database_fp, vector_t filenames, vector_t *files);
 
 void print_filenames(int index, void *value)
 {
@@ -96,7 +98,7 @@ void write_student(student_t *student, FILE *out_fp)
     write_student_assessment(student, out_fp);
 }
 
-int write_file_contents(char *filename, FILE *out_fp)
+void write_file_contents(char *filename, FILE *out_fp)
 {
     FILE *fp;
 
@@ -119,7 +121,7 @@ int write_file_contents(char *filename, FILE *out_fp)
     fclose(fp);
 }
 
-int write_file_t_contents(file_t file, FILE *out_fp)
+void write_file_t_contents(file_t file, FILE *out_fp)
 {
 
     printf("WRITE file size: %ld\n", file.size);
@@ -135,7 +137,7 @@ int compare_filenames(const void *ap, const void *bp)
     return strcmp(fileA->filename, filename);
 }
 
-int write_files(FILE *out_fp, vector_t student_list, vector_t existingFiles)
+void write_files(FILE *out_fp, vector_t student_list, vector_t existingFiles)
 {
 #ifdef DEBUG
     printf("Start write files\n");
@@ -194,7 +196,7 @@ int xor_encrypt_database(FILE *database_fp, long start_pos)
     if (temp_fp == NULL)
     {
         printf("Error creating temp file");
-        return 0;
+        return 1;
     }
 
     /* Goto where the database files begin */
@@ -217,7 +219,7 @@ int xor_encrypt_database(FILE *database_fp, long start_pos)
 
     /* Get and write the hashed password 
            using password check initial conditions */
-    int t = secure_hash_password_check(key, hashed_key);
+    secure_hash_password_check(key, hashed_key);
     fwrite(hashed_key, sizeof(char), HASH_SIZE, database_fp);
 
     /* Now copy the encrypted temp database files to the database */
@@ -226,6 +228,8 @@ int xor_encrypt_database(FILE *database_fp, long start_pos)
 
     fclose(temp_fp);
     remove("encrypted.bin.tmp");
+
+    return 0;
 }
 
 int shift_encrypt_database(FILE *database_fp, long start_pos)
@@ -235,7 +239,7 @@ int shift_encrypt_database(FILE *database_fp, long start_pos)
     if (temp_fp == NULL)
     {
         printf("Error creating temp file");
-        return 0;
+        return 1;
     }
 
     /* Goto where the database files begin */
@@ -251,6 +255,8 @@ int shift_encrypt_database(FILE *database_fp, long start_pos)
 
     fclose(temp_fp);
     remove("encrypted.bin.tmp");
+
+    return 0;
 }
 
 int huffman_compress_database(FILE **database_fp, long start_pos, char *out_file)
@@ -260,7 +266,7 @@ int huffman_compress_database(FILE **database_fp, long start_pos, char *out_file
     if (temp_fp == NULL)
     {
         printf("Error creating temp file");
-        return 0;
+        return 1;
     }
 
     /* Goto where the database files begin */
@@ -278,6 +284,8 @@ int huffman_compress_database(FILE **database_fp, long start_pos, char *out_file
     *database_fp = temp_fp;
     remove(out_file);
     rename("compressed.bin.tmp", out_file);
+
+    return 1;
 }
 
 int write_database(vector_t student_list, char *out_file, char bit_flag, vector_t existingFiles)
@@ -408,7 +416,7 @@ void read_header(FILE *database_fp, vector_t *student_list)
     }
 }
 
-int read_database_fp(FILE *database_fp, vector_t *filenames)
+void read_database_fp(FILE *database_fp, vector_t *filenames)
 {
     /* Read all the database information */
     initVector(filenames, sizeof(char) * 255);
@@ -445,7 +453,7 @@ int read_database_to_memory(char *database_file, vector_t *files)
     return 0;
 }
 
-int separate_files_to_memory(FILE *database_fp, vector_t filenames, vector_t *files)
+void separate_files_to_memory(FILE *database_fp, vector_t filenames, vector_t *files)
 {
     int i;
     for (i = 0; i < filenames.size; i++)
@@ -466,7 +474,7 @@ int separate_files_to_memory(FILE *database_fp, vector_t filenames, vector_t *fi
     }
 }
 
-int separate_files(FILE *database_fp, vector_t filenames)
+void separate_files(FILE *database_fp, vector_t filenames)
 {
     int i;
     for (i = 0; i < filenames.size; i++)
@@ -507,11 +515,15 @@ int unpackage_database_files(char *database_file, char *dir)
     vector_t filenames;
     getAllFilenames(student_list, &filenames);
 
-    unpackage_database_files_contents(database_fp, "database.bin.tmp");
+    if (unpackage_database_files_contents(database_fp, "database.bin.tmp"))
+    {
+        return 1;
+    }
 
-    FILE* files_fp = fopen("database.bin.tmp", "rb");
+    FILE *files_fp = fopen("database.bin.tmp", "rb");
     separate_files(files_fp, filenames);
     fclose(files_fp);
+    return 0;
 }
 
 int unpackage_database_files_contents(FILE *database_fp, char *files)
@@ -539,7 +551,7 @@ int unpackage_database_files_contents(FILE *database_fp, char *files)
         if (temp_fp == NULL)
         {
             printf("Error creating temp file");
-            return 0;
+            return 1;
         }
 
         /* Goto where the database files begin */
@@ -555,7 +567,7 @@ int unpackage_database_files_contents(FILE *database_fp, char *files)
            The correct password. */
         char hashed_key[HASH_SIZE];
         secure_hash_password_check(key, hashed_key);
-        unsigned char stored_hash_key[HASH_SIZE];
+        char stored_hash_key[HASH_SIZE];
         fread(stored_hash_key, sizeof(unsigned char), HASH_SIZE, files_fp);
 
         if (strcmp(hashed_key, stored_hash_key) != 0)
@@ -625,6 +637,7 @@ int unpackage_database_files_contents(FILE *database_fp, char *files)
     }
 
     fclose(files_fp);
+    return 0;
 }
 
 int checkIfFileExists(char *filename)

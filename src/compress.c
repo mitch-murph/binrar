@@ -292,7 +292,6 @@ node_t *read_huffman_tree(FILE *fp)
     node_t *root = (node_t *)malloc(sizeof(node_t));
     vectorPushBack(&stack, &root);
     int buffer = 0, buffer_size = 0;
-    int bit = 0;
     while (stack.size > 0)
     {
         node_t *curr = *(node_t **)vectorPop(&stack);
