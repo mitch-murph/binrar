@@ -15,7 +15,6 @@
 
 /*****************************************************************************
  * Private function prototypes
- *  - No private functions in this files
 *****************************************************************************/
 void countBytes(FILE *fp, hashmap_t *map);
 int assignTreeAddrToNode(node_t *current, vector_t *addr);
@@ -25,27 +24,6 @@ node_t *buildHuffmanTree(vector_t nodes);
 void writeCompressedFile(FILE *in_fp, FILE *out_fp, vector_t nodes);
 void readCompressedFile(FILE *in_fp, FILE *out_fp, node_t *root,
                         int compressedSize);
-void huffmanCompress(FILE *in_fp, FILE *out_fp);
-void huffmanDecompress(FILE *in_fp, FILE *out_fp);
-
-int comp(const void *a, const void *b)
-{
-    node_t *as = (node_t *)a;
-    node_t *bs = (node_t *)b;
-    return as->key == bs->key;
-}
-
-int hash(const void *a)
-{
-    node_t *as = (node_t *)a;
-    return as->key % 0x101;
-}
-
-int exists(const void *a)
-{
-    node_t *as = (node_t *)a;
-    return as->in_use;
-}
 
 /*****************************************************************************
  * This function counts the frequency of each bytes in a file into a hashmap
@@ -350,7 +328,7 @@ void huffmanCompress(FILE *in_fp, FILE *out_fp)
 {
     /* Count the frequency of each byte into a hashmap. */
     hashmap_t map;
-    init_hashmap(&map, sizeof(node_t), 0x101, comp, hash, exists, initNode);
+    init_hashmap(&map, sizeof(node_t), 0x101, compareNodeNode, hashNode, nodeExists, initNode);
     /* Store the start of the file so that file pointer can be reverted.
        NOTE we cannot seek the start incase the given in_fp is not
        at the start */

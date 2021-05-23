@@ -36,3 +36,22 @@ int compareNodeKey(const void *a, const void *b)
     unsigned char key = *(unsigned char *)b;
     return node->key == key;
 }
+
+int compareNodeNode(const void *a, const void *b)
+{
+    node_t *as = (node_t *)a;
+    node_t *bs = (node_t *)b;
+    return as->key == bs->key;
+}
+
+int hashNode(const void *a)
+{
+    node_t *as = (node_t *)a;
+    return as->key % 0x101;
+}
+
+int nodeExists(const void *a)
+{
+    node_t *as = (node_t *)a;
+    return as->in_use;
+}

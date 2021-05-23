@@ -22,5 +22,8 @@ void initNode(const void *node);
 void initNodeFromNode(const void *dest, const void *src);
 int compareNodeValue(const void *a, const void *b);
 int compareNodeKey(const void *a, const void *b);
+int compareNodeNode(const void *a, const void *b);
+int hashNode(const void *a);
+int nodeExists(const void *a);
 
 #endif
