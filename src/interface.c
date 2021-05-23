@@ -271,6 +271,15 @@ void addStudent(vector_t *student_list)
 
 void deleteStudent(vector_t *student_list)
 {
+    int index = scanFindStudent(*student_list);
+    if (index == -1)
+        return;
+
+    student_t *student = vector_get(*student_list, index);
+    int studentId = student->studentId;
+    vector_remove(student_list, index);
+    printf("%d has been deleted.\n", studentId);
+    wait_for_enter();
 }
 
 void displayStudent(const vector_t student_list)
@@ -299,7 +308,7 @@ void displayStudent(const vector_t student_list)
     wait_for_enter();
 }
 
-void findStudent(const vector_t student_list)
+int scanFindStudent(const vector_t student_list)
 {
     int studentId;
     printf("Enter the ID of the student>");
@@ -307,14 +316,23 @@ void findStudent(const vector_t student_list)
     /* Consume trailing newline */
     getchar();
 
-    student_t *maybeStudent = searchStudent(student_list, studentId);
-    if (maybeStudent == NULL)
+    int index = searchStudentIndex(student_list, studentId);
+    if (index == -1)
     {
         printf("\n\nNo student found with ID %d\n", studentId);
         printf("You will you be returned to the menu.\n");
         wait_for_enter();
-        return;
     }
+    return index;
+}
+
+void findStudent(const vector_t student_list)
+{
+    int index = scanFindStudent(student_list);
+    if (index == -1)
+        return;
+
+    student_t *maybeStudent = vector_get(student_list, index);
     studentMainMenu(maybeStudent);
 }
 

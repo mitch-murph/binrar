@@ -32,6 +32,11 @@ student_t *searchStudent(const vector_t studentList, int studentId)
     return NULL;
 }
 
+int searchStudentIndex(const vector_t studentList, int studentId)
+{
+    return linearSearch(studentList, hasStudentId, &studentId);
+}
+
 void getAllAssessments(const vector_t student_list, vector_t *assessment_list)
 {
     init_vector(assessment_list, 10, sizeof(assessment_student_t));
