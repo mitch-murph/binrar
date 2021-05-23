@@ -77,7 +77,7 @@ int assign_tree_addr_to_node(node_t *current, vector_t *addr)
 #ifdef DEBUG
         printf("%c freq: %d size: %d space: %d\n", current->key, current->value, addr->size, bit_size);
 #endif
-        current->value = convert_vector_to_bit_array(*addr);
+        current->value = convertVectorToBitArray(*addr);
         return bit_size;
     }
     else
@@ -109,19 +109,19 @@ int write_huffman_tree(FILE *fp, node_t *root)
         node_t *current = *(node_t **)vectorPop(&stack);
         if (current->left == NULL && current->right == NULL)
         {
-            write_bit(&buffer, &buffer_size, 1, 1, fp);
-            write_bit(&buffer, &buffer_size, current->key, 8, fp);
+            writeBit(&buffer, &buffer_size, 1, 1, fp);
+            writeBit(&buffer, &buffer_size, current->key, 8, fp);
             size += 9;
         }
         else
         {
-            write_bit(&buffer, &buffer_size, 0, 1, fp);
+            writeBit(&buffer, &buffer_size, 0, 1, fp);
             size++;
             vectorPushBack(&stack, (void *)&current->left);
             vectorPushBack(&stack, (void *)&current->right);
         }
     }
-    write_bit(&buffer, &buffer_size, 0, -1, fp);
+    writeBit(&buffer, &buffer_size, 0, -1, fp);
 
     return size;
 }
@@ -173,7 +173,7 @@ void write_compressed_file(FILE *in_fp, FILE *out_fp, vector_t nodes)
     {
         node_t *node = *(node_t **)vectorGet(nodes, i);
 #ifdef DEBUG
-        print_bits_length(node->value, node->bit_length);
+        printBits(node->value, node->bit_length);
         printf(" -> %c\n", node->key);
 #endif
     }
@@ -195,9 +195,9 @@ void write_compressed_file(FILE *in_fp, FILE *out_fp, vector_t nodes)
                 break;
             }
         }
-        write_bit(&bit_buffer, &bit_buffer_size, bits, bit_length + 1, out_fp);
+        writeBit(&bit_buffer, &bit_buffer_size, bits, bit_length + 1, out_fp);
     }
-    write_bit(&bit_buffer, &bit_buffer_size, 0, -1, out_fp);
+    writeBit(&bit_buffer, &bit_buffer_size, 0, -1, out_fp);
 }
 
 void read_compressed_file(FILE *in_fp, FILE *out_fp, node_t *root, int compressed_size)
@@ -212,7 +212,7 @@ void read_compressed_file(FILE *in_fp, FILE *out_fp, node_t *root, int compresse
         if (i_bit == 7)
             buffer = fgetc(in_fp);
 
-        int bit = get_bit(buffer, i_bit);
+        int bit = getBit(buffer, i_bit);
         if (bit)
             curr = curr->right;
         else
@@ -295,9 +295,9 @@ node_t *read_huffman_tree(FILE *fp)
     while (stack.size > 0)
     {
         node_t *curr = *(node_t **)vectorPop(&stack);
-        if (read_bit(&buffer, &buffer_size, fp))
+        if (readBit(&buffer, &buffer_size, fp))
         {
-            curr->key = read_n_bit(&buffer, &buffer_size, 8, fp);
+            curr->key = readNBit(&buffer, &buffer_size, 8, fp);
             printf("Read value: %c\n", curr->key);
         }
         else
