@@ -253,7 +253,7 @@ void writeCompressedFile(FILE *in_fp, FILE *out_fp, vector_t nodes)
     while ((buffer = fgetc(in_fp)) != EOF)
     {
         /* Find the node that has key matching the buffer */
-        int index = linearSearch(nodes, compareNodeKey, &buffer);
+        int index = search(nodes, compareNodeKey, &buffer);
         node_t *node = *(node_t **)vectorGet(nodes, index);
 
         /* Write the bit address of that node to the file. */

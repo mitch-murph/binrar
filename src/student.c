@@ -25,7 +25,7 @@ void freeStudent(student_t *student)
 
 student_t *searchStudent(const vector_t studentList, int studentId)
 {
-    int maybeStudent = linearSearch(studentList, hasStudentId, &studentId);
+    int maybeStudent = search(studentList, hasStudentId, &studentId);
     printf("maybeStudent: %d\n", maybeStudent);
     if (maybeStudent != -1)
         return vectorGet(studentList, maybeStudent);
@@ -34,7 +34,7 @@ student_t *searchStudent(const vector_t studentList, int studentId)
 
 int searchStudentIndex(const vector_t studentList, int studentId)
 {
-    return linearSearch(studentList, hasStudentId, &studentId);
+    return search(studentList, hasStudentId, &studentId);
 }
 
 void getAllAssessments(const vector_t student_list, vector_t *assessment_list)

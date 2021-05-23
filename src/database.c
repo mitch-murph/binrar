@@ -159,7 +159,7 @@ void write_files(FILE *out_fp, vector_t student_list, vector_t existingFiles)
 #endif
 
             /* Check if file exists in existing files */
-            int pos = linearSearch(existingFiles, compare_filenames, filename);
+            int pos = search(existingFiles, compare_filenames, filename);
 
             if (pos == -1)
                 write_file_contents(filename, out_fp);
