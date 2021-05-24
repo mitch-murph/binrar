@@ -16,15 +16,16 @@
 
 
 /*****************************************************************************
- * This function opens the and gets the content from first file. If the file
- * is not empty, each bytes in the file is shifted by an amount and written 
- * in the second file.
+ * This function opens the first file and gets the content from first file.
+ * If the file is not empty, each bytes in the file is shifted by an amount
+ * and substituting each shifted bytes the corresponded ASCII code and is 
+ * written in the second file.
 
  * Input:
  *   fp1 - File pointer to count the frequency of bytes from first file.
 
  * Output:
- *   fp2 - File pointer to write the shifted frequency of bytes to second 
+ *   fp2 - File pointer to write the substituted frequency of bytes to second 
             file.
 *****************************************************************************/
 
@@ -39,19 +40,21 @@ void shift_encrypt_bytes(FILE *fd1, FILE *fd2, int amount)
 }
 
 /*****************************************************************************
- * This function encyrpts the file of diffrent types and shifts each 
- * bytes by an amount which correspondes to the ASCII characters
+ * This function encyrpts the file of diffrent types by shifting it to a 
+ * defined shift number and substitute each shifted bytes by an amount which
+ * correspondes to the ASCII characters
 
  * Input:
  *   input text: Hello everyone
 
  * Output:
- *   output text: z%yy# lel$(#&l
+ *   output text: Mjqqt%j{jw~tsj
 *****************************************************************************/
 
 void shift_encrypt(FILE *fd1, FILE *fd2)
 {
-    /* encrypt the file to shift forward by the defined amount */ 
+    /* encrypt the file by substituting with ASCII code by shifting 
+       forward by the defined amount */ 
     shift_encrypt_bytes(fd1, fd2, SHIFT_AMOUNT);
 }
 
@@ -60,7 +63,7 @@ void shift_encrypt(FILE *fd1, FILE *fd2)
  * file. 
 
  * Input:
- *   input text: z%yy# lel$(#&l
+ *   input text: Mjqqt%j{jw~tsj
 
  * Output:
  *   output text: Hello everyone
