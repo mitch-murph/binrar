@@ -1,7 +1,7 @@
 # makefile for generating binrar.out
 
 CC = gcc
-CFLAGS = -ansi -lm
+CFLAGS = -Wall -Werror -ansi -lm
 SRCDIR = src
 OBJDIR = obj
 EXE = binrar.out

@@ -7,31 +7,94 @@
 #include "search.h"
 #include "database.h"
 
-int scanDatabaseFilename(char *filename);
-void wait_for_enter();
-void launchWithDatabaseFile(char *database);
-void mainMenu(void);
-void studentMainMenu(student_t *student);
+/*****************************************************************************
+ * Private function prototypes
+*****************************************************************************/
+int readStringFixLength(char *str, int length);
+void waitForEnter();
 int scanMenu(void);
-int scanStudentMenu(student_t *student);
 void printMainMenu(void);
-void printStudentMenu(student_t *student);
-void addStudent(vector_t *student_list);
-void deleteStudent(vector_t *student_list);
-void displayStudent(const vector_t student_list);
-void findStudent(const vector_t student_list);
-void addAssessment(student_t *student);
-void saveStudents(const vector_t student_list, char *databaseFile);
-void loadStudents(vector_t *student_list, char *databaseFile);
-void displayAllAssessments(vector_t student_list);
-void displayAssessments(vector_t assessment_list);
-void extractAllFiles(vector_t student_list, char *databaseFile);
-void searchAllAssessments(vector_t assessment_list);
+void addStudent(vector_t *studentList);
+void deleteStudent(vector_t *studentList);
+void displayStudent(const vector_t studentList);
+void findStudent(const vector_t studentList);
+void displayAllAssessments(vector_t studentList);
+void searchAllAssessments(vector_t assessmentList);
+void saveStudents(const vector_t studentList, char *databaseFile);
+void loadStudents(vector_t *studentList, char *databaseFile);
+void extractAllFiles(vector_t studentList, char *databaseFile);
+int scanFindStudent(const vector_t studentList);
 
+void studentMainMenu(student_t *student);
+int scanStudentMenu(student_t *student);
+void printStudentMenu(student_t *student);
+void addAssessment(student_t *student);
+void deleteAssessment(student_t *student);
+void displayAssessments(const student_t student);
+void extractAssessment(const student_t student);
+
+/*****************************************************************************
+ * This function reads a string and only accepted a fixed length. Exceeding
+ * characters are ignored.
+ * Input:
+ *   strp - the pointer to where the string is to be written to.
+ *   length - the length of string to read.
+ * Return:
+ *   1 - input has exceeded the length.
+ *   0 - input has not exceeded the length.
+*****************************************************************************/
+int readStringFixLength(char *strp, int length)
+{
+    int flag = 0;
+    /* Read each character into *str by
+	   iterating over each char in name.
+	   Stop when length limit is reached 
+       or '\n' is encountered. */
+    while (--length > 0 && (*strp = getchar()) != '\n')
+    {
+        strp++;
+    }
+
+    /* Read the remaining characters that exceed 
+	   length to clear the buffer.
+	   Stop clearing if either the last character
+	   entered is '\n' or until the next '\n'
+	   is read. */
+    while (*strp != '\n' && getchar() != '\n')
+        flag = 1; /* Loop until '\n' reached */
+
+    /* Set the last char in *str to the null-terminator */
+    *strp = '\0';
+    return flag;
+}
+
+/*****************************************************************************
+ * This function prints a message stating to press the enter key.
+ * It then pauses the program until it is pressed.
+ * Input:
+ *   None
+ * Return:
+ *   None
+*****************************************************************************/
+void waitForEnter()
+{
+    printf("Press Enter to Continue");
+    while (getchar() != '\n')
+        ;
+}
+
+/*****************************************************************************
+ * This function prints a message stating to press the enter key.
+ * It then pauses the program until it is pressed.
+ * Input:
+ *   None
+ * Return:
+ *   None
+*****************************************************************************/
 void mainMenu(void)
 {
-    vector_t student_list;
-    init_vector(&student_list, 10, sizeof(student_t));
+    vector_t studentList;
+    initVector(&studentList, sizeof(student_t));
     char databaseFile[MAX_FILENAME_SIZE];
     databaseFile[0] = 0;
 
@@ -41,31 +104,31 @@ void mainMenu(void)
         switch (choice)
         {
         case 1:
-            addStudent(&student_list);
+            addStudent(&studentList);
             break;
         case 2:
-            deleteStudent(&student_list);
+            deleteStudent(&studentList);
             break;
         case 3:
-            displayStudent(student_list);
+            displayStudent(studentList);
             break;
         case 4:
-            findStudent(student_list);
+            findStudent(studentList);
             break;
         case 5:
-            displayAllAssessments(student_list);
+            displayAllAssessments(studentList);
             break;
         case 6:
-            searchAllAssessments(student_list);
+            searchAllAssessments(studentList);
             break;
         case 7:
-            saveStudents(student_list, databaseFile);
+            saveStudents(studentList, databaseFile);
             break;
         case 8:
-            loadStudents(&student_list, databaseFile);
+            loadStudents(&studentList, databaseFile);
             break;
         case 9:
-            extractAllFiles(student_list, databaseFile);
+            extractAllFiles(studentList, databaseFile);
             break;
         default:
             printf("Invalid choice.\n");
@@ -101,73 +164,40 @@ void printMainMenu(void)
            "10. exit the program\n");
 }
 
-int read_string_fix_length(char *str, int length)
+void addStudent(vector_t *studentList)
 {
-    int flag = 0;
-    /* Read each character into *str by
-	   iterating over each char in name.
-	   Stop when length limit is reached 
-       or '\n' is encountered. */
-    while (--length > 0 && (*str = getchar()) != '\n')
-    {
-        str++;
-    }
-
-    /* Read the remaining characters that exceed 
-	   length to clear the buffer.
-	   Stop clearing if either the last character
-	   entered is '\n' or until the next '\n'
-	   is read. */
-    while (*str != '\n' && getchar() != '\n')
-        flag = 1; /* Loop until '\n' reached */
-
-    /* Set the last char in *str to the null-terminator */
-    *str = '\0';
-    return flag;
-}
-
-void wait_for_enter()
-{
-    printf("Press Enter to Continue");
-    while (getchar() != '\n')
-        ;
-}
-
-void addStudent(vector_t *student_list)
-{
-    student_t new_student;
+    student_t newStudent;
+    initStudent(&newStudent);
     printf("Enter student ID>");
-    scanf("%d", &new_student.studentId);
+    scanf("%d", &newStudent.studentId);
     /* Consume trailing newline */
     getchar();
 
     printf("Enter first name>");
-    read_string_fix_length(new_student.firstName, MAX_NAME_SIZE);
-    /* scanf("%[^\n]%*c", new_student.firstName); */
+    readStringFixLength(newStudent.firstName, MAX_NAME_SIZE);
 
     printf("Enter last name>");
-    read_string_fix_length(new_student.lastName, MAX_NAME_SIZE);
-    /* scanf("%[^\n]%*c", new_student.lastName); */
+    readStringFixLength(newStudent.lastName, MAX_NAME_SIZE);
 
-    vector_push_back(student_list, &new_student);
+    vectorPushBack(studentList, &newStudent);
 }
 
-void deleteStudent(vector_t *student_list)
+void deleteStudent(vector_t *studentList)
 {
-    int index = scanFindStudent(*student_list);
+    int index = scanFindStudent(*studentList);
     if (index == -1)
         return;
 
-    student_t *student = vector_get(*student_list, index);
+    student_t *student = vectorGet(*studentList, index);
     int studentId = student->studentId;
-    vector_remove(student_list, index);
+    vectorRemove(studentList, index);
     printf("%d has been deleted.\n", studentId);
-    wait_for_enter();
+    waitForEnter();
 }
 
-void displayStudent(const vector_t student_list)
+void displayStudent(const vector_t studentList)
 {
-    int size = student_list.size;
+    int size = studentList.size;
     if (size < 1)
     {
         printf("No students.\n");
@@ -181,17 +211,17 @@ void displayStudent(const vector_t student_list)
         printf("-------------------------------------------------\n");
         while (size--)
         {
-            student_t *student = vector_get(student_list, size);
+            student_t *student = vectorGet(studentList, size);
             printf("|%-15d", student->studentId);
             printf("|%-15s", student->firstName);
             printf("|%-15s|\n", student->lastName);
         }
         printf("-------------------------------------------------\n");
     }
-    wait_for_enter();
+    waitForEnter();
 }
 
-int scanFindStudent(const vector_t student_list)
+int scanFindStudent(const vector_t studentList)
 {
     int studentId;
     printf("Enter the ID of the student>");
@@ -199,30 +229,30 @@ int scanFindStudent(const vector_t student_list)
     /* Consume trailing newline */
     getchar();
 
-    int index = searchStudentIndex(student_list, studentId);
+    int index = searchStudentIndex(studentList, studentId);
     if (index == -1)
     {
         printf("\n\nNo student found with ID %d\n", studentId);
         printf("You will you be returned to the menu.\n");
-        wait_for_enter();
+        waitForEnter();
     }
     return index;
 }
 
-void findStudent(const vector_t student_list)
+void findStudent(const vector_t studentList)
 {
-    int index = scanFindStudent(student_list);
+    int index = scanFindStudent(studentList);
     if (index == -1)
         return;
 
-    student_t *maybeStudent = vector_get(student_list, index);
+    student_t *maybeStudent = vectorGet(studentList, index);
     studentMainMenu(maybeStudent);
 }
 
 void studentMainMenu(student_t *student)
 {
     int choice;
-    while ((choice = scanStudentMenu(student)) != 6)
+    while ((choice = scanStudentMenu(student)) != 5)
     {
         switch (choice)
         {
@@ -230,17 +260,17 @@ void studentMainMenu(student_t *student)
             addAssessment(student);
             break;
 
-            /* case 2:
-            deleteStudent(&student_list);
+        case 2:
+            deleteAssessment(student);
             break;
 
         case 3:
-            displayStudent(student_list);
+            displayAssessments(*student);
             break;
 
         case 4:
-            findStudent(student_list);
-            break; */
+            extractAssessment(*student);
+            break;
 
         default:
             printf("Invalid choice.\n");
@@ -258,9 +288,8 @@ void printStudentMenu(student_t *student)
     printf("1. add assessment\n"
            "2. delete assessment\n"
            "3. display students assessments\n"
-           "4. search for student\n"
-           "5. read the student list from the database\n"
-           "6. Return to main menu\n");
+           "4. Extract assessment file\n"
+           "5. Return to main menu\n");
 }
 
 int scanStudentMenu(student_t *student)
@@ -281,18 +310,18 @@ void addAssessment(student_t *student)
     assessment_t newAssessment;
 
     printf("Enter subject name>");
-    read_string_fix_length(newAssessment.subject, MAX_NAME_SIZE);
+    readStringFixLength(newAssessment.subject, MAX_NAME_SIZE);
 
     printf("Enter the assessment file name>");
-    int exceedLength = read_string_fix_length(newAssessment.filename,
-                                              MAX_FILENAME_SIZE);
+    int exceedLength = readStringFixLength(newAssessment.filename,
+                                           MAX_FILENAME_SIZE);
     if (exceedLength)
     {
         printf("\n\nFilename size exceed. Please rename the file.\n"
                "The max length is %d.\n"
                "You will be returned to the menu.\n",
                MAX_FILENAME_SIZE);
-        wait_for_enter();
+        waitForEnter();
         return;
     }
     if (!checkIfFileExists(newAssessment.filename))
@@ -300,7 +329,7 @@ void addAssessment(student_t *student)
         printf("\n\nCannot find file %s.\n"
                "You will be returned to the menu\n",
                newAssessment.filename);
-        wait_for_enter();
+        waitForEnter();
         return;
     }
 
@@ -309,7 +338,7 @@ void addAssessment(student_t *student)
     /* Consume trailing newline */
     getchar();
 
-    vector_push_back(&student->assessments, &newAssessment);
+    vectorPushBack(&student->assessments, &newAssessment);
 }
 
 char setBitFlag(char *filename)
@@ -348,7 +377,7 @@ char setBitFlag(char *filename)
 void saveStudents(const vector_t studentList, char *databaseFile)
 {
     vector_t existingFiles;
-    init_vector(&existingFiles, 10, sizeof(file_t));
+    initVector(&existingFiles, sizeof(file_t));
     if (databaseFile[0] != 0)
     {
         read_database_to_memory(databaseFile, &existingFiles);
@@ -356,21 +385,22 @@ void saveStudents(const vector_t studentList, char *databaseFile)
     int jj;
     for (jj = 0; jj < existingFiles.size; jj++)
     {
-        file_t *file = vector_get(existingFiles, jj);
+        file_t *file = vectorGet(existingFiles, jj);
         printf("%s\n", file->filename);
     }
 
+    /* TODO: the new file name needs to go into databaseFile (the param) */
     char filename[MAX_FILENAME_SIZE];
     printf("Enter the new database file name>");
-    int exceedLength = read_string_fix_length(filename,
-                                              MAX_FILENAME_SIZE);
+    int exceedLength = readStringFixLength(filename,
+                                           MAX_FILENAME_SIZE);
     if (exceedLength)
     {
         printf("\n\nFilename size exceed. Please use a different name.\n"
                "The max length is %d.\n"
                "You will be returned to the menu.\n",
                MAX_FILENAME_SIZE);
-        wait_for_enter();
+        waitForEnter();
         return;
     }
 
@@ -381,39 +411,39 @@ void saveStudents(const vector_t studentList, char *databaseFile)
         printf("\n\nCannot create database file %s.\n"
                "You will be returned to the menu\n",
                filename);
-        wait_for_enter();
+        waitForEnter();
         return;
     }
 }
 
-void loadStudents(vector_t *student_list, char *filename)
+void loadStudents(vector_t *studentList, char *filename)
 {
     printf("Enter the database file name>");
-    int exceedLength = read_string_fix_length(filename,
-                                              MAX_FILENAME_SIZE);
+    int exceedLength = readStringFixLength(filename,
+                                           MAX_FILENAME_SIZE);
     if (exceedLength)
     {
         printf("\n\nFilename size exceed. Please rename the file.\n"
                "The max length is %d.\n"
                "You will be returned to the menu.\n",
                MAX_FILENAME_SIZE);
-        wait_for_enter();
+        waitForEnter();
         return;
     }
-    if (read_database(filename, student_list))
+    if (read_database(filename, studentList))
     {
         printf("\n\nCannot read database file %s.\n"
                "You will be returned to the menu\n",
                filename);
-        wait_for_enter();
+        waitForEnter();
         return;
     }
 }
 
-void displayAllAssessments(vector_t student_list)
+void displayAllAssessments(vector_t studentList)
 {
     vector_t assessments;
-    getAllAssessments(student_list, &assessments);
+    getAllAssessments(studentList, &assessments);
     int size = assessments.size;
     if (size < 1)
     {
@@ -428,30 +458,30 @@ void displayAllAssessments(vector_t student_list)
         printf("-------------------------------------------------\n");
         while (size--)
         {
-            assessment_student_t *assessment = vector_get(assessments, size);
+            assessment_student_t *assessment = vectorGet(assessments, size);
             printf("|%-15d", assessment->studentp->studentId);
             printf("|%-15s", assessment->assessmentp->subject);
             printf("|%-15d|\n", assessment->assessmentp->mark);
         }
         printf("-------------------------------------------------\n");
     }
-    wait_for_enter();
-    free_vector(assessments);
+    waitForEnter();
+    freeVector(assessments);
 }
 
-void extractAllFiles(vector_t student_list, char *databaseFile)
+void extractAllFiles(vector_t studentList, char *databaseFile)
 {
     char dir[MAX_FILENAME_SIZE];
     printf("Enter the directory you would like to extract to>");
-    int exceedLength = read_string_fix_length(dir,
-                                              MAX_FILENAME_SIZE);
+    int exceedLength = readStringFixLength(dir,
+                                           MAX_FILENAME_SIZE);
     if (exceedLength)
     {
         printf("\n\nDirectory name size exceed.\n"
                "The max length is %d.\n"
                "You will be returned to the menu.\n",
                MAX_FILENAME_SIZE);
-        wait_for_enter();
+        waitForEnter();
         return;
     }
     if (unpackage_database_files(databaseFile, dir))
@@ -459,11 +489,26 @@ void extractAllFiles(vector_t student_list, char *databaseFile)
         printf("\n\nCannot read database file %s.\n"
                "You will be returned to the menu\n",
                databaseFile);
-        wait_for_enter();
+        waitForEnter();
         return;
     }
 }
 
-void searchAllAssessments(vector_t assessment_list)
+void searchAllAssessments(vector_t assessmentList)
 {
+}
+
+void deleteAssessment(student_t *student)
+{
+
+}
+
+void displayAssessments(const student_t student)
+{
+
+}
+
+void extractAssessment(const student_t student)
+{
+
 }

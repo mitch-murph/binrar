@@ -13,18 +13,16 @@ struct vector
 
 typedef struct vector vector_t;
 
-int init_vector(vector_t *vector, int capacity, size_t element_size);
-int copy_vector(vector_t *dest, const vector_t src);
-void free_vector(vector_t vector);
-void print_vector(vector_t vector, void (*print_func)(int index, void *value));
-void *vector_push_back(vector_t *vector, void *value);
-void *vector_pop(vector_t *vector);
-void *vector_get(vector_t vector, int index);
+int initVector(vector_t *vector, size_t element_size);
+int initVectorCap(vector_t *vector, int capacity, size_t element_size);
+int copyVector(vector_t *dest, const vector_t src);
+void freeVector(vector_t vector);
 void vector_resize(vector_t *vector, int new_capacity);
-int vector_insert(vector_t *vector, void *value, int position);
-int vector_remove(vector_t *vector, int position);
-int vector_set(vector_t vector, void *value, int position);
-void vector_swap(vector_t vector, int a, int b);
-void vector_sort(vector_t vector, int (*compare)(const void *a, const void *b));
+void *vectorPushBack(vector_t *vector, void *value);
+void *vectorPop(vector_t *vector);
+void *vectorGet(vector_t vector, int index);
+int vectorRemove(vector_t *vector, int position);
+int vectorSet(vector_t vector, void *value, int position);
+void vectorSwap(vector_t vector, int a, int b);
 
 #endif

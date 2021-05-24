@@ -3,7 +3,10 @@
 
 #define HASH_SIZE sizeof(long int) + 1
 
-long int secure_hash_password_check(char *string, char *hash_string);
-long int secure_hash_encrypt(char *string, char *hash_string);
+/*****************************************************************************
+ * Public function prototypes
+*****************************************************************************/
+long int secureHashPasswordCheck(char *string, char *hash_string);
+long int secureHashEncrypt(char *string, char *hash_string);
 
 #endif

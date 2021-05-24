@@ -9,6 +9,8 @@
 #include "search.h"
 
 void read_header(FILE *database_fp, vector_t *filenames);
+int unpackage_database_files_contents(FILE *database_fp, char *files);
+void separate_files_to_memory(FILE *database_fp, vector_t filenames, vector_t *files);
 
 void print_filenames(int index, void *value)
 {
@@ -28,9 +30,9 @@ void copy_header(FILE *dest, FILE *src)
 {
     /* Seek the end of the header */
     vector_t temp;
-    init_vector(&temp, 10, sizeof(char) * 255);
+    initVector(&temp, sizeof(char) * 255);
     read_header(src, &temp);
-    free_vector(temp);
+    freeVector(temp);
     char bit_flag;
     fread(&bit_flag, sizeof(char), 1, src);
 
@@ -72,7 +74,7 @@ void write_student_assessment(student_t *student, FILE *out_fp)
     int i;
     for (i = 0; i < student->assessments.size; i++)
     {
-        write_assessment(vector_get(student->assessments, i), out_fp);
+        write_assessment(vectorGet(student->assessments, i), out_fp);
     }
 }
 
@@ -96,7 +98,7 @@ void write_student(student_t *student, FILE *out_fp)
     write_student_assessment(student, out_fp);
 }
 
-int write_file_contents(char *filename, FILE *out_fp)
+void write_file_contents(char *filename, FILE *out_fp)
 {
     FILE *fp;
 
@@ -119,7 +121,7 @@ int write_file_contents(char *filename, FILE *out_fp)
     fclose(fp);
 }
 
-int write_file_t_contents(file_t file, FILE *out_fp)
+void write_file_t_contents(file_t file, FILE *out_fp)
 {
 
     printf("WRITE file size: %ld\n", file.size);
@@ -135,7 +137,7 @@ int compare_filenames(const void *ap, const void *bp)
     return strcmp(fileA->filename, filename);
 }
 
-int write_files(FILE *out_fp, vector_t student_list, vector_t existingFiles)
+void write_files(FILE *out_fp, vector_t student_list, vector_t existingFiles)
 {
 #ifdef DEBUG
     printf("Start write files\n");
@@ -144,12 +146,12 @@ int write_files(FILE *out_fp, vector_t student_list, vector_t existingFiles)
     int i, j;
     for (i = 0; i < student_list.size; i++)
     {
-        student_t *student = vector_get(student_list, i);
+        student_t *student = vectorGet(student_list, i);
         for (j = 0; j < student->assessments.size; j++)
         {
 
             char filename[MAX_FILENAME_SIZE];
-            assessment_t *assessment = vector_get(student->assessments, j);
+            assessment_t *assessment = vectorGet(student->assessments, j);
             strcpy(filename, assessment->filename);
 
 #ifdef DEBUG
@@ -157,13 +159,13 @@ int write_files(FILE *out_fp, vector_t student_list, vector_t existingFiles)
 #endif
 
             /* Check if file exists in existing files */
-            int pos = linearSearch(existingFiles, compare_filenames, filename);
+            int pos = search(existingFiles, compare_filenames, filename);
 
             if (pos == -1)
                 write_file_contents(filename, out_fp);
             else
             {
-                file_t *file = vector_get(existingFiles, pos);
+                file_t *file = vectorGet(existingFiles, pos);
                 write_file_t_contents(*file, out_fp);
             }
         }
@@ -183,7 +185,7 @@ void write_header(FILE *out_fp, vector_t student_list)
     int i;
     for (i = 0; i < student_list.size; i++)
     {
-        write_student(vector_get(student_list, i), out_fp);
+        write_student(vectorGet(student_list, i), out_fp);
     }
 }
 
@@ -194,7 +196,7 @@ int xor_encrypt_database(FILE *database_fp, long start_pos)
     if (temp_fp == NULL)
     {
         printf("Error creating temp file");
-        return 0;
+        return 1;
     }
 
     /* Goto where the database files begin */
@@ -207,7 +209,7 @@ int xor_encrypt_database(FILE *database_fp, long start_pos)
     /* Get the hashed key for encrypting the 
            database using encrypt initial conditions */
     char hashed_key[HASH_SIZE];
-    secure_hash_encrypt(key, hashed_key);
+    secureHashEncrypt(key, hashed_key);
 
     /* encrypt database to a temp file */
     XOR_cipher(database_fp, temp_fp, hashed_key);
@@ -217,7 +219,7 @@ int xor_encrypt_database(FILE *database_fp, long start_pos)
 
     /* Get and write the hashed password 
            using password check initial conditions */
-    int t = secure_hash_password_check(key, hashed_key);
+    secureHashPasswordCheck(key, hashed_key);
     fwrite(hashed_key, sizeof(char), HASH_SIZE, database_fp);
 
     /* Now copy the encrypted temp database files to the database */
@@ -226,6 +228,8 @@ int xor_encrypt_database(FILE *database_fp, long start_pos)
 
     fclose(temp_fp);
     remove("encrypted.bin.tmp");
+
+    return 0;
 }
 
 int shift_encrypt_database(FILE *database_fp, long start_pos)
@@ -235,7 +239,7 @@ int shift_encrypt_database(FILE *database_fp, long start_pos)
     if (temp_fp == NULL)
     {
         printf("Error creating temp file");
-        return 0;
+        return 1;
     }
 
     /* Goto where the database files begin */
@@ -251,6 +255,8 @@ int shift_encrypt_database(FILE *database_fp, long start_pos)
 
     fclose(temp_fp);
     remove("encrypted.bin.tmp");
+
+    return 0;
 }
 
 int huffman_compress_database(FILE **database_fp, long start_pos, char *out_file)
@@ -260,7 +266,7 @@ int huffman_compress_database(FILE **database_fp, long start_pos, char *out_file
     if (temp_fp == NULL)
     {
         printf("Error creating temp file");
-        return 0;
+        return 1;
     }
 
     /* Goto where the database files begin */
@@ -271,13 +277,15 @@ int huffman_compress_database(FILE **database_fp, long start_pos, char *out_file
     fseek(temp_fp, start_pos, SEEK_SET);
 
     /* Encrypt database to a temp file */
-    compress(*database_fp, temp_fp);
+    huffmanCompress(*database_fp, temp_fp);
 
     /* Now swap the compressed database with the existing database */
     fclose(*database_fp);
     *database_fp = temp_fp;
     remove(out_file);
     rename("compressed.bin.tmp", out_file);
+
+    return 1;
 }
 
 int write_database(vector_t student_list, char *out_file, char bit_flag, vector_t existingFiles)
@@ -359,7 +367,7 @@ void read_student_assessment(student_t *student, FILE *in_fp)
         printf("READ assessment file: %s\n", assessment.filename);
 #endif
 
-        vector_push_back(&student->assessments, &assessment);
+        vectorPushBack(&student->assessments, &assessment);
     }
 }
 
@@ -404,14 +412,14 @@ void read_header(FILE *database_fp, vector_t *student_list)
         printf("READ Student ID: %d\n", student.studentId);
 #endif
 
-        vector_push_back(student_list, &student);
+        vectorPushBack(student_list, &student);
     }
 }
 
-int read_database_fp(FILE *database_fp, vector_t *filenames)
+void read_database_fp(FILE *database_fp, vector_t *filenames)
 {
     /* Read all the database information */
-    init_vector(filenames, 10, sizeof(char) * 255);
+    initVector(filenames, sizeof(char) * 255);
     read_header(database_fp, filenames);
 }
 
@@ -420,7 +428,6 @@ int read_database(char *database_file, vector_t *filenames)
     FILE *database_fp;
     database_fp = fopen(database_file, "rb");
     read_database_fp(database_fp, filenames);
-    /* print_vector(*filenames, print_filenames); */
 
     return 0;
 }
@@ -446,7 +453,7 @@ int read_database_to_memory(char *database_file, vector_t *files)
     return 0;
 }
 
-int separate_files_to_memory(FILE *database_fp, vector_t filenames, vector_t *files)
+void separate_files_to_memory(FILE *database_fp, vector_t filenames, vector_t *files)
 {
     int i;
     for (i = 0; i < filenames.size; i++)
@@ -456,7 +463,7 @@ int separate_files_to_memory(FILE *database_fp, vector_t filenames, vector_t *fi
 
         printf("To memory file size: %ld\n", file.size);
 
-        strcpy(file.filename, (char *)vector_get(filenames, i));
+        strcpy(file.filename, (char *)vectorGet(filenames, i));
 
 #ifdef DEBUG
         printf("To memory READ %s size: %ld\n", file.filename, file.size);
@@ -467,7 +474,7 @@ int separate_files_to_memory(FILE *database_fp, vector_t filenames, vector_t *fi
     }
 }
 
-int separate_files(FILE *database_fp, vector_t filenames)
+void separate_files(FILE *database_fp, vector_t filenames)
 {
     int i;
     for (i = 0; i < filenames.size; i++)
@@ -478,7 +485,7 @@ int separate_files(FILE *database_fp, vector_t filenames)
         printf("file size: %ld\n", file_size);
 
         char filename[MAX_FILENAME_SIZE];
-        strcpy(filename, (char *)vector_get(filenames, i));
+        strcpy(filename, (char *)vectorGet(filenames, i));
 
 #ifdef DEBUG
         printf("READ %s size: %ld\n", filename, file_size);
@@ -507,15 +514,16 @@ int unpackage_database_files(char *database_file, char *dir)
     read_database_fp(database_fp, &student_list);
     vector_t filenames;
     getAllFilenames(student_list, &filenames);
-    print_vector(filenames, print_filenames);
 
-    unpackage_database_files_contents(database_fp, "database.bin.tmp");
+    if (unpackage_database_files_contents(database_fp, "database.bin.tmp"))
+    {
+        return 1;
+    }
 
-    /* 
-    FILE* files_fp = fopen...
-    separate_files(files_fp, filenames, dir);
-    fclose()...
-    */
+    FILE *files_fp = fopen("database.bin.tmp", "rb");
+    separate_files(files_fp, filenames);
+    fclose(files_fp);
+    return 0;
 }
 
 int unpackage_database_files_contents(FILE *database_fp, char *files)
@@ -543,7 +551,7 @@ int unpackage_database_files_contents(FILE *database_fp, char *files)
         if (temp_fp == NULL)
         {
             printf("Error creating temp file");
-            return 0;
+            return 1;
         }
 
         /* Goto where the database files begin */
@@ -558,8 +566,8 @@ int unpackage_database_files_contents(FILE *database_fp, char *files)
            This will tell us if the user has entered
            The correct password. */
         char hashed_key[HASH_SIZE];
-        secure_hash_password_check(key, hashed_key);
-        unsigned char stored_hash_key[HASH_SIZE];
+        secureHashPasswordCheck(key, hashed_key);
+        char stored_hash_key[HASH_SIZE];
         fread(stored_hash_key, sizeof(unsigned char), HASH_SIZE, files_fp);
 
         if (strcmp(hashed_key, stored_hash_key) != 0)
@@ -571,7 +579,7 @@ int unpackage_database_files_contents(FILE *database_fp, char *files)
 
         /* Decrypt the database to a temp file.
            Using the hashed encrypt password. */
-        secure_hash_encrypt(key, hashed_key);
+        secureHashEncrypt(key, hashed_key);
         XOR_cipher(files_fp, temp_fp, hashed_key);
 
         fclose(files_fp);
@@ -620,7 +628,7 @@ int unpackage_database_files_contents(FILE *database_fp, char *files)
         fseek(files_fp, 0, SEEK_SET);
 
         /* Decompress the database to a temp file. */
-        decompress(files_fp, temp_fp);
+        huffmanDecompress(files_fp, temp_fp);
 
         fclose(files_fp);
         remove(files);
@@ -629,6 +637,7 @@ int unpackage_database_files_contents(FILE *database_fp, char *files)
     }
 
     fclose(files_fp);
+    return 0;
 }
 
 int checkIfFileExists(char *filename)
