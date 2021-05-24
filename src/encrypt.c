@@ -15,19 +15,16 @@
 #define SHIFT_AMOUNT 69
 
 
-/*****************************************************************************
- * This function opens the first file and gets the content from first file.
- * If the file is not empty, each bytes in the file is shifted by an amount
- * and substituting each shifted bytes the corresponded ASCII code and is 
- * written in the second file.
+/******************************************************************************
+* This function reads content from file 1 to encrypt/decrypts and write it in file 2. 
 
- * Input:
- *   fp1 - File pointer to count the frequency of bytes from first file.
+* Input:
+ *   read content in file 1
 
  * Output:
- *   fp2 - File pointer to write the substituted frequency of bytes to second 
-            file.
-*****************************************************************************/
+ *   write content in file 2.
+ 
+******************************************************************************/
 
 void shift_encrypt_bytes(FILE *fd1, FILE *fd2, int amount)
 {
@@ -40,10 +37,17 @@ void shift_encrypt_bytes(FILE *fd1, FILE *fd2, int amount)
 }
 
 /*****************************************************************************
- * This function encyrpts the file of diffrent types by shifting it to a 
- * defined shift number and substitute each shifted bytes by an amount which
- * correspondes to the ASCII characters
-
+ * This function encyrpts the file of diffrent types by shifting the ASCII 
+ * number of original bytes by the defined shift amount and then the shifted
+ * ASCII value is substituted as its corresponding characters. 
+ 
+ * Example: 
+            input character : A
+            ASCII character of A: 65
+            Adding shift_amount (69) to ASCII character of A: 134
+            134 ASCII code to corresponding character : å
+ 
+        
  * Input:
  *   input text: Hello everyone
 
@@ -61,6 +65,12 @@ void shift_encrypt(FILE *fd1, FILE *fd2)
 /*****************************************************************************
  * This function dencyrpts the file the ASCII characters to the original
  * file. 
+  
+    * Example: 
+            input character : å
+            ASCII character of å : 134
+            Subtracting shift_amount (69) to ASCII character of å: 65
+            134 ASCII code to corresponding character : A
 
  * Input:
  *   input text: Mjqqt%j{jw~tsj
