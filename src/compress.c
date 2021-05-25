@@ -43,14 +43,14 @@ void countBytes(FILE *fp, hashmap_t *map)
            see if it already exists. */
         node_t node;
         node.key = buffer;
-        node_t *maybeNode = hashmap_get(*map, &node);
+        node_t *maybeNode = hashmapGet(*map, &node);
 
         /* If it does exist increments its frequency count.
            Otherwises use node created. */
         if (maybeNode != NULL)
         {
             maybeNode->value++;
-            hashmap_set(*map, maybeNode);
+            hashmapSet(*map, maybeNode);
         }
         else
         {
@@ -58,7 +58,7 @@ void countBytes(FILE *fp, hashmap_t *map)
             initNode(&node);
             node.in_use = 1;
             node.value++;
-            hashmap_set(*map, &node);
+            hashmapSet(*map, &node);
         }
     }
 }
@@ -328,7 +328,7 @@ void huffmanCompress(FILE *in_fp, FILE *out_fp)
 {
     /* Count the frequency of each byte into a hashmap. */
     hashmap_t map;
-    init_hashmap(&map, sizeof(node_t), 0x101, compareNodeNode, hashNode, nodeExists, initNode);
+    initHashmap(&map, sizeof(node_t), 0x101, compareNodeNode, hashNode, nodeExists, initNode);
     /* Store the start of the file so that file pointer can be reverted.
        NOTE we cannot seek the start incase the given in_fp is not
        at the start */
@@ -340,7 +340,7 @@ void huffmanCompress(FILE *in_fp, FILE *out_fp)
     vector_t nodes;
     initVector(&nodes, sizeof(node_t *));
     hashmapConvert(map, &nodes);
-    free_hashmap(&map);
+    freeHashmap(&map);
 
     /* Turn the vector of nodes into a huffman tree */
     vector_t nodesCopy;

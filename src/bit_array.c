@@ -10,7 +10,8 @@
 
 /*****************************************************************************
  * Private function prototypes
- *  - No private functions in this files
+ *  - No private functions in this files.
+ *  - All public function prototypes in header.
 *****************************************************************************/
 
 /*****************************************************************************

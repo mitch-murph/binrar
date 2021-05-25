@@ -14,7 +14,7 @@
 #define MAX_FILENAME_SIZE 255 /* Maximum filename size */
 
 /*****************************************************************************
- * List structs
+ * Structs
 *****************************************************************************/
 /* Struct to store information of a file. */
 struct file
