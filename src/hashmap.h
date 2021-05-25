@@ -3,23 +3,31 @@
 
 #include "vector.h"
 
+/*****************************************************************************
+ * Structs
+*****************************************************************************/
+/* Struct to hashmap information */
 struct hashmap
 {
-    vector_t map;
-    int (*compare)(const void *a, const void *b);
-    int (*hash)(const void *a);
-    int (*exists)(const void *a);
+    vector_t map; /* The actual hashmap */
+    int (*compare)(const void *a,
+                   const void *b); /* Pointer to compare function */
+    int (*hash)(const void *a);    /* Pointer to hash function */
+    int (*exists)(const void *a);  /* Pointer to esist function*/
 };
 
 typedef struct hashmap hashmap_t;
 
-int init_hashmap(hashmap_t *hashmap, size_t element_size, int size,
-                 int (*compare)(const void *a, const void *b),
-                 int (*hash)(const void *a),
-                 int (*exists)(const void *a),
-                 void (*init)(const void *a));
-int free_hashmap(hashmap_t *hashmap);
-int hashmap_set(hashmap_t hashmap, void *item);
-void *hashmap_get(hashmap_t hashmap, void *item);
+/*****************************************************************************
+ * Public function prototypes
+*****************************************************************************/
+int initHashmap(hashmap_t *hashmap, size_t elementSize, int size,
+                int (*compare)(const void *a, const void *b),
+                int (*hash)(const void *a),
+                int (*exists)(const void *a),
+                void (*init)(const void *a));
+int freeHashmap(hashmap_t *hashmap);
+int hashmapSet(hashmap_t hashmap, void *item);
+void *hashmapGet(hashmap_t hashmap, void *item);
 
 #endif

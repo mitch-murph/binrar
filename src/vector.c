@@ -5,18 +5,18 @@
 
 #define DEFAULT_CAPACITY 10
 
-int initVector(vector_t *vector, size_t element_size)
+int initVector(vector_t *vector, size_t elementSize)
 {
-    initVectorCap(vector, DEFAULT_CAPACITY, element_size);
+    initVectorCap(vector, DEFAULT_CAPACITY, elementSize);
     return 0;
 }
 
-int initVectorCap(vector_t *vector, int capacity, size_t element_size)
+int initVectorCap(vector_t *vector, int capacity, size_t elementSize)
 {
     vector->size = 0;
     vector->capacity = capacity;
-    vector->element_size = element_size;
-    vector->vector = malloc(capacity * element_size);
+    vector->elementSize = elementSize;
+    vector->vector = malloc(capacity * elementSize);
     return 0;
 }
 
@@ -24,8 +24,8 @@ int copyVector(vector_t *dest, const vector_t src)
 {
     dest->size = src.size;
     dest->capacity = src.capacity;
-    dest->element_size = src.element_size;
-    dest->vector = malloc(dest->capacity * dest->element_size);
+    dest->elementSize = src.elementSize;
+    dest->vector = malloc(dest->capacity * dest->elementSize);
 
     int i;
     for (i = 0; i < src.size; i++)
@@ -43,7 +43,7 @@ void freeVector(vector_t vector)
 
 void *vectorGet(vector_t vector, int index)
 {
-    return vector.vector + index * vector.element_size;
+    return vector.vector + index * vector.elementSize;
 }
 
 void *vectorPushBack(vector_t *vector, void *value)
@@ -52,8 +52,8 @@ void *vectorPushBack(vector_t *vector, void *value)
     {
         vector_resize(vector, vector->capacity * 2);
     }
-    void *ptr = vector->vector + vector->size * vector->element_size;
-    memcpy(ptr, value, vector->element_size);
+    void *ptr = vector->vector + vector->size * vector->elementSize;
+    memcpy(ptr, value, vector->elementSize);
     vector->size++;
     return ptr;
 }
@@ -71,8 +71,8 @@ void *vectorPop(vector_t *vector)
 void vector_resize(vector_t *vector, int new_capacity)
 {
     void *old_vector = vector->vector;
-    vector->vector = malloc(new_capacity * vector->element_size);
-    memcpy(vector->vector, old_vector, vector->size * vector->element_size);
+    vector->vector = malloc(new_capacity * vector->elementSize);
+    memcpy(vector->vector, old_vector, vector->size * vector->elementSize);
     vector->capacity = new_capacity;
     free(old_vector);
 }
@@ -88,7 +88,7 @@ int vectorRemove(vector_t *vector, int position)
     {
         void *ptr = vectorGet(*vector, i + 1);
         void *new_ptr = vectorGet(*vector, i);
-        memcpy(new_ptr, ptr, vector->element_size);
+        memcpy(new_ptr, ptr, vector->elementSize);
     }
     vector->size--;
     return 0;
@@ -101,17 +101,17 @@ int vectorSet(vector_t vector, void *value, int position)
         return 1;
     }
     void *ptr = vectorGet(vector, position);
-    memcpy(ptr, value, vector.element_size);
+    memcpy(ptr, value, vector.elementSize);
     return 0;
 }
 
 void vectorSwap(vector_t vector, int a, int b)
 {
-    void *temp = malloc(vector.element_size);
+    void *temp = malloc(vector.elementSize);
     void *ap = vectorGet(vector, a);
     void *bp = vectorGet(vector, b);
-    memcpy(temp, ap, vector.element_size);
-    memcpy(ap, bp, vector.element_size);
-    memcpy(bp, temp, vector.element_size);
+    memcpy(temp, ap, vector.elementSize);
+    memcpy(ap, bp, vector.elementSize);
+    memcpy(bp, temp, vector.elementSize);
     free(temp);
 }

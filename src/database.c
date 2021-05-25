@@ -1,5 +1,12 @@
+/*****************************************************************************
+ * 48430 Fundamentals of C Programming - Assignment 3
+ * Database management.
+ * Functions for managing the database. This includes reading and writing
+ * student information. Packaging one or more files together and compression
+ * and/or encrypting the assessment files.
+*****************************************************************************/
 #include <stdio.h>
-#include <string.h>
+#include <string.h> /* strlen */
 #include "database.h"
 #include "vector.h"
 #include "encrypt.h"
@@ -8,16 +15,68 @@
 #include "student.h"
 #include "search.h"
 
-void read_header(FILE *database_fp, vector_t *filenames);
-int unpackage_database_files_contents(FILE *database_fp, char *files);
-void separate_files_to_memory(FILE *database_fp, vector_t filenames, vector_t *files);
+#define TEMP_DATABASE_NAME "database.bin.tmp"
 
-void print_filenames(int index, void *value)
+/*****************************************************************************
+ * Private function prototypes
+*****************************************************************************/
+void copyFile(FILE *dest, FILE *src);
+void copyHeader(FILE *dest, FILE *src);
+void writeAssessment(assessment_t *assessment, FILE *out_fp);
+void writeStudentAssessment(student_t *student, FILE *out_fp);
+void writeStudent(student_t *student, FILE *out_fp);
+void writeFileContents(char *filename, FILE *out_fp);
+void writeFileTContents(file_t file, FILE *out_fp);
+int compareFilenames(const void *ap, const void *bp);
+void writeFiles(FILE *out_fp, vector_t studentList, vector_t existingFiles);
+void writeHeader(FILE *out_fp, vector_t studentList);
+int XOREncryptDatabase(FILE *database_fp, long startPos);
+int shiftEncryptDatabase(FILE *database_fp, long startPos);
+int huffmanCompressDatabase(FILE **database_fp, long startPos,
+                            char *out_file);
+int XORDecryptDatabase(FILE **database_fp, char *outFile);
+int shiftDecryptDatabase(FILE **database_fp, char *outFile);
+int huffmanDecompressDatabase(FILE **database_fp, char *outFile);
+void readAssessment(assessment_t *assessment, FILE *in_fp);
+void readStudentAssessment(student_t *student, FILE *in_fp);
+void readStudent(student_t *student, FILE *in_fp);
+void readHeader(FILE *database_fp, vector_t *studentList);
+void readDatabaseFp(FILE *database_fp, vector_t *filenames);
+void separateFilesToMemory(FILE *database_fp, vector_t filenames,
+                           vector_t *files);
+void separateFiles(FILE *database_fp, vector_t filenames);
+int unpackageDatabaseFilesContents(FILE *database_fp, char *files);
+int checkIfFileExists(char *filename);
+
+/*****************************************************************************
+ * Given a filename, this function will check if the file exists.
+ * Input:
+ *   filename - The name of the file to check if it exists.
+ * Return:
+ *   1 - The file does exist.
+ *   0 - The file does not exist.
+*****************************************************************************/
+int checkIfFileExists(char *filename)
 {
-    printf("[%d] %s\n", index, (char *)value);
+    FILE *filep;
+    if ((filep = fopen(filename, "r")))
+    {
+        fclose(filep);
+        return 1;
+    }
+    return 0;
 }
 
-void copy_file(FILE *dest, FILE *src)
+/*****************************************************************************
+ * This function copys the bytes of one file pointer to another until
+ * end-of-file is reached from the source file.
+ * Input:
+ *   dest - The destination file pointer to copy the bytes to.
+ *   src - The source file pointer of the bytes to be copied from.
+ * Post:
+ *   dest - Will have all the bytes in src appended to it.
+*****************************************************************************/
+void copyFile(FILE *dest, FILE *src)
 {
     int buffer;
     while ((buffer = getc(src)) != EOF)
@@ -26,15 +85,25 @@ void copy_file(FILE *dest, FILE *src)
     }
 }
 
-void copy_header(FILE *dest, FILE *src)
+/*****************************************************************************
+ * This function copys the header information of a file only. It seeks the
+ * end of the header to get the header length, then copies until that
+ * length is exceeded.
+ * Input:
+ *   dest - The destination file pointer to copy the header to.
+ *   src - The source file pointer of the header to be copied from.
+ * Post:
+ *   dest - Will have the header bytes in src appended to it.
+*****************************************************************************/
+void copyHeader(FILE *dest, FILE *src)
 {
     /* Seek the end of the header */
     vector_t temp;
     initVector(&temp, sizeof(char) * 255);
-    read_header(src, &temp);
+    readHeader(src, &temp);
     freeVector(temp);
-    char bit_flag;
-    fread(&bit_flag, sizeof(char), 1, src);
+    char bitFlag;
+    fread(&bitFlag, sizeof(char), 1, src);
 
     /* Get where header ends */
     long pos = ftell(src);
@@ -48,149 +117,240 @@ void copy_header(FILE *dest, FILE *src)
     }
 }
 
-void write_assessment(assessment_t *assessment, FILE *out_fp)
+/*****************************************************************************
+ * This function writes an assessment struct to a file pointer.
+ * Input:
+ *   assessmentp - Pointer to the assessment to be written
+ *   out_fp - File pointer to write the assessment to.
+ * Post:
+ *   out_fp - Will have assessment written to it.
+*****************************************************************************/
+void writeAssessment(assessment_t *assessmentp, FILE *out_fp)
 {
     /* Write the mark */
-    fwrite(&assessment->mark, sizeof(int), 1, out_fp);
+    fwrite(&assessmentp->mark, sizeof(int), 1, out_fp);
 
     /* Write the subject name */
     unsigned char len;
-    len = strlen(assessment->subject);
+    len = strlen(assessmentp->subject);
     fwrite(&len, sizeof(unsigned char), 1, out_fp);
-    fwrite(assessment->subject, sizeof(char), len, out_fp);
+    fwrite(assessmentp->subject, sizeof(char), len, out_fp);
 
     /* Write the filename */
-    len = strlen(assessment->filename);
+    len = strlen(assessmentp->filename);
     fwrite(&len, sizeof(unsigned char), 1, out_fp);
-    fwrite(assessment->filename, sizeof(char), len, out_fp);
+    fwrite(assessmentp->filename, sizeof(char), len, out_fp);
 }
 
-void write_student_assessment(student_t *student, FILE *out_fp)
+/*****************************************************************************
+ * This function loops over a students assessment to be written.
+ * Input:
+ *   studentp - Pointer to the student whos assessment is to be written
+ *   out_fp - File pointer to write the students assessments to.
+ * Post:
+ *   out_fp - Will have the assessments written to it.
+*****************************************************************************/
+void writeStudentAssessment(student_t *studentp, FILE *out_fp)
 {
     /* Write number of assessments */
-    fwrite(&student->assessments.size, sizeof(unsigned char), 1, out_fp);
+    fwrite(&studentp->assessments.size, sizeof(unsigned char), 1, out_fp);
 
-    /* Write assessments */
+    /* Write all assessments under student */
     int i;
-    for (i = 0; i < student->assessments.size; i++)
+    for (i = 0; i < studentp->assessments.size; i++)
     {
-        write_assessment(vectorGet(student->assessments, i), out_fp);
+        writeAssessment(vectorGet(studentp->assessments, i), out_fp);
     }
 }
 
-void write_student(student_t *student, FILE *out_fp)
+/*****************************************************************************
+ * This function writes a student to the file pointer.
+ * Input:
+ *   studentp - Pointer to the student who is to be written
+ *   out_fp - File pointer to write the student to.
+ * Post:
+ *   out_fp - Will have the student written to it.
+*****************************************************************************/
+void writeStudent(student_t *studentp, FILE *out_fp)
 {
     /* Write the studentId */
-    fwrite(&student->studentId, sizeof(int), 1, out_fp);
+    fwrite(&studentp->studentId, sizeof(int), 1, out_fp);
 
     /* Write the student first name */
     unsigned char len;
-    len = strlen(student->firstName);
+    len = strlen(studentp->firstName);
     fwrite(&len, sizeof(unsigned char), 1, out_fp);
-    fwrite(student->firstName, sizeof(char), len, out_fp);
+    fwrite(studentp->firstName, sizeof(char), len, out_fp);
 
     /* Write the student last name */
-    len = strlen(student->lastName);
+    len = strlen(studentp->lastName);
     fwrite(&len, sizeof(unsigned char), 1, out_fp);
-    fwrite(student->lastName, sizeof(char), len, out_fp);
+    fwrite(studentp->lastName, sizeof(char), len, out_fp);
 
     /* Write student assessments */
-    write_student_assessment(student, out_fp);
+    writeStudentAssessment(studentp, out_fp);
 }
 
-void write_file_contents(char *filename, FILE *out_fp)
+/*****************************************************************************
+ * This function writes the actual contents of an assessment file to a file
+ * pointer.
+ * Input:
+ *   filename - Pointer to the student who is to be written
+ *   out_fp - File pointer to write the student to.
+ * Post:
+ *   out_fp - Will have the student written to it.
+*****************************************************************************/
+void writeFileContents(char *filename, FILE *out_fp)
 {
+    /* Open the file and determine its size. Write its size to the file */
     FILE *fp;
-
     fp = fopen(filename, "rb");
-
     fseek(fp, 0L, SEEK_END);
-    long file_size = ftell(fp);
+    long fileSize = ftell(fp);
     rewind(fp);
+    fwrite(&fileSize, sizeof(long), 1, out_fp);
 
-    printf("WRITE file size: %ld\n", file_size);
+#ifdef DEBUG
+    printf("WRITE file size: %ld\n", fileSize);
+#endif
 
-    fwrite(&file_size, sizeof(long), 1, out_fp);
-
+    /* Now write each byte in the given file to the file pointer. */
     int buffer;
     while ((buffer = fgetc(fp)) != EOF)
     {
         fputc(buffer, out_fp);
     }
-
     fclose(fp);
 }
 
-void write_file_t_contents(file_t file, FILE *out_fp)
+/*****************************************************************************
+ * This function writes the actual contents of a file_t to a file
+ * pointer.
+ * Input:
+ *   file - file_t struct to be written to the file.
+ *   out_fp - File pointer to write to.
+ * Post:
+ *   out_fp - Will have the file written to it.
+*****************************************************************************/
+void writeFileTContents(file_t file, FILE *out_fp)
 {
-
+#ifdef DEBUG
     printf("WRITE file size: %ld\n", file.size);
+#endif
 
+    /* Write the file size and the actual bytes of the file. */
     fwrite(&file.size, sizeof(long), 1, out_fp);
     fwrite(&file.bytes, sizeof(char), file.size, out_fp);
 }
 
-int compare_filenames(const void *ap, const void *bp)
+/*****************************************************************************
+ * This function compares a file_t and a filename to determine if they match.
+ * Input:
+ *   ap - Pointer to a file_t struct.
+ *   bp - Pointer to a string of a filename.
+ * Return:
+ *   0 - The strings are equal.
+ *   non-zero - The string are not equal.
+*****************************************************************************/
+int compareFilenames(const void *ap, const void *bp)
 {
+    /* Type cast both void pointers to their types. */
     file_t *fileA = (file_t *)ap;
     char *filename = (char *)bp;
+
+    /* String compare the names to see if they are equal. */
     return strcmp(fileA->filename, filename);
 }
 
-void write_files(FILE *out_fp, vector_t student_list, vector_t existingFiles)
+/*****************************************************************************
+ * This function writes the actual assesment files.
+ * Input:
+ *   out_fp - File pointer to write to.
+ *   studentList - The list of students and their assessments.
+ *   existingFiles - The file existing in the database already.
+ * Return:
+ *   The file pointer out_fp will now contain the content of the assessment
+ *   files.
+*****************************************************************************/
+void writeFiles(FILE *out_fp, vector_t studentList, vector_t existingFiles)
 {
 #ifdef DEBUG
     printf("Start write files\n");
 #endif
 
+    /* Loop over the students in the list. */
     int i, j;
-    for (i = 0; i < student_list.size; i++)
+    for (i = 0; i < studentList.size; i++)
     {
-        student_t *student = vectorGet(student_list, i);
+        /* Get the student and loop over their assessments. */
+        student_t *student = vectorGet(studentList, i);
         for (j = 0; j < student->assessments.size; j++)
         {
-
-            char filename[MAX_FILENAME_SIZE];
             assessment_t *assessment = vectorGet(student->assessments, j);
-            strcpy(filename, assessment->filename);
 
 #ifdef DEBUG
-            printf("Writing file: %s\n", filename);
+            printf("Writing file: %s\n", assessment->filename);
 #endif
 
             /* Check if file exists in existing files */
-            int pos = search(existingFiles, compare_filenames, filename);
-
+            int pos = search(existingFiles, compareFilenames,
+                             assessment->filename);
             if (pos == -1)
-                write_file_contents(filename, out_fp);
+            {
+                /* If the file does not exist in the database already,
+                   write the file using the file in the drive. */
+                writeFileContents(assessment->filename, out_fp);
+            }
             else
             {
+                /* Otherwise, write it from the existing database files. */
                 file_t *file = vectorGet(existingFiles, pos);
-                write_file_t_contents(*file, out_fp);
+                writeFileTContents(*file, out_fp);
             }
         }
     }
 }
 
-void write_header(FILE *out_fp, vector_t student_list)
+/*****************************************************************************
+ * This function writes file header. This includes the student details and
+ * their assessment details.
+ * Input:
+ *   out_fp - File pointer to write to.
+ *   studentList - The list of students and their assessments.
+ * Return:
+ *   The file pointer out_fp will now contain the students and their 
+ *   assessments information.
+*****************************************************************************/
+void writeHeader(FILE *out_fp, vector_t studentList)
 {
 #ifdef DEBUG
     printf("Start write header\n");
 #endif
 
     /* Write number of students */
-    fwrite(&student_list.size, sizeof(unsigned char), 1, out_fp);
+    fwrite(&studentList.size, sizeof(unsigned char), 1, out_fp);
 
-    /* Write students */
+    /* Loop over each student and write their details. */
     int i;
-    for (i = 0; i < student_list.size; i++)
+    for (i = 0; i < studentList.size; i++)
     {
-        write_student(vectorGet(student_list, i), out_fp);
+        writeStudent(vectorGet(studentList, i), out_fp);
     }
 }
 
-int xor_encrypt_database(FILE *database_fp, long start_pos)
+/*****************************************************************************
+ * This function XOR encrypts contents of a file using a temporary file. 
+ * It also asks the user for the password to encrypt with.
+ * Input:
+ *   database_fp - File pointer to encrypt.
+ *   startPos - Position to start the encryption from.
+ * Return:
+ *   0 - Success
+ *   1 - Failure
+*****************************************************************************/
+int XOREncryptDatabase(FILE *database_fp, long startPos)
 {
+    /* Create a temp file to store the encrypted bytes temporary */
     FILE *temp_fp;
     temp_fp = fopen("encrypted.bin.tmp", "wb+");
     if (temp_fp == NULL)
@@ -200,8 +360,9 @@ int xor_encrypt_database(FILE *database_fp, long start_pos)
     }
 
     /* Goto where the database files begin */
-    fseek(database_fp, start_pos, SEEK_SET);
+    fseek(database_fp, startPos, SEEK_SET);
 
+    /* Ask the user for the password encrypt with */
     printf("Enter the password to encrypt with>");
     char key[255];
     scanf("%s", key);
@@ -211,11 +372,11 @@ int xor_encrypt_database(FILE *database_fp, long start_pos)
     char hashed_key[HASH_SIZE];
     secureHashEncrypt(key, hashed_key);
 
-    /* encrypt database to a temp file */
+    /* XOR encrypt database to a temp file */
     XOR_cipher(database_fp, temp_fp, hashed_key);
 
     /* Goto where the database files begin */
-    fseek(database_fp, start_pos, SEEK_SET);
+    fseek(database_fp, startPos, SEEK_SET);
 
     /* Get and write the hashed password 
            using password check initial conditions */
@@ -224,16 +385,27 @@ int xor_encrypt_database(FILE *database_fp, long start_pos)
 
     /* Now copy the encrypted temp database files to the database */
     fseek(temp_fp, 0, SEEK_SET);
-    copy_file(database_fp, temp_fp);
+    copyFile(database_fp, temp_fp);
 
+    /* Close the temp file and remove it. */
     fclose(temp_fp);
     remove("encrypted.bin.tmp");
 
     return 0;
 }
 
-int shift_encrypt_database(FILE *database_fp, long start_pos)
+/*****************************************************************************
+ * This function Shift encrypts contents of a file using a temporary file. 
+ * Input:
+ *   database_fp - File pointer to encrypt.
+ *   startPos - Position to start the encryption from.
+ * Return:
+ *   0 - Success
+ *   1 - Failure
+*****************************************************************************/
+int shiftEncryptDatabase(FILE *database_fp, long startPos)
 {
+    /* Create a temp file to store the encrypted bytes temporary */
     FILE *temp_fp;
     temp_fp = fopen("encrypted.bin.tmp", "wb+");
     if (temp_fp == NULL)
@@ -243,24 +415,40 @@ int shift_encrypt_database(FILE *database_fp, long start_pos)
     }
 
     /* Goto where the database files begin */
-    fseek(database_fp, start_pos, SEEK_SET);
+    fseek(database_fp, startPos, SEEK_SET);
 
-    /* Encrypt database to a temp file */
+    /* Shift encrypt database to a temp file */
     shift_encrypt(database_fp, temp_fp);
 
     /* Now copy the encrypted temp database files to the database */
-    fseek(database_fp, start_pos, SEEK_SET);
+    fseek(database_fp, startPos, SEEK_SET);
     fseek(temp_fp, 0, SEEK_SET);
-    copy_file(database_fp, temp_fp);
+    copyFile(database_fp, temp_fp);
 
+    /* Close the temp file and remove it. */
     fclose(temp_fp);
     remove("encrypted.bin.tmp");
 
     return 0;
 }
 
-int huffman_compress_database(FILE **database_fp, long start_pos, char *out_file)
+/*****************************************************************************
+ * This function compressions the contents of a file using huffman encoding 
+ * via a temporary file. Because the size is expected to differ, it replaces
+ * the existing file by renaming it.
+ * Input:
+ *   database_fpp - Pointer to a file pointer to encrypt. As we need to swap
+ *                  it with the new file pointer.
+ *   startPos - Position to start the encryption from.
+ *   outFile - The name of the file to swap it with.
+ * Return:
+ *   0 - Success
+ *   1 - Failure
+*****************************************************************************/
+int huffmanCompressDatabase(FILE **database_fpp, long startPos,
+                            char *outFile)
 {
+    /* Create a temp file to store the compressed bytes */
     FILE *temp_fp;
     temp_fp = fopen("compressed.bin.tmp", "wb+");
     if (temp_fp == NULL)
@@ -270,383 +458,609 @@ int huffman_compress_database(FILE **database_fp, long start_pos, char *out_file
     }
 
     /* Goto where the database files begin */
-    fseek(*database_fp, 0, SEEK_SET);
-    copy_header(temp_fp, *database_fp);
+    fseek(*database_fpp, 0, SEEK_SET);
+    copyHeader(temp_fp, *database_fpp);
     /* Goto where the database files begin */
-    fseek(*database_fp, start_pos, SEEK_SET);
-    fseek(temp_fp, start_pos, SEEK_SET);
+    fseek(*database_fpp, startPos, SEEK_SET);
+    fseek(temp_fp, startPos, SEEK_SET);
 
-    /* Encrypt database to a temp file */
-    huffmanCompress(*database_fp, temp_fp);
+    /* Compress the database to a temp file */
+    huffmanCompress(*database_fpp, temp_fp);
 
-    /* Now swap the compressed database with the existing database */
-    fclose(*database_fp);
-    *database_fp = temp_fp;
-    remove(out_file);
-    rename("compressed.bin.tmp", out_file);
+    /* Now swap the compressed database with the existing database
+       by closing the existing, removing and renaming it. */
+    fclose(*database_fpp);
+    *database_fpp = temp_fp;
+    remove(outFile);
+    rename("compressed.bin.tmp", outFile);
 
     return 1;
 }
 
-int write_database(vector_t student_list, char *out_file, char bit_flag, vector_t existingFiles)
+/*****************************************************************************
+ * This function writes the entire database using the students list, new 
+ * files and the files already existing in the database..
+ * Input:
+ *   studentList - List of students and their assessments.
+ *   outFile - The name of the file to swap it with.
+ *   bitFlag - Bit flag containing options for encryptions and compression.
+ *   existingFiles - List of all the files existing in the database already.
+ * Return:
+ *   0 - Success
+ *   1 - Failure
+*****************************************************************************/
+int writeDatabase(vector_t studentList, char *outFile, char bitFlag,
+                  vector_t existingFiles)
 {
 #ifdef DEBUG
     printf("Start write database\n");
 #endif
 
     FILE *out_fp;
-    out_fp = fopen(out_file, "wb+");
+    out_fp = fopen(outFile, "wb+");
     if (out_fp == NULL)
         return 1;
 
     /* Write all database information */
-    write_header(out_fp, student_list);
+    writeHeader(out_fp, studentList);
 
-    /* Write bit_flag */
-    fwrite(&bit_flag, sizeof(char), 1, out_fp);
+    /* Write the bit flag */
+    fwrite(&bitFlag, sizeof(char), 1, out_fp);
 
     /* Get pos of start of files */
     long file_pos = ftell(out_fp);
 
     /* Write files to be saved to the database */
-    write_files(out_fp, student_list, existingFiles);
-
-    /* If user has opted XOR encryption, encrypt database */
-    if (bit_flag & XOR_ENCRYPT)
-        xor_encrypt_database(out_fp, file_pos);
-
-    /* If user has opted shift encryption, encrypt database */
-    if (bit_flag & SHIFT_ENCRYPT)
-        shift_encrypt_database(out_fp, file_pos);
+    writeFiles(out_fp, studentList, existingFiles);
 
     /* If user has opted huffman compress, compress database */
-    if (bit_flag & HUFFMAN_COMPRESS)
-        huffman_compress_database(&out_fp, file_pos, out_file);
+    if (bitFlag & HUFFMAN_COMPRESS)
+        huffmanCompressDatabase(&out_fp, file_pos, outFile);
 
     /* If user has opted run length compress, compress database */
-    if (bit_flag & RUN_COMPRESS)
+    if (bitFlag & RUN_COMPRESS)
         ;
+
+    /* If user has opted shift encryption, encrypt database */
+    if (bitFlag & SHIFT_ENCRYPT)
+        shiftEncryptDatabase(out_fp, file_pos);
+
+    /* If user has opted XOR encryption, encrypt database */
+    if (bitFlag & XOR_ENCRYPT)
+        XOREncryptDatabase(out_fp, file_pos);
 
     fclose(out_fp);
 
     return 0;
 }
 
-void read_assessment(assessment_t *assessment, FILE *in_fp)
+/*****************************************************************************
+ * This function reads an assessments informatiom a file pointer.
+ * Input:
+ *   assessmentp - Pointer to the assessment to be read to.
+ *   in_fp - File pointer to read the assessment from.
+ * Post:
+ *   assessmentp will contain the assessment information.
+*****************************************************************************/
+void readAssessment(assessment_t *assessmentp, FILE *in_fp)
 {
-    /* Write the mark */
-    fread(&assessment->mark, sizeof(int), 1, in_fp);
+    /* Read the mark */
+    fread(&assessmentp->mark, sizeof(int), 1, in_fp);
 
-    /* Write the subject name */
+    /* Read the subject name */
     unsigned char len;
     fread(&len, sizeof(unsigned char), 1, in_fp);
-    fread(assessment->subject, sizeof(char), len, in_fp);
-    assessment->subject[len] = '\0';
+    fread(assessmentp->subject, sizeof(char), len, in_fp);
+    assessmentp->subject[len] = '\0';
 
-    /* Write the filename */
+    /* Read the filename */
     fread(&len, sizeof(unsigned char), 1, in_fp);
-    fread(assessment->filename, sizeof(char), len, in_fp);
-    assessment->filename[len] = '\0';
+    fread(assessmentp->filename, sizeof(char), len, in_fp);
+    assessmentp->filename[len] = '\0';
 }
 
-void read_student_assessment(student_t *student, FILE *in_fp)
+/*****************************************************************************
+ * This function reads all the assessments under a student.
+ * Input:
+ *   studentp - Pointer to the student whos assessments are being read.
+ *   in_fp - File pointer to read the assessments from.
+ * Post:
+ *   studentp will contain the all their assessment information.
+*****************************************************************************/
+void readStudentAssessment(student_t *studentp, FILE *in_fp)
 {
-    unsigned char num_assessments;
     /* Read number of assessments */
+    unsigned char num_assessments;
     fread(&num_assessments, sizeof(unsigned char), 1, in_fp);
 
-    /* Read assessments */
+    /* Loop over and read all assessments. */
     int i;
     for (i = 0; i < num_assessments; i++)
     {
+        /* Read the assessment. */
         assessment_t assessment;
-        /* TODO: initAssessment... initStudent(&student); */
-        read_assessment(&assessment, in_fp);
+        readAssessment(&assessment, in_fp);
 
 #ifdef DEBUG
         printf("READ assessment file: %s\n", assessment.filename);
 #endif
 
-        vectorPushBack(&student->assessments, &assessment);
+        /* Push the assessment into the student. */
+        vectorPushBack(&studentp->assessments, &assessment);
     }
 }
 
-void read_student(student_t *student, FILE *in_fp)
+/*****************************************************************************
+ * This function reads a students information.
+ * Input:
+ *   studentp - Pointer to the student being read.
+ *   in_fp - File pointer to read the student from.
+ * Post:
+ *   studentp will contain the all their information and their assessments.
+*****************************************************************************/
+void readStudent(student_t *studentp, FILE *in_fp)
 {
     /* Write the studentId */
-    fread(&student->studentId, sizeof(int), 1, in_fp);
+    fread(&studentp->studentId, sizeof(int), 1, in_fp);
 
     /* Read the student first name */
     unsigned char len;
     fread(&len, sizeof(unsigned char), 1, in_fp);
-    fread(student->firstName, sizeof(char), len, in_fp);
-    student->firstName[len] = '\0';
+    fread(studentp->firstName, sizeof(char), len, in_fp);
+    studentp->firstName[len] = '\0';
 
-    /* Write the student last name */
+    /* Read the student last name */
     fread(&len, sizeof(unsigned char), 1, in_fp);
-    fread(student->lastName, sizeof(char), len, in_fp);
-    student->lastName[len] = '\0';
+    fread(studentp->lastName, sizeof(char), len, in_fp);
+    studentp->lastName[len] = '\0';
 
-    /* Write student assessments */
-    read_student_assessment(student, in_fp);
+    /* Read student assessments */
+    readStudentAssessment(studentp, in_fp);
 }
 
-void read_header(FILE *database_fp, vector_t *student_list)
+/*****************************************************************************
+ * This function reads the entire header from a file. This includes all 
+ * students and their assessment information.
+ * Input:
+ *   database_fp - File pointer to the database to be read from.
+ *   studentList - List to read the students to.
+ * Post:
+ *   studentList will contain all the students and their information from
+ *   the database.
+*****************************************************************************/
+void readHeader(FILE *database_fp, vector_t *studentList)
 {
     /* Read number of students */
-    unsigned char num_students;
-    fread(&num_students, sizeof(unsigned char), 1, database_fp);
+    unsigned char numStudents;
+    fread(&numStudents, sizeof(unsigned char), 1, database_fp);
 
 #ifdef DEBUG
     printf("READ File count: %d\n", num_students);
 #endif
 
+    /* Loop over the number of students and read each one. */
     int i;
-    for (i = 0; i < num_students; i++)
+    for (i = 0; i < numStudents; i++)
     {
+        /* Initialise and read the student. */
         student_t student;
         initStudent(&student);
-        read_student(&student, database_fp);
+        readStudent(&student, database_fp);
 
 #ifdef DEBUG
         printf("READ Student ID: %d\n", student.studentId);
 #endif
 
-        vectorPushBack(student_list, &student);
+        /* Push the student just read onto the studentList. */
+        vectorPushBack(studentList, &student);
     }
 }
 
-void read_database_fp(FILE *database_fp, vector_t *filenames)
+/*****************************************************************************
+ * This function initialises a studentList and then reads the header of a 
+ * database into that studentList.
+ * Input:
+ *   database_fp - File pointer to the database to be read from.
+ *   studentList - List to read the students to.
+ * Post:
+ *   studentList will be initialised and will contain all the students and 
+ *   their information from the database.
+*****************************************************************************/
+void readDatabaseFp(FILE *database_fp, vector_t *studentList)
 {
-    /* Read all the database information */
-    initVector(filenames, sizeof(char) * 255);
-    read_header(database_fp, filenames);
+    /* Initialise the student list. */
+    /* TODO: This was sizeof(char) * 255 */
+    initVector(studentList, sizeof(student_t));
+    /* Read all the database information. */
+    readHeader(database_fp, studentList);
 }
 
-int read_database(char *database_file, vector_t *filenames)
+/*****************************************************************************
+ * This function reads a file by creating a file pointer then calls 
+ * readDatabaseFp() to read it.
+ * Input:
+ *   databaseFile - The name of the file to be opened and read.
+ *   studentList - List to read the students to.
+ * Post:
+ *   studentList will contain all the students and their information from
+ *   the database.
+ * Return:
+ *   0 - Success
+ *   1 - Failure
+*****************************************************************************/
+int readDatabase(char *databaseFile, vector_t *studentList)
 {
+    /* Create a file pointer to the database file. */
     FILE *database_fp;
-    database_fp = fopen(database_file, "rb");
-    read_database_fp(database_fp, filenames);
+    database_fp = fopen(databaseFile, "rb");
+    if (database_fp == NULL)
+        return 1;
+
+    /* Read all the database information. */
+    readDatabaseFp(database_fp, studentList);
 
     return 0;
 }
 
-int read_database_to_memory(char *database_file, vector_t *files)
+/*****************************************************************************
+ * This function reads a database file to memory using the file_t struct.
+ * Input:
+ *   databaseFile - The name of the file to be opened and read.
+ *   files - List of file_t to store the file information to.
+ * Post:
+ *   files - Will contain a file_t for each file in databaseFile database.
+ * Return:
+ *   0 - Success
+ *   1 - Failure
+*****************************************************************************/
+int readDatabaseToMemory(char *databaseFile, vector_t *files)
 {
-    /* Read all the database information */
+    /* Create a new database and read all the student information into list */
     FILE *database_fp;
-    vector_t student_list;
-    database_fp = fopen(database_file, "rb");
-    read_database_fp(database_fp, &student_list);
+    vector_t studentList;
+    database_fp = fopen(databaseFile, "rb");
+    readDatabaseFp(database_fp, &studentList);
+
+    /* Retrieve just the filenames from the previously read student list. */
     vector_t filenames;
-    getAllFilenames(student_list, &filenames);
+    getAllFilenames(studentList, &filenames);
 
-    unpackage_database_files_contents(database_fp, "database.bin.tmp");
-    /* fclose(database_fp); */
+    /* Unpackage all database files to a temp file
+       i.e. decompress and decrypt them into temp file. */
+    if (unpackageDatabaseFilesContents(database_fp, TEMP_DATABASE_NAME))
+    {
+        fclose(database_fp);
+        return 1;
+    }
 
-    FILE *database_temp_fp;
-    database_temp_fp = fopen("database.bin.tmp", "rb");
-    separate_files_to_memory(database_temp_fp, filenames, files);
-    fclose(database_temp_fp);
+    /* Open the unpackaged temp database file. */
+    FILE *databaseTemp_fp;
+    databaseTemp_fp = fopen(TEMP_DATABASE_NAME, "rb");
+    {
+        return 1;
+    }
+
+    /* Separate the content of the temp database file into 
+       a list of file_t. */
+    separateFilesToMemory(databaseTemp_fp, filenames, files);
+
+    /* Close and remove temp database file. */
+    fclose(databaseTemp_fp);
+    remove(TEMP_DATABASE_NAME);
 
     return 0;
 }
 
-void separate_files_to_memory(FILE *database_fp, vector_t filenames, vector_t *files)
+/*****************************************************************************
+ * This function separates files in a database into list of file_t in memory
+ * Input:
+ *   database_fp - File pointer to the database to be read from.
+ *   filenames - List of the file names to be read in the database.
+ *   files - List of file_t to store the file information to.
+ * Post:
+ *   files - Will contain a file_t for each file in database_fp database 
+ *           file pointer.
+*****************************************************************************/
+void separateFilesToMemory(FILE *database_fp, vector_t filenames, vector_t *files)
 {
+    /* Loop over each file in the filename list */
     int i;
     for (i = 0; i < filenames.size; i++)
     {
+        /* Read the size of the current file being read. */
         file_t file;
         fread(&file.size, sizeof(long), 1, database_fp);
 
+#ifdef DEBUG
         printf("To memory file size: %ld\n", file.size);
+#endif
 
+        /* Set the filename using the name from the list of filenames. */
         strcpy(file.filename, (char *)vectorGet(filenames, i));
 
 #ifdef DEBUG
         printf("To memory READ %s size: %ld\n", file.filename, file.size);
 #endif
 
+        /* Read the bytes of the size read into file.bytes. 
+           i.e. read the file contents into memory. */
         file.bytes = malloc(sizeof(char) * file.size);
         fread(file.bytes, sizeof(char), file.size, database_fp);
     }
 }
 
-void separate_files(FILE *database_fp, vector_t filenames)
+/*****************************************************************************
+ * This function separates the packaged files in a database by rewriting 
+ * each one to a new file.
+ * Input:
+ *   database_fp - File pointer to the database to be read from.
+ *   filenames - List of the file names to be read in the database.
+ * Post:
+ *   The packaged files in database_fp will be created in the current
+ *   directory.
+*****************************************************************************/
+void separateFiles(FILE *database_fp, vector_t filenames)
 {
+    /* Loop over each file in the filename list */
     int i;
     for (i = 0; i < filenames.size; i++)
     {
-        long file_size;
-        fread(&file_size, sizeof(long), 1, database_fp);
+        /* Read the size of the current file being read. */
+        long fileSize;
+        fread(&fileSize, sizeof(long), 1, database_fp);
 
-        printf("file size: %ld\n", file_size);
-
+        /* Copy the filename from the list so that
+           it is easier to work with. */
         char filename[MAX_FILENAME_SIZE];
         strcpy(filename, (char *)vectorGet(filenames, i));
 
 #ifdef DEBUG
-        printf("READ %s size: %ld\n", filename, file_size);
+        printf("READ %s size: %ld\n", filename, fileSize);
 #endif
 
+        /* Create (or open and overwrite) the filename from the list */
         FILE *file_fp = fopen(filename, "wb+");
         if (file_fp == NULL)
         {
-            printf("error opening file\n");
+            printf("error opening file %s\n", filename);
         }
+
+        /* Now read each byte into the new file from the database. */
         int buffer;
-        while (file_size--)
+        while (fileSize--)
         {
             buffer = fgetc(database_fp);
             fputc(buffer, file_fp);
         }
+
+        /* Close the new file. */
         fclose(file_fp);
     }
 }
 
-int unpackage_database_files(char *database_file, char *dir)
+/*****************************************************************************
+ * This function extracts all assessment files to the current directory. 
+ * This includes unpackaging (decrypt and decompress) the assessment files
+ * before extraction.
+ * Input:
+ *   databaseFile - The name of the database to extract the file from.
+ * Post:
+ *   The packaged files in database_fp will be created in the current
+ *   directory.
+*****************************************************************************/
+int unpackageDatabaseFiles(char *databaseFile)
 {
+    /* Open the database file. */
     FILE *database_fp;
-    database_fp = fopen(database_file, "rb");
-    vector_t student_list;
-    read_database_fp(database_fp, &student_list);
-    vector_t filenames;
-    getAllFilenames(student_list, &filenames);
+    database_fp = fopen(databaseFile, "rb");
+    if (database_fp == NULL)
+    {
+        printf("Cannot read database: %s\n", databaseFile);
+    }
 
-    if (unpackage_database_files_contents(database_fp, "database.bin.tmp"))
+    /* Read the student list to get all the filenames. */
+    vector_t studentList;
+    readDatabaseFp(database_fp, &studentList);
+    vector_t filenames;
+    getAllFilenames(studentList, &filenames);
+
+    /* Unpackage the database files i.e. decrypt and/or decompress them */
+    if (unpackageDatabaseFilesContents(database_fp, TEMP_DATABASE_NAME))
     {
         return 1;
     }
 
-    FILE *files_fp = fopen("database.bin.tmp", "rb");
-    separate_files(files_fp, filenames);
+    /* Unpackage the database files i.e. decrypt and/or decompress them */
+    FILE *files_fp = fopen(TEMP_DATABASE_NAME, "rb");
+    if (database_fp == NULL)
+    {
+        printf("There was a problem reading the unpackaged database.\n");
+        return 1;
+    }
+
+    /* Now separate the grouped files into new files. */
+    separateFiles(files_fp, filenames);
+
+    /* close the unpackaged database and remove it. */
     fclose(files_fp);
+    remove(TEMP_DATABASE_NAME);
     return 0;
 }
 
-int unpackage_database_files_contents(FILE *database_fp, char *files)
+/*****************************************************************************
+ * This function XOR decrypts contents of a file using a temporary file. 
+ * It also asks the user for the password to decrypt with and ensure it is
+ * the correct password.
+ * Input:
+ *   database_fpp - Pointer to a file pointer to decrypt.
+ *   outFile - The name of the file to replace with the decrypted version.
+ * Return:
+ *   0 - Success
+ *   1 - Failure
+*****************************************************************************/
+int XORDecryptDatabase(FILE **database_fpp, char *outFile)
+{
+    /* Create a temp file to store the decrypted bytes temporary */
+    FILE *temp_fp;
+    char new_name[] = "decrypt.bin.tmp";
+    temp_fp = fopen(new_name, "wb+");
+    if (temp_fp == NULL)
+    {
+        printf("Error creating temp file");
+        return 1;
+    }
+
+    /* Goto where the database files begin */
+    fseek(*database_fpp, 0, SEEK_SET);
+
+    printf("This database is encrypted\nEnter you password>");
+    char key[255];
+    scanf("%s", key);
+
+    /* Get the hashed key for password checking.
+           Compare it with the one in the database. 
+           This will tell us if the user has entered
+           The correct password. */
+    char hashed_key[HASH_SIZE];
+    secureHashPasswordCheck(key, hashed_key);
+    char stored_hash_key[HASH_SIZE];
+    fread(stored_hash_key, sizeof(unsigned char), HASH_SIZE, *database_fpp);
+    if (strcmp(hashed_key, stored_hash_key) != 0)
+    {
+        printf("You have entered the wrong password.\n");
+        return 1;
+    }
+    printf("You have entered the correct password.\n");
+
+    /* Decrypt the database to a temp file.
+           Using the hashed encrypt password. */
+    secureHashEncrypt(key, hashed_key);
+    XOR_cipher(*database_fpp, temp_fp, hashed_key);
+
+    /* Swap the existing database with the temp database.
+       By removing it and changing the pointer. */
+    fclose(*database_fpp);
+    remove(outFile);
+    *database_fpp = temp_fp;
+    rename(new_name, outFile);
+    return 0;
+}
+
+/*****************************************************************************
+ * This function shift decrypts contents of a file using a temporary file.
+ * Input:
+ *   database_fpp - Pointer to a file pointer to decrypt.
+ *   outFile - The name of the file to replace with the decrypted version.
+ * Return:
+ *   0 - Success
+ *   1 - Failure
+*****************************************************************************/
+int shiftDecryptDatabase(FILE **database_fpp, char *outFile)
+{
+    /* Create a temp file to store the decrypted bytes temporary */
+    FILE *temp_fp;
+    char new_name[] = "decrypt.bin.tmp";
+    temp_fp = fopen(new_name, "wb+");
+    if (temp_fp == NULL)
+    {
+        printf("Error creating temp file");
+        return 1;
+    }
+
+    /* Goto where the database files begin */
+    fseek(*database_fpp, 0, SEEK_SET);
+
+    /* Decrypt the database to a temp file. */
+    shift_decrypt(*database_fpp, temp_fp);
+
+    /* Swap the existing database with the temp database.
+       By removing it and changing the pointer. */
+    fclose(*database_fpp);
+    remove(outFile);
+    *database_fpp = temp_fp;
+    rename(new_name, outFile);
+    return 0;
+}
+
+/*****************************************************************************
+ * This function huffman decompresses the contents of a file using a 
+ * temporary file.
+ * Input:
+ *   database_fpp - Pointer to a file pointer to decompress.
+ *   outFile - The name of the file to replace with the decrypted version.
+ * Return:
+ *   0 - Success
+ *   1 - Failure
+*****************************************************************************/
+int huffmanDecompressDatabase(FILE **database_fpp, char *outFile)
+{
+    /* Create a temp file to store the decompressed bytes temporary */
+    FILE *temp_fp;
+    char new_name[] = "decompress.bin.tmp";
+    temp_fp = fopen(new_name, "wb+");
+    if (temp_fp == NULL)
+    {
+        printf("Error creating temp file");
+        return 1;
+    }
+
+    /* Goto where the database files begin */
+    fseek(*database_fpp, 0, SEEK_SET);
+
+    /* Decompress the database to a temp file. */
+    huffmanDecompress(*database_fpp, temp_fp);
+
+    /* Swap the existing database with the temp database.
+       By removing it and changing the pointer. */
+    fclose(*database_fpp);
+    remove(outFile);
+    *database_fpp = temp_fp;
+    rename(new_name, outFile);
+    return 0;
+}
+
+/*****************************************************************************
+ * This function does the unpackaging to the database by determining if it
+ * requires decryption and/or decompression.
+ * Input:
+ *   database_fp - File pointer to the database to be read from.
+ *   files - Filename to write the unpackaged files to.
+ * Post:
+ *   The files will be written decrypted and/or decompressed to filename of
+ *   files.
+*****************************************************************************/
+int unpackageDatabaseFilesContents(FILE *database_fp, char *files)
 {
     /* Read the bit flag */
-    char bit_flag;
-    fread(&bit_flag, sizeof(char), 1, database_fp);
+    char bitFlag;
+    fread(&bitFlag, sizeof(char), 1, database_fp);
 
 #ifdef DEBUG
-    printf("bit_flag: %d\n", bit_flag);
+    printf("bitFlag: %d\n", bitFlag);
 #endif
 
     /* Duplicate database for unpackaging */
     FILE *files_fp;
     files_fp = fopen(files, "wb+");
-    copy_file(files_fp, database_fp);
+    copyFile(files_fp, database_fp);
     fclose(database_fp);
 
     /* If user has opted XOR encryption, unencrypt database */
-    if (bit_flag & XOR_ENCRYPT)
-    {
-        FILE *temp_fp;
-        char new_name[] = "decrypt.bin.tmp";
-        temp_fp = fopen(new_name, "wb+");
-        if (temp_fp == NULL)
-        {
-            printf("Error creating temp file");
-            return 1;
-        }
-
-        /* Goto where the database files begin */
-        fseek(files_fp, 0, SEEK_SET);
-
-        printf("This database is encrypted\nEnter you password>");
-        char key[255];
-        scanf("%s", key);
-
-        /* Get the hashed key for password checking.
-           Compare it with the one in the database. 
-           This will tell us if the user has entered
-           The correct password. */
-        char hashed_key[HASH_SIZE];
-        secureHashPasswordCheck(key, hashed_key);
-        char stored_hash_key[HASH_SIZE];
-        fread(stored_hash_key, sizeof(unsigned char), HASH_SIZE, files_fp);
-
-        if (strcmp(hashed_key, stored_hash_key) != 0)
-        {
-            printf("You have entered the wrong password.\n");
-            return 1;
-        }
-        printf("You have entered the correct password.\n");
-
-        /* Decrypt the database to a temp file.
-           Using the hashed encrypt password. */
-        secureHashEncrypt(key, hashed_key);
-        XOR_cipher(files_fp, temp_fp, hashed_key);
-
-        fclose(files_fp);
-        remove(files);
-        files_fp = temp_fp;
-        rename(new_name, files);
-    }
+    if (bitFlag & XOR_ENCRYPT)
+        XORDecryptDatabase(&files_fp, files);
 
     /* If user has opted shift encryption, unencrypt database */
-    if (bit_flag & SHIFT_ENCRYPT)
-    {
-        FILE *temp_fp;
-        char new_name[] = "decrypt.bin.tmp";
-        temp_fp = fopen(new_name, "wb+");
-        if (temp_fp == NULL)
-        {
-            printf("Error creating temp file");
-            return 0;
-        }
-
-        /* Goto where the database files begin */
-        fseek(files_fp, 0, SEEK_SET);
-
-        /* Decrypt the database to a temp file. */
-        shift_decrypt(files_fp, temp_fp);
-
-        fclose(files_fp);
-        remove(files);
-        files_fp = temp_fp;
-        rename(new_name, files);
-    }
+    if (bitFlag & SHIFT_ENCRYPT)
+        shiftDecryptDatabase(&files_fp, files);
 
     /* If the database has been compressed using huffman, decompress database */
-    if (bit_flag & HUFFMAN_COMPRESS)
-    {
-        FILE *temp_fp;
-        char new_name[] = "decompress.bin.tmp";
-        temp_fp = fopen(new_name, "wb+");
-        if (temp_fp == NULL)
-        {
-            printf("Error creating temp file");
-            return 0;
-        }
+    if (bitFlag & HUFFMAN_COMPRESS)
+        ;
 
-        /* Goto where the database files begin */
-        fseek(files_fp, 0, SEEK_SET);
-
-        /* Decompress the database to a temp file. */
-        huffmanDecompress(files_fp, temp_fp);
-
-        fclose(files_fp);
-        remove(files);
-        files_fp = temp_fp;
-        rename(new_name, files);
-    }
+    /* If the database has been compressed using huffman, decompress database */
+    if (bitFlag & HUFFMAN_COMPRESS)
+        huffmanDecompressDatabase(&files_fp, files);
 
     fclose(files_fp);
-    return 0;
-}
-
-int checkIfFileExists(char *filename)
-{
-    FILE *filep;
-    if ((filep = fopen(filename, "r")))
-    {
-        fclose(filep);
-        return 1;
-    }
     return 0;
 }

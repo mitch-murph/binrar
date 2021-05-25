@@ -7,14 +7,14 @@ struct vector
 {
     int size;
     int capacity;
-    size_t element_size;
+    size_t elementSize;
     void *vector;
 };
 
 typedef struct vector vector_t;
 
-int initVector(vector_t *vector, size_t element_size);
-int initVectorCap(vector_t *vector, int capacity, size_t element_size);
+int initVector(vector_t *vector, size_t elementSize);
+int initVectorCap(vector_t *vector, int capacity, size_t elementSize);
 int copyVector(vector_t *dest, const vector_t src);
 void freeVector(vector_t vector);
 void vector_resize(vector_t *vector, int new_capacity);

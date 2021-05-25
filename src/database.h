@@ -1,15 +1,22 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
-#define XOR_ENCRYPT 1
-#define SHIFT_ENCRYPT 2
-#define HUFFMAN_COMPRESS 4
-#define RUN_COMPRESS 8
-#define MAX_FILENAME_SIZE 255
-
 #include "vector.h"
 #include <stdio.h>
 
+/*****************************************************************************
+ * Preprocessing directives
+*****************************************************************************/
+#define XOR_ENCRYPT 1         /* XOR encrypt bit flag position */
+#define SHIFT_ENCRYPT 2       /* shift encrypt bit flag position */
+#define HUFFMAN_COMPRESS 4    /* huffman compression bit flag position */
+#define RUN_COMPRESS 8        /* run length compression bit flag position */
+#define MAX_FILENAME_SIZE 255 /* Maximum filename size */
+
+/*****************************************************************************
+ * Structs
+*****************************************************************************/
+/* Struct to store information of a file. */
 struct file
 {
     char filename[MAX_FILENAME_SIZE];
@@ -19,10 +26,14 @@ struct file
 
 typedef struct file file_t;
 
-int write_database(vector_t student_list, char *out_file, char bit_flag, vector_t existingFiles);
-int read_database(char *database_file, vector_t *studentList);
-int unpackage_database_files(char *database_file, char *dir);
+/*****************************************************************************
+ * Public function prototypes
+*****************************************************************************/
 int checkIfFileExists(char *filename);
-int read_database_to_memory(char *database_file, vector_t *files);
+int writeDatabase(vector_t studentList, char *out_file, char bitFlag,
+                   vector_t existingFiles);
+int readDatabase(char *database_file, vector_t *studentList);
+int unpackageDatabaseFiles(char *database_file);
+int readDatabaseToMemory(char *database_file, vector_t *files);
 
 #endif
