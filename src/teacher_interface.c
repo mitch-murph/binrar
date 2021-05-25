@@ -347,13 +347,10 @@ void displayAllAssessments(vector_t *assessments)
     while (size--)
     {
         assessment_student_t *assessment = vectorGet(*assessments, size);
-        char filename[MAX_FILENAME_SIZE];
-        strcpy(filename, assessment->assessmentp->filename);
-        filename[15] = '\0';
         printf("|%-15d", assessment->studentp->studentId);
         printf("|%-15s", assessment->studentp->firstName);
         printf("|%-15s", assessment->studentp->lastName);
-        printf("|%-15s", filename);
+        printf("|%-15.15s", assessment->assessmentp->filename);
         printf("|%-15s", assessment->assessmentp->subject);
         printf("|%15d|\n", assessment->assessmentp->mark);
     }
@@ -778,10 +775,7 @@ void displayStudentAssessments(const student_t student)
     while (size--)
     {
         assessment_t *assessment = vectorGet(student.assessments, size);
-        char filename[MAX_FILENAME_SIZE];
-        strcpy(filename, assessment->filename);
-        filename[15] = '\0';
-        printf("|%-15s", filename);
+        printf("|%15.15s", assessment->filename);
         printf("|%-15s", assessment->subject);
         printf("|%-15d|\n", assessment->mark);
     }
