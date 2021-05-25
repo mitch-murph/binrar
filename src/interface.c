@@ -380,7 +380,7 @@ void saveStudents(const vector_t studentList, char *databaseFile)
     initVector(&existingFiles, sizeof(file_t));
     if (databaseFile[0] != 0)
     {
-        read_database_to_memory(databaseFile, &existingFiles);
+        readDatabaseToMemory(databaseFile, &existingFiles);
     }
     int jj;
     for (jj = 0; jj < existingFiles.size; jj++)
@@ -406,7 +406,7 @@ void saveStudents(const vector_t studentList, char *databaseFile)
 
     char bitFlag = setBitFlag(filename);
 
-    if (write_database(studentList, filename, bitFlag, existingFiles))
+    if (writeDatabase(studentList, filename, bitFlag, existingFiles))
     {
         printf("\n\nCannot create database file %s.\n"
                "You will be returned to the menu\n",
@@ -430,7 +430,7 @@ void loadStudents(vector_t *studentList, char *filename)
         waitForEnter();
         return;
     }
-    if (read_database(filename, studentList))
+    if (readDatabase(filename, studentList))
     {
         printf("\n\nCannot read database file %s.\n"
                "You will be returned to the menu\n",
@@ -472,7 +472,8 @@ void displayAllAssessments(vector_t studentList)
 void extractAllFiles(vector_t studentList, char *databaseFile)
 {
     char dir[MAX_FILENAME_SIZE];
-    printf("Enter the directory you would like to extract to>");
+    printf("Are you sure you would like to extract all files?");
+    /* TODO: on Y function */
     int exceedLength = readStringFixLength(dir,
                                            MAX_FILENAME_SIZE);
     if (exceedLength)
@@ -484,7 +485,7 @@ void extractAllFiles(vector_t studentList, char *databaseFile)
         waitForEnter();
         return;
     }
-    if (unpackage_database_files(databaseFile, dir))
+    if (unpackageDatabaseFiles(databaseFile))
     {
         printf("\n\nCannot read database file %s.\n"
                "You will be returned to the menu\n",

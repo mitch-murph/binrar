@@ -37,13 +37,13 @@ int searchStudentIndex(const vector_t studentList, int studentId)
     return search(studentList, hasStudentId, &studentId);
 }
 
-void getAllAssessments(const vector_t student_list, vector_t *assessment_list)
+void getAllAssessments(const vector_t studentList, vector_t *assessment_list)
 {
     initVector(assessment_list, sizeof(assessment_student_t));
     int i, j;
-    for (i = 0; i < student_list.size; i++)
+    for (i = 0; i < studentList.size; i++)
     {
-        student_t *student = (student_t *)vectorGet(student_list, i);
+        student_t *student = (student_t *)vectorGet(studentList, i);
         for (j = 0; j < student->assessments.size; j++)
         {
             assessment_student_t assessment;
@@ -54,13 +54,13 @@ void getAllAssessments(const vector_t student_list, vector_t *assessment_list)
     }
 }
 
-void getAllFilenames(const vector_t student_list, vector_t *filenames)
+void getAllFilenames(const vector_t studentList, vector_t *filenames)
 {
     initVector(filenames, sizeof(char) * MAX_FILENAME_SIZE);
     int i, j;
-    for (i = 0; i < student_list.size; i++)
+    for (i = 0; i < studentList.size; i++)
     {
-        student_t *student = (student_t *)vectorGet(student_list, i);
+        student_t *student = (student_t *)vectorGet(studentList, i);
         for (j = 0; j < student->assessments.size; j++)
         {
             assessment_t *assessment = vectorGet(student->assessments, j);
