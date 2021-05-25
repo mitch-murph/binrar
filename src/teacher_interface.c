@@ -10,7 +10,7 @@
 int readStringFixLength(char *strp, int length);
 int flushScan(void);
 int scanAreYouSure(char *message);
-int scanFilename(char *filename);
+int scanFilename(char *filename, char *message);
 void teacherMainMenu(void);
 int scanMenu(void (*printMenu)(const void *a), const void *);
 int scanFindStudent(const vector_t studentList);
@@ -134,9 +134,9 @@ void waitForEnter()
         ;
 }
 
-int scanFilename(char *filename)
+int scanFilename(char *filename, char *message)
 {
-    printf("Enter the assessment file name>");
+    printf("%s", message);
     int exceedLength = readStringFixLength(filename,
                                            MAX_FILENAME_SIZE);
     if (exceedLength)
@@ -467,7 +467,7 @@ void saveDatabase(const vector_t studentList, char *databaseFile)
         readDatabaseToMemory(databaseFile, &existingFiles);
     }
 
-    if (scanFilename(databaseFile))
+    if (scanFilename(databaseFile, "Enter the database file name>"))
         return;
 
     char bitFlag = setBitFlag(databaseFile);
@@ -480,19 +480,28 @@ void saveDatabase(const vector_t studentList, char *databaseFile)
         waitForEnter();
         return;
     }
+    printf("\n\nDatabase successfully saved to %s\n"
+           "You will be returned to the menu\n",
+           databaseFile);
+    waitForEnter();
 }
 
 void loadDatabase(vector_t *studentList, char *databaseFile)
 {
-    scanFilename(databaseFile);
+    scanFilename(databaseFile, "Enter the database file name>");
     if (readDatabase(databaseFile, studentList))
     {
         printf("\n\nCannot read database file %s.\n"
-               "You will be returned to the menu\n",
+               "You will be returned to the menu.\n",
                databaseFile);
         waitForEnter();
         return;
     }
+
+    printf("\n\nDatabase %s successfully loaded.\n"
+           "You will be returned to the menu.\n",
+           databaseFile);
+    waitForEnter();
 }
 
 void extractAll(vector_t *studentList, char *databaseFile)
@@ -756,13 +765,15 @@ void displayStudentAssessments(const student_t student)
 {
     int size = student.assessments.size;
     printf("-------------------------------------------------\n");
-    printf("|%-s|%-s|%s|\n", "Student ID     ",
+    printf("|%-s|%-s|%s|\n",
+           "Filename       ",
            "Subject        ",
            "Mark           ");
     printf("-------------------------------------------------\n");
     if (size < 1)
     {
-        printf("No assessments.\n");
+        printf("|%-47s|\n",
+               " No assesments.");
     }
     while (size--)
     {
@@ -784,7 +795,7 @@ void addStudentAssessments(student_t *student)
     printf("Enter subject name>");
     readStringFixLength(newAssessment.subject, MAX_NAME_SIZE);
 
-    if (scanFilename(newAssessment.filename))
+    if (scanFilename(newAssessment.filename, "Enter the assessment file name>"))
         return;
 
     if (!checkIfFileExists(newAssessment.filename))
@@ -807,7 +818,7 @@ void addStudentAssessments(student_t *student)
 void deleteStudentAssessment(student_t *student)
 {
     char filename[MAX_FILENAME_SIZE];
-    if (scanFilename(filename))
+    if (scanFilename(filename, "Enter the assessment file name>"))
         return;
     int index = searchStudentAssessmentIndex(*student, filename);
     if (index == -1)

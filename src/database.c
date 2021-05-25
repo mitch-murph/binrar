@@ -513,14 +513,6 @@ int writeDatabase(vector_t studentList, char *outFile, char bitFlag,
     /* Write files to be saved to the database */
     writeFiles(out_fp, studentList, existingFiles);
 
-    /* If user has opted XOR encryption, encrypt database */
-    if (bitFlag & XOR_ENCRYPT)
-        XOREncryptDatabase(out_fp, file_pos);
-
-    /* If user has opted shift encryption, encrypt database */
-    if (bitFlag & SHIFT_ENCRYPT)
-        shiftEncryptDatabase(out_fp, file_pos);
-
     /* If user has opted huffman compress, compress database */
     if (bitFlag & HUFFMAN_COMPRESS)
         huffmanCompressDatabase(&out_fp, file_pos, outFile);
@@ -528,6 +520,14 @@ int writeDatabase(vector_t studentList, char *outFile, char bitFlag,
     /* If user has opted run length compress, compress database */
     if (bitFlag & RUN_COMPRESS)
         ;
+
+    /* If user has opted shift encryption, encrypt database */
+    if (bitFlag & SHIFT_ENCRYPT)
+        shiftEncryptDatabase(out_fp, file_pos);
+
+    /* If user has opted XOR encryption, encrypt database */
+    if (bitFlag & XOR_ENCRYPT)
+        XOREncryptDatabase(out_fp, file_pos);
 
     fclose(out_fp);
 
@@ -1045,24 +1045,21 @@ int unpackageDatabaseFilesContents(FILE *database_fp, char *files)
     copyFile(files_fp, database_fp);
     fclose(database_fp);
 
-
-    /* If the database has been compressed using huffman, decompress database */
-    if (bitFlag & HUFFMAN_COMPRESS)
-    {
-        huffmanDecompressDatabase(&files_fp, files);
-    }
+    /* If user has opted XOR encryption, unencrypt database */
+    if (bitFlag & XOR_ENCRYPT)
+        XORDecryptDatabase(&files_fp, files);
 
     /* If user has opted shift encryption, unencrypt database */
     if (bitFlag & SHIFT_ENCRYPT)
-    {
         shiftDecryptDatabase(&files_fp, files);
-    }
 
-    /* If user has opted XOR encryption, unencrypt database */
-    if (bitFlag & XOR_ENCRYPT)
-    {
-        XORDecryptDatabase(&files_fp, files);
-    }
+    /* If the database has been compressed using huffman, decompress database */
+    if (bitFlag & HUFFMAN_COMPRESS)
+        ;
+
+    /* If the database has been compressed using huffman, decompress database */
+    if (bitFlag & HUFFMAN_COMPRESS)
+        huffmanDecompressDatabase(&files_fp, files);
 
     fclose(files_fp);
     return 0;
