@@ -408,6 +408,7 @@ node_t *readHuffmanTree(FILE *fp)
     {
         /* Pop the stack to get the current node. */
         node_t *curr = *(node_t **)vectorPop(&stack);
+        initNode(curr);
 
         /* If the current node is a 1, we have read an end node. */
         if (readBit(&buffer, &bufferSize, fp))
