@@ -34,6 +34,9 @@ int XOREncryptDatabase(FILE *database_fp, long startPos);
 int shiftEncryptDatabase(FILE *database_fp, long startPos);
 int huffmanCompressDatabase(FILE **database_fp, long startPos,
                             char *out_file);
+int XORDecryptDatabase(FILE **database_fp, char *outFile);
+int shiftDecryptDatabase(FILE **database_fp, char *outFile);
+int huffmanDecompressDatabase(FILE **database_fp, char *outFile);
 void readAssessment(assessment_t *assessment, FILE *in_fp);
 void readStudentAssessment(student_t *student, FILE *in_fp);
 void readStudent(student_t *student, FILE *in_fp);
@@ -885,6 +888,138 @@ int unpackageDatabaseFiles(char *databaseFile)
 }
 
 /*****************************************************************************
+ * This function XOR decrypts contents of a file using a temporary file. 
+ * It also asks the user for the password to decrypt with and ensure it is
+ * the correct password.
+ * Input:
+ *   database_fpp - Pointer to a file pointer to decrypt.
+ *   outFile - The name of the file to replace with the decrypted version.
+ * Return:
+ *   0 - Success
+ *   1 - Failure
+*****************************************************************************/
+int XORDecryptDatabase(FILE **database_fpp, char *outFile)
+{
+    /* Create a temp file to store the decrypted bytes temporary */
+    FILE *temp_fp;
+    char new_name[] = "decrypt.bin.tmp";
+    temp_fp = fopen(new_name, "wb+");
+    if (temp_fp == NULL)
+    {
+        printf("Error creating temp file");
+        return 1;
+    }
+
+    /* Goto where the database files begin */
+    fseek(*database_fpp, 0, SEEK_SET);
+
+    printf("This database is encrypted\nEnter you password>");
+    char key[255];
+    scanf("%s", key);
+
+    /* Get the hashed key for password checking.
+           Compare it with the one in the database. 
+           This will tell us if the user has entered
+           The correct password. */
+    char hashed_key[HASH_SIZE];
+    secureHashPasswordCheck(key, hashed_key);
+    char stored_hash_key[HASH_SIZE];
+    fread(stored_hash_key, sizeof(unsigned char), HASH_SIZE, *database_fpp);
+    if (strcmp(hashed_key, stored_hash_key) != 0)
+    {
+        printf("You have entered the wrong password.\n");
+        return 1;
+    }
+    printf("You have entered the correct password.\n");
+
+    /* Decrypt the database to a temp file.
+           Using the hashed encrypt password. */
+    secureHashEncrypt(key, hashed_key);
+    XOR_cipher(*database_fpp, temp_fp, hashed_key);
+
+    /* Swap the existing database with the temp database.
+       By removing it and changing the pointer. */
+    fclose(*database_fpp);
+    remove(outFile);
+    *database_fpp = temp_fp;
+    rename(new_name, outFile);
+    return 0;
+}
+
+/*****************************************************************************
+ * This function shift decrypts contents of a file using a temporary file.
+ * Input:
+ *   database_fpp - Pointer to a file pointer to decrypt.
+ *   outFile - The name of the file to replace with the decrypted version.
+ * Return:
+ *   0 - Success
+ *   1 - Failure
+*****************************************************************************/
+int shiftDecryptDatabase(FILE **database_fpp, char *outFile)
+{
+    /* Create a temp file to store the decrypted bytes temporary */
+    FILE *temp_fp;
+    char new_name[] = "decrypt.bin.tmp";
+    temp_fp = fopen(new_name, "wb+");
+    if (temp_fp == NULL)
+    {
+        printf("Error creating temp file");
+        return 1;
+    }
+
+    /* Goto where the database files begin */
+    fseek(*database_fpp, 0, SEEK_SET);
+
+    /* Decrypt the database to a temp file. */
+    shift_decrypt(*database_fpp, temp_fp);
+
+    /* Swap the existing database with the temp database.
+       By removing it and changing the pointer. */
+    fclose(*database_fpp);
+    remove(outFile);
+    *database_fpp = temp_fp;
+    rename(new_name, outFile);
+    return 0;
+}
+
+/*****************************************************************************
+ * This function huffman decompresses the contents of a file using a 
+ * temporary file.
+ * Input:
+ *   database_fpp - Pointer to a file pointer to decompress.
+ *   outFile - The name of the file to replace with the decrypted version.
+ * Return:
+ *   0 - Success
+ *   1 - Failure
+*****************************************************************************/
+int huffmanDecompressDatabase(FILE **database_fpp, char *outFile)
+{
+    /* Create a temp file to store the decompressed bytes temporary */
+    FILE *temp_fp;
+    char new_name[] = "decompress.bin.tmp";
+    temp_fp = fopen(new_name, "wb+");
+    if (temp_fp == NULL)
+    {
+        printf("Error creating temp file");
+        return 1;
+    }
+
+    /* Goto where the database files begin */
+    fseek(*database_fpp, 0, SEEK_SET);
+
+    /* Decompress the database to a temp file. */
+    huffmanDecompress(*database_fpp, temp_fp);
+
+    /* Swap the existing database with the temp database.
+       By removing it and changing the pointer. */
+    fclose(*database_fpp);
+    remove(outFile);
+    *database_fpp = temp_fp;
+    rename(new_name, outFile);
+    return 0;
+}
+
+/*****************************************************************************
  * This function does the unpackaging to the database by determining if it
  * requires decryption and/or decompression.
  * Input:
@@ -910,98 +1045,23 @@ int unpackageDatabaseFilesContents(FILE *database_fp, char *files)
     copyFile(files_fp, database_fp);
     fclose(database_fp);
 
-    /* If user has opted XOR encryption, unencrypt database */
-    if (bitFlag & XOR_ENCRYPT)
+
+    /* If the database has been compressed using huffman, decompress database */
+    if (bitFlag & HUFFMAN_COMPRESS)
     {
-        FILE *temp_fp;
-        char new_name[] = "decrypt.bin.tmp";
-        temp_fp = fopen(new_name, "wb+");
-        if (temp_fp == NULL)
-        {
-            printf("Error creating temp file");
-            return 1;
-        }
-
-        /* Goto where the database files begin */
-        fseek(files_fp, 0, SEEK_SET);
-
-        printf("This database is encrypted\nEnter you password>");
-        char key[255];
-        scanf("%s", key);
-
-        /* Get the hashed key for password checking.
-           Compare it with the one in the database. 
-           This will tell us if the user has entered
-           The correct password. */
-        char hashed_key[HASH_SIZE];
-        secureHashPasswordCheck(key, hashed_key);
-        char stored_hash_key[HASH_SIZE];
-        fread(stored_hash_key, sizeof(unsigned char), HASH_SIZE, files_fp);
-
-        if (strcmp(hashed_key, stored_hash_key) != 0)
-        {
-            printf("You have entered the wrong password.\n");
-            return 1;
-        }
-        printf("You have entered the correct password.\n");
-
-        /* Decrypt the database to a temp file.
-           Using the hashed encrypt password. */
-        secureHashEncrypt(key, hashed_key);
-        XOR_cipher(files_fp, temp_fp, hashed_key);
-
-        fclose(files_fp);
-        remove(files);
-        files_fp = temp_fp;
-        rename(new_name, files);
+        huffmanDecompressDatabase(&files_fp, files);
     }
 
     /* If user has opted shift encryption, unencrypt database */
     if (bitFlag & SHIFT_ENCRYPT)
     {
-        FILE *temp_fp;
-        char new_name[] = "decrypt.bin.tmp";
-        temp_fp = fopen(new_name, "wb+");
-        if (temp_fp == NULL)
-        {
-            printf("Error creating temp file");
-            return 0;
-        }
-
-        /* Goto where the database files begin */
-        fseek(files_fp, 0, SEEK_SET);
-
-        /* Decrypt the database to a temp file. */
-        shift_decrypt(files_fp, temp_fp);
-
-        fclose(files_fp);
-        remove(files);
-        files_fp = temp_fp;
-        rename(new_name, files);
+        shiftDecryptDatabase(&files_fp, files);
     }
 
-    /* If the database has been compressed using huffman, decompress database */
-    if (bitFlag & HUFFMAN_COMPRESS)
+    /* If user has opted XOR encryption, unencrypt database */
+    if (bitFlag & XOR_ENCRYPT)
     {
-        FILE *temp_fp;
-        char new_name[] = "decompress.bin.tmp";
-        temp_fp = fopen(new_name, "wb+");
-        if (temp_fp == NULL)
-        {
-            printf("Error creating temp file");
-            return 0;
-        }
-
-        /* Goto where the database files begin */
-        fseek(files_fp, 0, SEEK_SET);
-
-        /* Decompress the database to a temp file. */
-        huffmanDecompress(files_fp, temp_fp);
-
-        fclose(files_fp);
-        remove(files);
-        files_fp = temp_fp;
-        rename(new_name, files);
+        XORDecryptDatabase(&files_fp, files);
     }
 
     fclose(files_fp);
