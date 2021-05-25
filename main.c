@@ -1,7 +1,8 @@
-#include "src/interface.h"
+#include "src/teacher_interface.h"
+#include <stdio.h>
 
 int main(void)
 {
-    mainMenu();
+    teacherMainMenu();
     return 0;
 }
