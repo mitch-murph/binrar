@@ -49,6 +49,7 @@ void studentAssessmentList(student_t *student, char *databaseFile);
 void addStudentAssessments(student_t *student);
 void deleteStudentAssessment(student_t *student);
 void extractStudentAssessmentFile(student_t *student, char *databaseFile);
+void sortStudentAssessmentFile(student_t *student);
 
 void displayStudentAssessments(const student_t student);
 void printStudentAssessmentList(const void *a);
@@ -161,7 +162,7 @@ void teacherMainMenu(void)
     printLaunch();
 
     int choice;
-    while ((choice = scanMenu(printTeacherMainMenu, NULL)) != 7)
+    while ((choice = scanMenu(printTeacherMainMenu, NULL)) != 6)
     {
         switch (choice)
         {
@@ -214,8 +215,7 @@ void printTeacherMainMenu(const void *a)
            "3. Save to database\n"
            "4. Load database\n"
            "5. Extract all files\n"
-           "6. View help\n"
-           "7. Exit the program\n");
+           "6. Exit the program\n");
 }
 
 void teacherStudentMainMenu(vector_t *studentList, char *databaseFile)
@@ -271,7 +271,7 @@ void teacherAssessmentMenu(vector_t *studentList, char *databaseFile)
 void printTeacherAssessmentMenu(const void *a)
 {
     printf("\n\nStudent Main Menu\n");
-    printf("1. View all assessments\n"
+    printf("1. Open all assessments list\n"
            "2. Add assessment\n"
            "3. Delete assessment\n"
            "4. Extract assessment file\n"
@@ -430,7 +430,7 @@ void sortAllAssessmentList(vector_t *assessments)
     int option;
     scanf("%d", &option);
     /* Consume newline */
-    getchar();
+    flushScan();
     if (option == 1)
     {
         sort(*assessments, compareAssessmentStudentAsc);
@@ -485,7 +485,7 @@ char setBitFlag(char *filename)
         int option;
         scanf("%d", &option);
         /* Consume trailing newline */
-        getchar();
+        flushScan();
         if (0 < option && option <= 4)
             bitFlag = bitFlag ^ (char)pow(2, option - 1);
         else if (option == 5)
@@ -572,7 +572,7 @@ void extractAll(char *databaseFile)
 void printTeacherStudentMainMenu(const void *a)
 {
     printf("\n\nStudent Main Menu\n");
-    printf("1. View all students\n"
+    printf("1. Open student list\n"
            "2. Search student\n"
            "3. Add student\n"
            "4. Delete student\n"
@@ -645,7 +645,7 @@ int scanFindStudent(const vector_t studentList)
     printf("Enter the ID of the student>");
     scanf("%d", &studentId);
     /* Consume trailing newline */
-    getchar();
+    flushScan();
 
     int index = searchStudentIndex(studentList, studentId);
     if (index == -1)
@@ -721,7 +721,8 @@ void sortStudents(vector_t *studentList)
     int option;
     scanf("%d", &option);
     /* Consume newline */
-    getchar();
+    flushScan();
+
     if (option == 1)
     {
         sort(*studentList, compareStudentAsc);
@@ -769,7 +770,7 @@ void printTeacherStudentMenu(const void *a)
     printf("\n\nStudent Menu\n");
     printf("For student Id: %d\n", student->studentId);
     printf("Name: %s %s\n", student->lastName, student->firstName);
-    printf("1. View students assessments\n"
+    printf("1. Open students assessment list\n"
            "2. Add assessment\n"
            "3. Delete assessment\n"
            "4. Extract Assessment File\n"
@@ -792,6 +793,9 @@ void studentAssessmentList(student_t *student, char *databaseFile)
         case 4:
             extractStudentAssessmentFile(student, databaseFile);
             break;
+        case 5:
+            sortStudentAssessmentFile(student);
+            break;
         default:
             printf("\nInvalid choice.\n");
         }
@@ -805,7 +809,7 @@ void printStudentAssessmentList(const void *a)
     printf("For student Id: %d\n", student->studentId);
     printf("Name: %s %s\n", student->lastName, student->firstName);
     displayStudentAssessments(*student);
-    printf("1. Close assessment list\n"
+    printf("1. Close students assessment list\n"
            "2. Add assessment\n"
            "3. Delete assessment\n"
            "4. Extract Assessment File\n"
@@ -895,4 +899,29 @@ void extractStudentAssessmentFile(student_t *student, char *databaseFile)
 {
     /* TODO: Implement student assessment file*/
     extractAssessmentFile(databaseFile);
+}
+
+void sortStudentAssessmentFile(student_t *student)
+{
+    printf("1. Ascending\n"
+           "2. Descending\n");
+    printf("Sort mark by>");
+    int option;
+    scanf("%d", &option);
+    /* Consume newline */
+    flushScan();
+    if (option == 1)
+    {
+        sort(student->assessments, compareAssessmentAsc);
+    }
+    else if (option == 2)
+    {
+        sort(student->assessments, compareAssessmentDesc);
+    }
+    else
+    {
+        printf("Invalid.\n");
+        printf("You will be returned to the menu list\n");
+        waitForEnter();
+    }
 }
