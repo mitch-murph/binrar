@@ -379,12 +379,23 @@ char setBitFlag(char *filename)
 
 void saveDatabase(const vector_t studentList, char *databaseFile)
 {
+#ifdef DEBUG
+    printf("Existing Database: %s\n", databaseFile);
+#endif
     vector_t existingFiles;
     initVector(&existingFiles, sizeof(file_t));
     if (databaseFile[0] != 0)
     {
-        readDatabaseToMemory(databaseFile, &existingFiles);
+        if (readDatabaseToMemory(databaseFile, &existingFiles))
+        {
+            printf("Failed to read existing database\n");
+            return;
+        }
     }
+    
+#ifdef DEBUG
+    printf("Existing file count: %d\n", existingFiles.size);
+#endif
 
     if (scanFilename(databaseFile, "Enter the database file name>"))
         return;

@@ -498,17 +498,17 @@ void runLengthCompress(FILE *in_fp, FILE *out_fp)
                 /* If it no longer matches the previous byte.
                    Write the count and the byte. 
                    Set count back to 0. */
-                fputc(count, out_fp);
+                fwrite(&count, sizeof(int), 1, out_fp);
                 fputc(prev, out_fp);
-                count = 0;
+                count = 1;
             }
         }
     }
     /* Write the final byte and its size. Ensure the file is not empty. */
     if (flag != 0)
     {
-        fputc(count, out_fp);
-        fputc(prev, out_fp);
+        fwrite(&count, sizeof(int), 1, out_fp);
+        fputc(temp, out_fp);
     }
 }
 
@@ -522,12 +522,16 @@ void runLengthCompress(FILE *in_fp, FILE *out_fp)
 *****************************************************************************/
 void runLengthDecompress(FILE *in_fp, FILE *out_fp)
 {
-    /* Loop while not EOF */
+    /* Loop while not until no more frequencies are read. */
     int frequency;
-    while ((frequency = fgetc(in_fp)) != EOF)
+    while (fread(&frequency, sizeof(int), 1, in_fp) == 1)
     {
         /* Get the frequency and value */
         int value = fgetc(in_fp);
+
+#ifdef DEBUG
+        printf("freq: %d value: %02x\n", frequency, value);
+#endif
 
         /* Write the value, frequency times. */
         int i;

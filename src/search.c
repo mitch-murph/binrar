@@ -16,5 +16,5 @@ int compareString(const void *ap, const void *bp)
 {
     char *stringA = (char *)ap;
     char *stringB = (char *)bp;
-    return strcmp(stringA, stringB);
+    return !strcmp(stringA, stringB);
 }

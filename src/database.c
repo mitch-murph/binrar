@@ -32,10 +32,13 @@ int writeFiles(FILE *out_fp, vector_t studentList, vector_t existingFiles);
 void writeHeader(FILE *out_fp, vector_t studentList);
 int XOREncryptDatabase(FILE *database_fp, long startPos);
 int shiftEncryptDatabase(FILE *database_fp, long startPos);
+int runCompressDatabase(FILE **database_fpp, long startPos,
+                        char *outFile);
 int huffmanCompressDatabase(FILE **database_fp, long startPos,
                             char *out_file);
 int XORDecryptDatabase(FILE **database_fp, char *outFile);
 int shiftDecryptDatabase(FILE **database_fp, char *outFile);
+int runDecompressDatabase(FILE **database_fpp, char *outFile);
 int huffmanDecompressDatabase(FILE **database_fp, char *outFile);
 void readAssessment(assessment_t *assessment, FILE *in_fp);
 void readStudentAssessment(student_t *student, FILE *in_fp);
@@ -89,6 +92,10 @@ int checkIfFileExistsInDatabase(char *databaseFile, char *filename)
     vector_t filenames;
     getAllFilenames(studentList, &filenames);
     int index = search(filenames, compareString, filename);
+
+#ifdef DEBUG
+    printf("file index: %d\n", index);
+#endif
 
     /* Free vectors and return result. */
     freeVector(studentList);
@@ -227,7 +234,7 @@ void writeStudent(student_t *studentp, FILE *out_fp)
  *   filename - Pointer to the student who is to be written
  *   out_fp - File pointer to write the student to.
  * Post:
- *   out_fp - Will have the student written to it.
+ *   out_fp - Will have the assessment file written to it.
 *****************************************************************************/
 void writeFileContents(char *filename, FILE *out_fp)
 {
@@ -269,7 +276,7 @@ void writeFileTContents(file_t file, FILE *out_fp)
 
     /* Write the file size and the actual bytes of the file. */
     fwrite(&file.size, sizeof(long), 1, out_fp);
-    fwrite(&file.bytes, sizeof(char), file.size, out_fp);
+    fwrite(file.bytes, sizeof(char), file.size, out_fp);
 }
 
 /*****************************************************************************
@@ -278,8 +285,8 @@ void writeFileTContents(file_t file, FILE *out_fp)
  *   ap - Pointer to a file_t struct.
  *   bp - Pointer to a string of a filename.
  * Return:
- *   0 - The strings are equal.
- *   non-zero - The string are not equal.
+ *   1 - The strings are equal.
+ *   0 - The string are not equal.
 *****************************************************************************/
 int compareFilenames(const void *ap, const void *bp)
 {
@@ -288,7 +295,7 @@ int compareFilenames(const void *ap, const void *bp)
     char *filename = (char *)bp;
 
     /* String compare the names to see if they are equal. */
-    return strcmp(fileA->filename, filename);
+    return !strcmp(fileA->filename, filename);
 }
 
 /*****************************************************************************
@@ -474,6 +481,51 @@ int shiftEncryptDatabase(FILE *database_fp, long startPos)
 }
 
 /*****************************************************************************
+ * This function compressions the contents of a file using run length 
+ * compression via a temporary file. Because the size is expected to differ, 
+ * it replaces the existing file by renaming it.
+ * Input:
+ *   database_fpp - Pointer to a file pointer to encrypt. As we need to swap
+ *                  it with the new file pointer.
+ *   startPos - Position to start the encryption from.
+ *   outFile - The name of the file to swap it with.
+ * Return:
+ *   0 - Success
+ *   1 - Failure
+*****************************************************************************/
+int runCompressDatabase(FILE **database_fpp, long startPos,
+                        char *outFile)
+{
+    /* Create a temp file to store the compressed bytes */
+    FILE *temp_fp;
+    temp_fp = fopen("compressed.bin.tmp", "wb+");
+    if (temp_fp == NULL)
+    {
+        printf("Error creating temp file");
+        return 1;
+    }
+
+    /* Goto where the database files begin */
+    fseek(*database_fpp, 0, SEEK_SET);
+    copyHeader(temp_fp, *database_fpp);
+    /* Goto where the database files begin */
+    fseek(*database_fpp, startPos, SEEK_SET);
+    fseek(temp_fp, startPos, SEEK_SET);
+
+    /* Compress the database to a temp file */
+    runLengthCompress(*database_fpp, temp_fp);
+
+    /* Now swap the compressed database with the existing database
+       by closing the existing, removing and renaming it. */
+    fclose(*database_fpp);
+    *database_fpp = temp_fp;
+    remove(outFile);
+    rename("compressed.bin.tmp", outFile);
+
+    return 0;
+}
+
+/*****************************************************************************
  * This function compressions the contents of a file using huffman encoding 
  * via a temporary file. Because the size is expected to differ, it replaces
  * the existing file by renaming it.
@@ -515,7 +567,7 @@ int huffmanCompressDatabase(FILE **database_fpp, long startPos,
     remove(outFile);
     rename("compressed.bin.tmp", outFile);
 
-    return 1;
+    return 0;
 }
 
 /*****************************************************************************
@@ -567,7 +619,7 @@ int writeDatabase(vector_t studentList, char *outFile, char bitFlag,
 
     /* If user has opted run length compress, compress database */
     if (bitFlag & RUN_COMPRESS)
-        ;
+        runCompressDatabase(&out_fp, file_pos, outFile);
 
     /* If user has opted shift encryption, encrypt database */
     if (bitFlag & SHIFT_ENCRYPT)
@@ -683,7 +735,7 @@ void readHeader(FILE *database_fp, vector_t *studentList)
     fread(&numStudents, sizeof(unsigned char), 1, database_fp);
 
 #ifdef DEBUG
-    printf("READ File count: %d\n", num_students);
+    printf("READ File count: %d\n", numStudents);
 #endif
 
     /* Loop over the number of students and read each one. */
@@ -777,21 +829,22 @@ int readDatabaseToMemory(char *databaseFile, vector_t *files)
        i.e. decompress and decrypt them into temp file. */
     if (unpackageDatabaseFilesContents(database_fp, TEMP_DATABASE_NAME))
     {
+        printf("Error while unpacking database\n");
         fclose(database_fp);
         return 1;
     }
 
     /* Open the unpackaged temp database file. */
     FILE *databaseTemp_fp;
-    databaseTemp_fp = fopen(TEMP_DATABASE_NAME, "rb");
+    if ((databaseTemp_fp = fopen(TEMP_DATABASE_NAME, "rb")) == NULL)
     {
+        printf("Error while opening temp database file\n");
         return 1;
     }
 
     /* Separate the content of the temp database file into 
        a list of file_t. */
     separateFilesToMemory(databaseTemp_fp, filenames, files);
-
     /* Close and remove temp database file. */
     fclose(databaseTemp_fp);
     remove(TEMP_DATABASE_NAME);
@@ -834,6 +887,7 @@ void separateFilesToMemory(FILE *database_fp, vector_t filenames, vector_t *file
            i.e. read the file contents into memory. */
         file.bytes = malloc(sizeof(char) * file.size);
         fread(file.bytes, sizeof(char), file.size, database_fp);
+        vectorPushBack(files, &file);
     }
 }
 
@@ -1027,9 +1081,11 @@ int XORDecryptDatabase(FILE **database_fpp, char *outFile)
     /* Goto where the database files begin */
     fseek(*database_fpp, 0, SEEK_SET);
 
-    printf("This database is encrypted\nEnter you password>");
+    /* Scan the database password. */
+    printf("This database is encrypted\nEnter your password>");
     char key[255];
     scanf("%s", key);
+    getchar();
 
     /* Get the hashed key for password checking.
            Compare it with the one in the database. 
@@ -1097,11 +1153,48 @@ int shiftDecryptDatabase(FILE **database_fpp, char *outFile)
 }
 
 /*****************************************************************************
+ * This function run length decompresses the contents of a file using a 
+ * temporary file.
+ * Input:
+ *   database_fpp - Pointer to a file pointer to decompress.
+ *   outFile - The name of the file to replace with the decompressed version.
+ * Return:
+ *   0 - Success
+ *   1 - Failure
+*****************************************************************************/
+int runDecompressDatabase(FILE **database_fpp, char *outFile)
+{
+    /* Create a temp file to store the decompressed bytes temporary */
+    FILE *temp_fp;
+    char new_name[] = "decompress.bin.tmp";
+    temp_fp = fopen(new_name, "wb+");
+    if (temp_fp == NULL)
+    {
+        printf("Error creating temp file");
+        return 1;
+    }
+
+    /* Goto where the database files begin */
+    fseek(*database_fpp, 0, SEEK_SET);
+
+    /* Decompress the database to a temp file. */
+    runLengthDecompress(*database_fpp, temp_fp);
+
+    /* Swap the existing database with the temp database.
+       By removing it and changing the pointer. */
+    fclose(*database_fpp);
+    remove(outFile);
+    *database_fpp = temp_fp;
+    rename(new_name, outFile);
+    return 0;
+}
+
+/*****************************************************************************
  * This function huffman decompresses the contents of a file using a 
  * temporary file.
  * Input:
  *   database_fpp - Pointer to a file pointer to decompress.
- *   outFile - The name of the file to replace with the decrypted version.
+ *   outFile - The name of the file to replace with the decompressed version.
  * Return:
  *   0 - Success
  *   1 - Failure
@@ -1168,8 +1261,8 @@ int unpackageDatabaseFilesContents(FILE *database_fp, char *files)
         shiftDecryptDatabase(&files_fp, files);
 
     /* If the database has been compressed using huffman, decompress database */
-    if (bitFlag & HUFFMAN_COMPRESS)
-        ;
+    if (bitFlag & RUN_COMPRESS)
+        runDecompressDatabase(&files_fp, files);
 
     /* If the database has been compressed using huffman, decompress database */
     if (bitFlag & HUFFMAN_COMPRESS)
