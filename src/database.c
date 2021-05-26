@@ -90,6 +90,10 @@ int checkIfFileExistsInDatabase(char *databaseFile, char *filename)
     getAllFilenames(studentList, &filenames);
     int index = search(filenames, compareString, filename);
 
+#ifdef DEBUG
+    printf("file index: %d\n", index);
+#endif
+
     /* Free vectors and return result. */
     freeVector(studentList);
     freeVector(filenames);
@@ -227,7 +231,7 @@ void writeStudent(student_t *studentp, FILE *out_fp)
  *   filename - Pointer to the student who is to be written
  *   out_fp - File pointer to write the student to.
  * Post:
- *   out_fp - Will have the student written to it.
+ *   out_fp - Will have the assessment file written to it.
 *****************************************************************************/
 void writeFileContents(char *filename, FILE *out_fp)
 {
@@ -269,7 +273,7 @@ void writeFileTContents(file_t file, FILE *out_fp)
 
     /* Write the file size and the actual bytes of the file. */
     fwrite(&file.size, sizeof(long), 1, out_fp);
-    fwrite(&file.bytes, sizeof(char), file.size, out_fp);
+    fwrite(file.bytes, sizeof(char), file.size, out_fp);
 }
 
 /*****************************************************************************
