@@ -1254,19 +1254,31 @@ int unpackageDatabaseFilesContents(FILE *database_fp, char *files)
 
     /* If user has opted XOR encryption, unencrypt database */
     if (bitFlag & XOR_ENCRYPT)
-        XORDecryptDatabase(&files_fp, files);
+    {
+        if (XORDecryptDatabase(&files_fp, files))
+            return 1;
+    }
 
     /* If user has opted shift encryption, unencrypt database */
     if (bitFlag & SHIFT_ENCRYPT)
-        shiftDecryptDatabase(&files_fp, files);
+    {
+        if (shiftDecryptDatabase(&files_fp, files))
+            return 1;
+    }
 
     /* If the database has been compressed using huffman, decompress database */
     if (bitFlag & RUN_COMPRESS)
-        runDecompressDatabase(&files_fp, files);
+    {
+        if (runDecompressDatabase(&files_fp, files))
+            return 1;
+    }
 
     /* If the database has been compressed using huffman, decompress database */
     if (bitFlag & HUFFMAN_COMPRESS)
-        huffmanDecompressDatabase(&files_fp, files);
+    {
+        if (huffmanDecompressDatabase(&files_fp, files))
+            return 1;
+    }
 
     fclose(files_fp);
     return 0;
