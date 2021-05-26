@@ -30,6 +30,7 @@ struct assessment_student
 typedef struct assessment_student assessment_student_t;
 
 void initStudent(student_t *student);
+void copyStudent(student_t *dest, const student_t src);
 void freeStudent(student_t *student);
 student_t *searchStudent(const vector_t studentList, int studentId);
 int searchStudentIndex(const vector_t studentList, int studentId);

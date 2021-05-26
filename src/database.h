@@ -30,10 +30,11 @@ typedef struct file file_t;
  * Public function prototypes
 *****************************************************************************/
 int checkIfFileExists(char *filename);
+int checkIfFileExistsInDatabase(char *databaseFile, char *filename);
 int writeDatabase(vector_t studentList, char *out_file, char bitFlag,
-                   vector_t existingFiles);
-int readDatabase(char *database_file, vector_t *studentList);
-int unpackageDatabaseFiles(char *database_file);
-int readDatabaseToMemory(char *database_file, vector_t *files);
+                  vector_t existingFiles);
+int readDatabase(char *databaseFile, vector_t *studentList);
+int readDatabaseToMemory(char *databaseFile, vector_t *files);
+int unpackageDatabaseFiles(char *databaseFile, char *filename);
 
 #endif

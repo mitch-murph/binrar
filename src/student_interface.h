@@ -1,9 +1,9 @@
-#ifndef TEACHER_INTERFACE_H
-#define TEACHER_INTERFACE_H
+#ifndef STUDENT_INTERFACE_H
+#define STUDENT_INTERFACE_H
 
 /*******************************************************************************
  * Public function prototypes
 *******************************************************************************/
-void teacherMainMenu(void);
+void studentMainMenu(char *databaseFile, char *studentId);
 
 #endif

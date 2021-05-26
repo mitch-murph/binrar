@@ -28,7 +28,7 @@ void writeStudent(student_t *student, FILE *out_fp);
 void writeFileContents(char *filename, FILE *out_fp);
 void writeFileTContents(file_t file, FILE *out_fp);
 int compareFilenames(const void *ap, const void *bp);
-void writeFiles(FILE *out_fp, vector_t studentList, vector_t existingFiles);
+int writeFiles(FILE *out_fp, vector_t studentList, vector_t existingFiles);
 void writeHeader(FILE *out_fp, vector_t studentList);
 int XOREncryptDatabase(FILE *database_fp, long startPos);
 int shiftEncryptDatabase(FILE *database_fp, long startPos);
@@ -45,6 +45,8 @@ void readDatabaseFp(FILE *database_fp, vector_t *filenames);
 void separateFilesToMemory(FILE *database_fp, vector_t filenames,
                            vector_t *files);
 void separateFiles(FILE *database_fp, vector_t filenames);
+void separateFilesFilter(FILE *database_fp, vector_t filenames,
+                         char *filenameFilter);
 int unpackageDatabaseFilesContents(FILE *database_fp, char *files);
 int checkIfFileExists(char *filename);
 
@@ -65,6 +67,33 @@ int checkIfFileExists(char *filename)
         return 1;
     }
     return 0;
+}
+
+/*****************************************************************************
+ * Given a filename, this function will check if the file exists in the
+ * database.
+ * Input:
+ *   databaseFile - The database file to verify if the file exist.
+ *   filename - The name of the file to check if it exists.
+ * Return:
+ *   1 - The file does exist.
+ *   0 - The file does not exist.
+*****************************************************************************/
+int checkIfFileExistsInDatabase(char *databaseFile, char *filename)
+{
+    /* Read all students in stored database. */
+    vector_t studentList;
+    readDatabase(databaseFile, &studentList);
+
+    /* Get all filenames in the database. */
+    vector_t filenames;
+    getAllFilenames(studentList, &filenames);
+    int index = search(filenames, compareString, filename);
+
+    /* Free vectors and return result. */
+    freeVector(studentList);
+    freeVector(filenames);
+    return index != -1;
 }
 
 /*****************************************************************************
@@ -268,11 +297,14 @@ int compareFilenames(const void *ap, const void *bp)
  *   out_fp - File pointer to write to.
  *   studentList - The list of students and their assessments.
  *   existingFiles - The file existing in the database already.
- * Return:
+ * Post:
  *   The file pointer out_fp will now contain the content of the assessment
  *   files.
+ * Return:
+ *   1 - Success
+ *   0 - Failure
 *****************************************************************************/
-void writeFiles(FILE *out_fp, vector_t studentList, vector_t existingFiles)
+int writeFiles(FILE *out_fp, vector_t studentList, vector_t existingFiles)
 {
 #ifdef DEBUG
     printf("Start write files\n");
@@ -299,6 +331,14 @@ void writeFiles(FILE *out_fp, vector_t studentList, vector_t existingFiles)
             {
                 /* If the file does not exist in the database already,
                    write the file using the file in the drive. */
+                if (!checkIfFileExists(assessment->filename))
+                {
+                    printf("Can no longer find file %s.\n",
+                           assessment->filename);
+                    printf("Please ensure it is in the current "
+                           "directory when saving the database.");
+                    return 1;
+                }
                 writeFileContents(assessment->filename, out_fp);
             }
             else
@@ -309,6 +349,7 @@ void writeFiles(FILE *out_fp, vector_t studentList, vector_t existingFiles)
             }
         }
     }
+    return 0;
 }
 
 /*****************************************************************************
@@ -511,7 +552,14 @@ int writeDatabase(vector_t studentList, char *outFile, char bitFlag,
     long file_pos = ftell(out_fp);
 
     /* Write files to be saved to the database */
-    writeFiles(out_fp, studentList, existingFiles);
+    if (writeFiles(out_fp, studentList, existingFiles))
+    {
+        /* If failed to write, close the file pointer
+           and remove the file */
+        fclose(out_fp);
+        remove(outFile);
+        return 1;
+    }
 
     /* If user has opted huffman compress, compress database */
     if (bitFlag & HUFFMAN_COMPRESS)
@@ -839,16 +887,79 @@ void separateFiles(FILE *database_fp, vector_t filenames)
 }
 
 /*****************************************************************************
+ * This function separates the packaged files and searches for the filename
+ * filter and rewriting that file only.
+ * Input:
+ *   database_fp - File pointer to the database to be read from.
+ *   filenames - List of the file names to be read in the database.
+ *   filenameFilter - Filename to rewrite from database.
+ * Post:
+ *   The packaged files in database_fp will be created in the current
+ *   directory.
+*****************************************************************************/
+void separateFilesFilter(FILE *database_fp, vector_t filenames, char *filenameFilter)
+{
+    /* Loop over each file in the filename list */
+    int i;
+    for (i = 0; i < filenames.size; i++)
+    {
+        /* Read the size of the current file being read. */
+        long fileSize;
+        fread(&fileSize, sizeof(long), 1, database_fp);
+
+        /* Copy the filename from the list so that
+           it is easier to work with. */
+        char filename[MAX_FILENAME_SIZE];
+        strcpy(filename, (char *)vectorGet(filenames, i));
+
+#ifdef DEBUG
+        printf("READ %s size: %ld\n", filename, fileSize);
+#endif
+
+        /* Check if filename equals the one wanted. */
+        if (!strcmp(filename, filenameFilter))
+        {
+            /* Create (or open and overwrite) the filename from the list */
+            FILE *file_fp = fopen(filename, "wb+");
+            if (file_fp == NULL)
+            {
+                printf("error opening file %s\n", filename);
+            }
+
+            /* Now read each byte into the new file from the database. */
+            int buffer;
+            while (fileSize--)
+            {
+                buffer = fgetc(database_fp);
+                fputc(buffer, file_fp);
+            }
+
+            /* Close the new file. */
+            fclose(file_fp);
+        }
+        else
+        {
+            /* If it doesn't, still need to move 
+               the file pointer to next file. */
+            while (fileSize--)
+                fgetc(database_fp);
+        }
+    }
+}
+
+/*****************************************************************************
  * This function extracts all assessment files to the current directory. 
  * This includes unpackaging (decrypt and decompress) the assessment files
  * before extraction.
  * Input:
  *   databaseFile - The name of the database to extract the file from.
+ *   filenameFilter - Filename to rewrite from database. If NULL filter
+ *                    is ignored.
  * Post:
  *   The packaged files in database_fp will be created in the current
  *   directory.
 *****************************************************************************/
-int unpackageDatabaseFiles(char *databaseFile)
+int unpackageDatabaseFiles(char *databaseFile, char *filenameFilter)
 {
     /* Open the database file. */
     FILE *database_fp;
@@ -878,8 +989,11 @@ int unpackageDatabaseFiles(char *databaseFile)
         return 1;
     }
 
-    /* Now separate the grouped files into new files. */
-    separateFiles(files_fp, filenames);
+    /* Now separate the grouped files into new files/file. */
+    if (filenameFilter == NULL)
+        separateFiles(files_fp, filenames);
+    else
+        separateFilesFilter(files_fp, filenames, filenameFilter);
 
     /* close the unpackaged database and remove it. */
     fclose(files_fp);

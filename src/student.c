@@ -26,6 +26,14 @@ void initStudent(student_t *student)
     initVector(&student->assessments, sizeof(assessment_t));
 }
 
+void copyStudent(student_t *dest, const student_t src)
+{
+    dest->studentId = src.studentId;
+    strcpy(dest->firstName, src.firstName);
+    strcpy(dest->lastName, src.lastName);
+    copyVector(&dest->assessments, src.assessments);
+}
+
 void freeStudent(student_t *student)
 {
     freeVector(student->assessments);
@@ -107,8 +115,8 @@ int compareAssessmentAsc(const void *a, const void *b)
 {
 
     assessment_t *assessmentap = (assessment_t *)a;
-    assessment_t *assessmentab = (assessment_t *)b;
-    return assessmentap->mark - assessmentab->mark;
+    assessment_t *assessmentbp = (assessment_t *)b;
+    return assessmentbp->mark - assessmentap->mark;
 }
 
 int compareAssessmentDesc(const void *a, const void *b)
@@ -120,8 +128,8 @@ int compareAssessmentStudentAsc(const void *a, const void *b)
 {
 
     assessment_student_t *stuAssap = (assessment_student_t *)a;
-    assessment_student_t *stuAssab = (assessment_student_t *)b;
-    return compareAssessmentAsc(stuAssap->assessmentp, stuAssab->assessmentp);
+    assessment_student_t *stuAssbp = (assessment_student_t *)b;
+    return compareAssessmentAsc(stuAssap->assessmentp, stuAssbp->assessmentp);
 }
 
 int compareAssessmentStudentDesc(const void *a, const void *b)
