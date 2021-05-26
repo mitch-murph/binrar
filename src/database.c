@@ -278,8 +278,8 @@ void writeFileTContents(file_t file, FILE *out_fp)
  *   ap - Pointer to a file_t struct.
  *   bp - Pointer to a string of a filename.
  * Return:
- *   0 - The strings are equal.
- *   non-zero - The string are not equal.
+ *   1 - The strings are equal.
+ *   0 - The string are not equal.
 *****************************************************************************/
 int compareFilenames(const void *ap, const void *bp)
 {
@@ -288,7 +288,7 @@ int compareFilenames(const void *ap, const void *bp)
     char *filename = (char *)bp;
 
     /* String compare the names to see if they are equal. */
-    return strcmp(fileA->filename, filename);
+    return !strcmp(fileA->filename, filename);
 }
 
 /*****************************************************************************
@@ -683,7 +683,7 @@ void readHeader(FILE *database_fp, vector_t *studentList)
     fread(&numStudents, sizeof(unsigned char), 1, database_fp);
 
 #ifdef DEBUG
-    printf("READ File count: %d\n", num_students);
+    printf("READ File count: %d\n", numStudents);
 #endif
 
     /* Loop over the number of students and read each one. */
@@ -777,21 +777,22 @@ int readDatabaseToMemory(char *databaseFile, vector_t *files)
        i.e. decompress and decrypt them into temp file. */
     if (unpackageDatabaseFilesContents(database_fp, TEMP_DATABASE_NAME))
     {
+        printf("Error while unpacking database\n");
         fclose(database_fp);
         return 1;
     }
 
     /* Open the unpackaged temp database file. */
     FILE *databaseTemp_fp;
-    databaseTemp_fp = fopen(TEMP_DATABASE_NAME, "rb");
+    if ((databaseTemp_fp = fopen(TEMP_DATABASE_NAME, "rb")) == NULL)
     {
+        printf("Error while opening temp database file\n");
         return 1;
     }
 
     /* Separate the content of the temp database file into 
        a list of file_t. */
     separateFilesToMemory(databaseTemp_fp, filenames, files);
-
     /* Close and remove temp database file. */
     fclose(databaseTemp_fp);
     remove(TEMP_DATABASE_NAME);
@@ -834,6 +835,7 @@ void separateFilesToMemory(FILE *database_fp, vector_t filenames, vector_t *file
            i.e. read the file contents into memory. */
         file.bytes = malloc(sizeof(char) * file.size);
         fread(file.bytes, sizeof(char), file.size, database_fp);
+        vectorPushBack(files, &file);
     }
 }
 
@@ -1168,7 +1170,7 @@ int unpackageDatabaseFilesContents(FILE *database_fp, char *files)
         shiftDecryptDatabase(&files_fp, files);
 
     /* If the database has been compressed using huffman, decompress database */
-    if (bitFlag & HUFFMAN_COMPRESS)
+    if (bitFlag & RUN_COMPRESS)
         ;
 
     /* If the database has been compressed using huffman, decompress database */

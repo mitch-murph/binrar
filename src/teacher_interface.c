@@ -379,6 +379,9 @@ char setBitFlag(char *filename)
 
 void saveDatabase(const vector_t studentList, char *databaseFile)
 {
+#ifdef DEBUG
+    printf("Existing Database: %s\n", databaseFile);
+#endif
     vector_t existingFiles;
     initVector(&existingFiles, sizeof(file_t));
     if (databaseFile[0] != 0)
