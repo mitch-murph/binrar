@@ -181,7 +181,7 @@ void teacherMainMenu(void)
             extractAll(databaseFile);
             break;
         default:
-            printf("Invalid choice.\n");
+            printf("\nInvalid choice.\n");
         }
     }
 }
@@ -195,7 +195,8 @@ int scanMenu(void (*printMenu)(const void *a), const void *a)
     int option;
     scanf("%d", &option);
     /* Consume trailing newline */
-    getchar();
+    if (flushScan() != 0)
+        return -1;
     return option;
 }
 
@@ -214,7 +215,7 @@ void printTeacherMainMenu(const void *a)
            "4. Load database\n"
            "5. Extract all files\n"
            "6. View help\n"
-           "7. exit the program\n");
+           "7. Exit the program\n");
 }
 
 void teacherStudentMainMenu(vector_t *studentList, char *databaseFile)
@@ -237,7 +238,7 @@ void teacherStudentMainMenu(vector_t *studentList, char *databaseFile)
             deleteStudent(studentList);
             break;
         default:
-            printf("Invalid choice.\n");
+            printf("\nInvalid choice.\n");
         }
     }
 }
@@ -262,7 +263,7 @@ void teacherAssessmentMenu(vector_t *studentList, char *databaseFile)
             extractAssessmentFile(databaseFile);
             break;
         default:
-            printf("Invalid choice.\n");
+            printf("\nInvalid choice.\n");
         }
     }
 }
@@ -306,7 +307,7 @@ void teacherAssessmentsListMenu(vector_t *studentList, char *databaseFile)
             filterAllAssessmentList(*studentList, &assessments);
             break;
         default:
-            printf("Invalid choice.\n");
+            printf("\nInvalid choice.\n");
         }
     }
     freeVector(assessments);
@@ -598,7 +599,7 @@ void teacherStudentListMenu(vector_t *studentList, char *databaseFile)
             sortStudents(studentList);
             break;
         default:
-            printf("Invalid choice.\n");
+            printf("\nInvalid choice.\n");
         }
     }
 }
@@ -673,7 +674,22 @@ void addStudent(vector_t *studentList)
     printf("Enter student ID>");
     scanf("%d", &newStudent.studentId);
     /* Consume trailing newline */
-    getchar();
+    if (flushScan() > 0)
+    {
+        printf("Invalid.\n");
+        printf("You will be returned to the menu list\n");
+        waitForEnter();
+        return;
+    }
+
+    if (searchStudentIndex(*studentList, newStudent.studentId) != -1)
+    {
+        printf("This student ID %d already exists in the database.\n",
+               newStudent.studentId);
+        printf("You will be returned to the menu list\n");
+        waitForEnter();
+        return;
+    }
 
     printf("Enter first name>");
     readStringFixLength(newStudent.firstName, MAX_NAME_SIZE);
@@ -742,7 +758,7 @@ void teacherStudentMenu(student_t *student, char *databaseFile)
             extractStudentAssessmentFile(student, databaseFile);
             break;
         default:
-            printf("Invalid choice.\n");
+            printf("\nInvalid choice.\n");
         }
     }
 }
@@ -777,7 +793,7 @@ void studentAssessmentList(student_t *student, char *databaseFile)
             extractStudentAssessmentFile(student, databaseFile);
             break;
         default:
-            printf("Invalid choice.\n");
+            printf("\nInvalid choice.\n");
         }
     }
 }
