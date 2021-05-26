@@ -165,7 +165,7 @@ void teacherAssessmentsListMenu(vector_t *studentList, char *databaseFile)
     vector_t assessments;
     getAllAssessments(*studentList, &assessments);
     int choice;
-    while ((choice = scanMenu(printTeacherAssessmentListMenu, &assessments)) != 7)
+    while ((choice = scanMenu(printTeacherAssessmentListMenu, &assessments)) != 7 && choice != 1)
     {
         switch (choice)
         {
