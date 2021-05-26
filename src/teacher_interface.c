@@ -856,10 +856,22 @@ void addStudentAssessments(student_t *student)
         return;
     }
 
-    printf("Enter the mark>");
-    scanf("%d", &newAssessment.mark);
-    /* Consume trailing newline */
-    getchar();
+    while (1)
+    {
+        printf("Enter the mark>");
+        scanf("%d", &newAssessment.mark);
+        /* Consume trailing newline */
+        if (flushScan() != 0 ||
+            newAssessment.mark < 0 || newAssessment.mark > 100)
+        {
+            printf("\nInvalid\n");
+            printf("Please enter a mark between 0 and 100\n");
+        }
+        else
+        {
+            break;
+        }
+    }
 
     vectorPushBack(&student->assessments, &newAssessment);
 }

@@ -28,7 +28,7 @@ void writeStudent(student_t *student, FILE *out_fp);
 void writeFileContents(char *filename, FILE *out_fp);
 void writeFileTContents(file_t file, FILE *out_fp);
 int compareFilenames(const void *ap, const void *bp);
-void writeFiles(FILE *out_fp, vector_t studentList, vector_t existingFiles);
+int writeFiles(FILE *out_fp, vector_t studentList, vector_t existingFiles);
 void writeHeader(FILE *out_fp, vector_t studentList);
 int XOREncryptDatabase(FILE *database_fp, long startPos);
 int shiftEncryptDatabase(FILE *database_fp, long startPos);
@@ -297,11 +297,14 @@ int compareFilenames(const void *ap, const void *bp)
  *   out_fp - File pointer to write to.
  *   studentList - The list of students and their assessments.
  *   existingFiles - The file existing in the database already.
- * Return:
+ * Post:
  *   The file pointer out_fp will now contain the content of the assessment
  *   files.
+ * Return:
+ *   1 - Success
+ *   0 - Failure
 *****************************************************************************/
-void writeFiles(FILE *out_fp, vector_t studentList, vector_t existingFiles)
+int writeFiles(FILE *out_fp, vector_t studentList, vector_t existingFiles)
 {
 #ifdef DEBUG
     printf("Start write files\n");
@@ -328,6 +331,14 @@ void writeFiles(FILE *out_fp, vector_t studentList, vector_t existingFiles)
             {
                 /* If the file does not exist in the database already,
                    write the file using the file in the drive. */
+                if (!checkIfFileExists(assessment->filename))
+                {
+                    printf("Can no longer find file %s.\n",
+                           assessment->filename);
+                    printf("Please ensure it is in the current "
+                           "directory when saving the database.");
+                    return 1;
+                }
                 writeFileContents(assessment->filename, out_fp);
             }
             else
@@ -338,6 +349,7 @@ void writeFiles(FILE *out_fp, vector_t studentList, vector_t existingFiles)
             }
         }
     }
+    return 0;
 }
 
 /*****************************************************************************
@@ -540,7 +552,14 @@ int writeDatabase(vector_t studentList, char *outFile, char bitFlag,
     long file_pos = ftell(out_fp);
 
     /* Write files to be saved to the database */
-    writeFiles(out_fp, studentList, existingFiles);
+    if (writeFiles(out_fp, studentList, existingFiles))
+    {
+        /* If failed to write, close the file pointer
+           and remove the file */
+        fclose(out_fp);
+        remove(outFile);
+        return 1;
+    }
 
     /* If user has opted huffman compress, compress database */
     if (bitFlag & HUFFMAN_COMPRESS)
