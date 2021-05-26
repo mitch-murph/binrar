@@ -1,5 +1,5 @@
-#include "src/teacher_interface.h"
-#include "src/compress.h"
+#include "src/teacher_interface.h" /* teacherMainMenu */
+#include "src/student_interface.h" /* studentMainMenu */
 #include <stdio.h>  /* printf */
 #include <string.h> /* strcmp */
 
@@ -9,9 +9,9 @@ int main(int argc, char *argv[])
     {
         teacherMainMenu();
     }
-    else if (argc == 3 && !strcmp(argv[1], "-s"))
+    else if (argc == 5 && !strcmp(argv[1], "-d") && !strcmp(argv[3], "-s"))
     {
-        printf("Student Mode %s\n", argv[2]);
+        studentMainMenu( argv[2], argv[4]);
     }
     else
     {
@@ -19,8 +19,8 @@ int main(int argc, char *argv[])
         printf("The run-time modes are\n");
         printf("Teacher: -t\n");
         printf("\t./binrar.out -t\n");
-        printf("Student: -s <studentID>\n");
-        printf("\t./binrar.out -s 101\n");
+        printf("Student: -d <database> -s <studentID>\n");
+        printf("\t./binrar.out -d student_database -s 101\n");
     }
     return 0;
 }

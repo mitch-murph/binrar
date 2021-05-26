@@ -26,6 +26,14 @@ void initStudent(student_t *student)
     initVector(&student->assessments, sizeof(assessment_t));
 }
 
+void copyStudent(student_t *dest, const student_t src)
+{
+    dest->studentId = src.studentId;
+    strcpy(dest->firstName, src.firstName);
+    strcpy(dest->lastName, src.lastName);
+    copyVector(&dest->assessments, src.assessments);
+}
+
 void freeStudent(student_t *student)
 {
     freeVector(student->assessments);
