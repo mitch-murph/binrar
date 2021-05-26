@@ -1,30 +1,26 @@
 #include "src/teacher_interface.h"
 #include "src/compress.h"
-#include <stdio.h>
+#include <stdio.h>  /* printf */
+#include <string.h> /* strcmp */
 
-void compress_test()
+int main(int argc, char *argv[])
 {
-    FILE *in_fp = fopen("koala.bmp", "rb+");
-    printf("%p\n", in_fp);
-    FILE *out_fp = fopen("compressed.bin", "wb+");
-    printf("%p\n", out_fp);
-    huffmanCompress(in_fp, out_fp);
-    fclose(in_fp);
-    fclose(out_fp);
-
-    printf("done\n");
-
-    in_fp = fopen("compressed.bin", "rb+");
-    printf("%p\n", in_fp);
-    out_fp = fopen("dfg.bmp", "wb+");
-    printf("%p\n", out_fp);
-    huffmanDecompress(in_fp, out_fp);
-    fclose(in_fp);
-    fclose(out_fp);
-}
-
-int main(void)
-{
-    teacherMainMenu();
+    if (argc == 2 && !strcmp(argv[1], "-t"))
+    {
+        teacherMainMenu();
+    }
+    else if (argc == 3 && !strcmp(argv[1], "-s"))
+    {
+        printf("Student Mode %s\n", argv[2]);
+    }
+    else
+    {
+        printf("Unknown run-time mode\n");
+        printf("The run-time modes are\n");
+        printf("Teacher: -t\n");
+        printf("\t./binrar.out -t\n");
+        printf("Student: -s <studentID>\n");
+        printf("\t./binrar.out -s 101\n");
+    }
     return 0;
 }
