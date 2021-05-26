@@ -165,7 +165,7 @@ void teacherAssessmentsListMenu(vector_t *studentList, char *databaseFile)
     vector_t assessments;
     getAllAssessments(*studentList, &assessments);
     int choice;
-    while ((choice = scanMenu(printTeacherAssessmentListMenu, &assessments)) != 7)
+    while ((choice = scanMenu(printTeacherAssessmentListMenu, &assessments)) != 7 && choice != 1)
     {
         switch (choice)
         {
@@ -392,7 +392,7 @@ void saveDatabase(const vector_t studentList, char *databaseFile)
             return;
         }
     }
-    
+
 #ifdef DEBUG
     printf("Existing file count: %d\n", existingFiles.size);
 #endif
