@@ -17,8 +17,8 @@ int scanFindStudent(const vector_t studentList);
 void printLaunch(void);
 void printTeacherMainMenu(const void *a);
 
-void teacherStudentMainMenu(vector_t *studentList);
-void teacherAssessmentMenu(vector_t *studentList);
+void teacherStudentMainMenu(vector_t *studentList, char *databaseFile);
+void teacherAssessmentMenu(vector_t *studentList, char *databaseFile);
 char setBitFlag(char *filename);
 void saveDatabase(const vector_t studentList, char *databaseFile);
 void loadDatabase(vector_t *studentList, char *databaseFile);
@@ -26,29 +26,29 @@ void extractAll(vector_t *studentList, char *databaseFile);
 
 void printTeacherStudentMainMenu(const void *studentList);
 void displayAllStudents(vector_t *studentList);
-void findStudent(const vector_t studentList);
+void findStudent(const vector_t studentList, char *databaseFile);
 void addStudent(vector_t *studentList);
 void deleteStudent(vector_t *studentList);
-void teacherStudentListMenu(vector_t *studentList);
+void teacherStudentListMenu(vector_t *studentList, char *databaseFile);
 void printTeacherStudentListMenu(const void *studentList);
 void sortStudents(vector_t *studentList);
 
 void printTeacherAssessmentMenu(const void *a);
-void teacherAssessmentsListMenu(vector_t *studentList);
+void teacherAssessmentsListMenu(vector_t *studentList, char *databaseFile);
 void displayAllAssessments(vector_t *studentList);
 void addAssessment(vector_t *studentList);
 void deleteAssessment(vector_t *studentList);
-void extractAssessmentFile(vector_t *studentList);
+void extractAssessmentFile(vector_t *studentList, char *databaseFile);
 void sortAllAssessmentList(vector_t *assessments);
 void filterAllAssessmentList(const vector_t studentList, vector_t *assessments);
 void printTeacherAssessmentListMenu(const void *a);
 
-void teacherStudentMenu(student_t *student);
+void teacherStudentMenu(student_t *student, char *databaseFile);
 void printTeacherStudentMenu(const void *a);
-void studentAssessmentList(student_t *student);
+void studentAssessmentList(student_t *student, char *databaseFile);
 void addStudentAssessments(student_t *student);
 void deleteStudentAssessment(student_t *student);
-void extractStudentAssessmentFile(student_t *student);
+void extractStudentAssessmentFile(student_t *student, char *databaseFile);
 
 void displayStudentAssessments(const student_t student);
 void printStudentAssessmentList(const void *a);
@@ -166,10 +166,10 @@ void teacherMainMenu(void)
         switch (choice)
         {
         case 1:
-            teacherStudentMainMenu(&studentList);
+            teacherStudentMainMenu(&studentList, databaseFile);
             break;
         case 2:
-            teacherAssessmentMenu(&studentList);
+            teacherAssessmentMenu(&studentList, databaseFile);
             break;
         case 3:
             saveDatabase(studentList, databaseFile);
@@ -217,7 +217,7 @@ void printTeacherMainMenu(const void *a)
            "7. exit the program\n");
 }
 
-void teacherStudentMainMenu(vector_t *studentList)
+void teacherStudentMainMenu(vector_t *studentList, char *databaseFile)
 {
     int choice;
     while ((choice = scanMenu(printTeacherStudentMainMenu, NULL)) != 5)
@@ -225,10 +225,10 @@ void teacherStudentMainMenu(vector_t *studentList)
         switch (choice)
         {
         case 1:
-            teacherStudentListMenu(studentList);
+            teacherStudentListMenu(studentList, databaseFile);
             break;
         case 2:
-            findStudent(*studentList);
+            findStudent(*studentList, databaseFile);
             break;
         case 3:
             addStudent(studentList);
@@ -242,7 +242,7 @@ void teacherStudentMainMenu(vector_t *studentList)
     }
 }
 
-void teacherAssessmentMenu(vector_t *studentList)
+void teacherAssessmentMenu(vector_t *studentList, char *databaseFile)
 {
     int choice;
     while ((choice = scanMenu(printTeacherAssessmentMenu, NULL)) != 5)
@@ -250,7 +250,7 @@ void teacherAssessmentMenu(vector_t *studentList)
         switch (choice)
         {
         case 1:
-            teacherAssessmentsListMenu(studentList);
+            teacherAssessmentsListMenu(studentList, databaseFile);
             break;
         case 2:
             addAssessment(studentList);
@@ -259,7 +259,7 @@ void teacherAssessmentMenu(vector_t *studentList)
             deleteAssessment(studentList);
             break;
         case 4:
-            extractAssessmentFile(studentList);
+            extractAssessmentFile(studentList, databaseFile);
             break;
         default:
             printf("Invalid choice.\n");
@@ -277,7 +277,7 @@ void printTeacherAssessmentMenu(const void *a)
            "5. Return back to Main Menu\n");
 }
 
-void teacherAssessmentsListMenu(vector_t *studentList)
+void teacherAssessmentsListMenu(vector_t *studentList, char *databaseFile)
 {
     vector_t assessments;
     getAllAssessments(*studentList, &assessments);
@@ -297,7 +297,7 @@ void teacherAssessmentsListMenu(vector_t *studentList)
             getAllAssessments(*studentList, &assessments);
             break;
         case 4:
-            extractAssessmentFile(studentList);
+            extractAssessmentFile(studentList, databaseFile);
             break;
         case 5:
             sortAllAssessmentList(&assessments);
@@ -378,8 +378,33 @@ void deleteAssessment(vector_t *studentList)
     deleteStudentAssessment(student);
 }
 
-void extractAssessmentFile(vector_t *studentList)
+void extractAssessmentFile(vector_t *studentList, char *databaseFile)
 {
+
+    if (databaseFile[0] == 0)
+    {
+        printf("\nNo database has been loaded.\n"
+               "Please ensure you have loaded a database.\n"
+               "If you added assessment files, you must first save\n"
+               "it to a database before it can be extracted.\n");
+        printf("You will be returned to the menu\n");
+        waitForEnter();
+        return;
+    }
+
+    if (scanAreYouSure("All files in the current directory with same name\n"
+                       "as those in the database will be overwritten.\n"
+                       "Are you sure you wish to continue (Y/N)?>"))
+        return;
+
+    if (unpackageDatabaseFiles(databaseFile))
+    {
+        printf("\n\nCannot read database file %s.\n"
+               "You will be returned to the menu\n",
+               databaseFile);
+        waitForEnter();
+        return;
+    }
 }
 
 void sortAllAssessmentList(vector_t *assessments)
@@ -539,7 +564,7 @@ void printTeacherStudentMainMenu(const void *a)
            "5. Return back to Main Menu\n");
 }
 
-void teacherStudentListMenu(vector_t *studentList)
+void teacherStudentListMenu(vector_t *studentList, char *databaseFile)
 {
     int choice;
     while ((choice = scanMenu(printTeacherStudentListMenu, studentList)) != 6 && choice != 1)
@@ -547,7 +572,7 @@ void teacherStudentListMenu(vector_t *studentList)
         switch (choice)
         {
         case 2:
-            findStudent(*studentList);
+            findStudent(*studentList, databaseFile);
             break;
         case 3:
             addStudent(studentList);
@@ -617,14 +642,14 @@ int scanFindStudent(const vector_t studentList)
     return index;
 }
 
-void findStudent(const vector_t studentList)
+void findStudent(const vector_t studentList, char *databaseFile)
 {
     int index = scanFindStudent(studentList);
     if (index == -1)
         return;
 
     student_t *maybeStudent = vectorGet(studentList, index);
-    teacherStudentMenu(maybeStudent);
+    teacherStudentMenu(maybeStudent, databaseFile);
 }
 
 void addStudent(vector_t *studentList)
@@ -683,7 +708,7 @@ void sortStudents(vector_t *studentList)
     }
 }
 
-void teacherStudentMenu(student_t *student)
+void teacherStudentMenu(student_t *student, char *databaseFile)
 {
     int choice;
     while ((choice = scanMenu(printTeacherStudentMenu, student)) != 5)
@@ -691,7 +716,7 @@ void teacherStudentMenu(student_t *student)
         switch (choice)
         {
         case 1:
-            studentAssessmentList(student);
+            studentAssessmentList(student, databaseFile);
             break;
         case 2:
             addStudentAssessments(student);
@@ -700,7 +725,7 @@ void teacherStudentMenu(student_t *student)
             deleteStudentAssessment(student);
             break;
         case 4:
-            extractStudentAssessmentFile(student);
+            extractStudentAssessmentFile(student, databaseFile);
             break;
         default:
             printf("Invalid choice.\n");
@@ -721,7 +746,7 @@ void printTeacherStudentMenu(const void *a)
            "5. Return back to Student Main Menu\n");
 }
 
-void studentAssessmentList(student_t *student)
+void studentAssessmentList(student_t *student, char *databaseFile)
 {
     int choice;
     while ((choice = scanMenu(printStudentAssessmentList, student)) != 6 && choice != 1)
@@ -735,7 +760,7 @@ void studentAssessmentList(student_t *student)
             deleteStudentAssessment(student);
             break;
         case 4:
-            extractStudentAssessmentFile(student);
+            extractStudentAssessmentFile(student, databaseFile);
             break;
         default:
             printf("Invalid choice.\n");
@@ -824,6 +849,6 @@ void deleteStudentAssessment(student_t *student)
     vectorRemove(&student->assessments, index);
 }
 
-void extractStudentAssessmentFile(student_t *student)
+void extractStudentAssessmentFile(student_t *student, char *databaseFile)
 {
 }
