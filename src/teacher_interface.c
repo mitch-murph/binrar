@@ -205,7 +205,7 @@ void printTeacherAssessmentListMenu(const void *studentList)
            "4. Extract assessment file\n"
            "5. Sort by mark\n"
            "6. Filter by subject\n"
-           "7. Return back to Main Menu\n");
+           "7. Return back\n");
 }
 
 void displayAllAssessments(vector_t *assessments)
@@ -506,7 +506,7 @@ void printTeacherStudentListMenu(const void *studentList)
            "3. Add student\n"
            "4. Delete student\n"
            "5. Sort students\n"
-           "6. Return back to Main Menu\n");
+           "6. Return back\n");
 }
 
 void displayAllStudents(vector_t *studentList)
@@ -661,13 +661,13 @@ void printTeacherStudentMenu(const void *a)
 {
     const student_t *student = a;
     printf("\n\nStudent Menu\n");
-    printf("For student Id: %d\n", student->studentId);
+    printf("For...\nStudent ID: %d\n", student->studentId);
     printf("Name: %s %s\n", student->lastName, student->firstName);
     printf("1. Open students assessment list\n"
            "2. Add assessment\n"
            "3. Delete assessment\n"
            "4. Extract Assessment File\n"
-           "5. Return back to Student Main Menu\n");
+           "5. Return back\n");
 }
 
 void studentAssessmentList(student_t *student, char *databaseFile)
@@ -699,7 +699,7 @@ void printStudentAssessmentList(const void *a)
 {
     const student_t *student = a;
     printf("\n\nStudent Menu\n");
-    printf("For student Id: %d\n", student->studentId);
+    printf("For...\nStudent ID: %d\n", student->studentId);
     printf("Name: %s %s\n", student->lastName, student->firstName);
     displayStudentAssessments(*student);
     printf("1. Close students assessment list\n"
@@ -707,7 +707,7 @@ void printStudentAssessmentList(const void *a)
            "3. Delete assessment\n"
            "4. Extract Assessment File\n"
            "5. Sort by Mark\n"
-           "6. Return back to Student Main Menu\n");
+           "6. Return back\n");
 }
 
 void addStudentAssessments(student_t *student)
