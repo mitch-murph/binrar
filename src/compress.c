@@ -488,6 +488,11 @@ void runLengthCompress(FILE *in_fp, FILE *out_fp)
                and the current buffer will be in the prev next loop. */
             prev = temp;
             temp = buffer;
+
+#ifdef DEBUG
+            printf("RUN prev: %02x curr: %02x\n", prev, buffer);
+#endif
+
             if (prev == buffer)
             {
                 /* If the previous matches the current, increment. */
@@ -498,17 +503,17 @@ void runLengthCompress(FILE *in_fp, FILE *out_fp)
                 /* If it no longer matches the previous byte.
                    Write the count and the byte. 
                    Set count back to 0. */
-                fputc(count, out_fp);
+                fwrite(&count, sizeof(int), 1, out_fp);
                 fputc(prev, out_fp);
-                count = 0;
+                count = 1;
             }
         }
     }
     /* Write the final byte and its size. Ensure the file is not empty. */
     if (flag != 0)
     {
-        fputc(count, out_fp);
-        fputc(prev, out_fp);
+        fwrite(&count, sizeof(int), 1, out_fp);
+        fputc(temp, out_fp);
     }
 }
 
@@ -524,7 +529,7 @@ void runLengthDecompress(FILE *in_fp, FILE *out_fp)
 {
     /* Loop while not EOF */
     int frequency;
-    while ((frequency = fgetc(in_fp)) != EOF)
+    while (fread(&frequency, sizeof(int), 1, out_fp) == 1)
     {
         /* Get the frequency and value */
         int value = fgetc(in_fp);
