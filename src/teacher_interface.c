@@ -22,7 +22,7 @@ void teacherAssessmentMenu(vector_t *studentList, char *databaseFile);
 char setBitFlag(char *filename);
 void saveDatabase(const vector_t studentList, char *databaseFile);
 void loadDatabase(vector_t *studentList, char *databaseFile);
-void extractAll(vector_t *studentList, char *databaseFile);
+void extractAll(char *databaseFile);
 
 void printTeacherStudentMainMenu(const void *studentList);
 void displayAllStudents(vector_t *studentList);
@@ -38,7 +38,7 @@ void teacherAssessmentsListMenu(vector_t *studentList, char *databaseFile);
 void displayAllAssessments(vector_t *studentList);
 void addAssessment(vector_t *studentList);
 void deleteAssessment(vector_t *studentList);
-void extractAssessmentFile(vector_t *studentList, char *databaseFile);
+void extractAssessmentFile(char *databaseFile);
 void sortAllAssessmentList(vector_t *assessments);
 void filterAllAssessmentList(const vector_t studentList, vector_t *assessments);
 void printTeacherAssessmentListMenu(const void *a);
@@ -178,7 +178,7 @@ void teacherMainMenu(void)
             loadDatabase(&studentList, databaseFile);
             break;
         case 5:
-            extractAll(&studentList, databaseFile);
+            extractAll(databaseFile);
             break;
         default:
             printf("Invalid choice.\n");
@@ -259,7 +259,7 @@ void teacherAssessmentMenu(vector_t *studentList, char *databaseFile)
             deleteAssessment(studentList);
             break;
         case 4:
-            extractAssessmentFile(studentList, databaseFile);
+            extractAssessmentFile(databaseFile);
             break;
         default:
             printf("Invalid choice.\n");
@@ -297,7 +297,7 @@ void teacherAssessmentsListMenu(vector_t *studentList, char *databaseFile)
             getAllAssessments(*studentList, &assessments);
             break;
         case 4:
-            extractAssessmentFile(studentList, databaseFile);
+            extractAssessmentFile(databaseFile);
             break;
         case 5:
             sortAllAssessmentList(&assessments);
@@ -378,9 +378,8 @@ void deleteAssessment(vector_t *studentList)
     deleteStudentAssessment(student);
 }
 
-void extractAssessmentFile(vector_t *studentList, char *databaseFile)
+void extractAssessmentFile(char *databaseFile)
 {
-
     if (databaseFile[0] == 0)
     {
         printf("\nNo database has been loaded.\n"
@@ -392,12 +391,27 @@ void extractAssessmentFile(vector_t *studentList, char *databaseFile)
         return;
     }
 
-    if (scanAreYouSure("All files in the current directory with same name\n"
-                       "as those in the database will be overwritten.\n"
+    char filename[MAX_FILENAME_SIZE];
+    if (scanFilename(filename, "Enter the name of the file you wish to extract>"))
+        return;
+
+    if (!checkIfFileExistsInDatabase(databaseFile, filename))
+    {
+        printf("\n%s cannot be found in the database.\n"
+               "If you have recently added the assessment file, you must first save\n"
+               "it to a database before it can be extracted.\n",
+               filename);
+        printf("You will be returned to the menu\n");
+        waitForEnter();
+        return;
+    }
+
+    if (scanAreYouSure("Any files in the current directory with same name\n"
+                       "will be overwritten.\n"
                        "Are you sure you wish to continue (Y/N)?>"))
         return;
 
-    if (unpackageDatabaseFiles(databaseFile))
+    if (unpackageDatabaseFiles(databaseFile, filename))
     {
         printf("\n\nCannot read database file %s.\n"
                "You will be returned to the menu\n",
@@ -526,7 +540,7 @@ void loadDatabase(vector_t *studentList, char *databaseFile)
     waitForEnter();
 }
 
-void extractAll(vector_t *studentList, char *databaseFile)
+void extractAll(char *databaseFile)
 {
     if (databaseFile[0] == 0)
     {
@@ -544,7 +558,7 @@ void extractAll(vector_t *studentList, char *databaseFile)
                        "Are you sure you wish to continue (Y/N)?>"))
         return;
 
-    if (unpackageDatabaseFiles(databaseFile))
+    if (unpackageDatabaseFiles(databaseFile, NULL))
     {
         printf("\n\nCannot read database file %s.\n"
                "You will be returned to the menu\n",
@@ -851,4 +865,6 @@ void deleteStudentAssessment(student_t *student)
 
 void extractStudentAssessmentFile(student_t *student, char *databaseFile)
 {
+    /* TODO: Implement student assessment file*/
+    extractAssessmentFile(databaseFile);
 }

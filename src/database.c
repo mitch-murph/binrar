@@ -45,6 +45,8 @@ void readDatabaseFp(FILE *database_fp, vector_t *filenames);
 void separateFilesToMemory(FILE *database_fp, vector_t filenames,
                            vector_t *files);
 void separateFiles(FILE *database_fp, vector_t filenames);
+void separateFilesFilter(FILE *database_fp, vector_t filenames,
+                         char *filenameFilter);
 int unpackageDatabaseFilesContents(FILE *database_fp, char *files);
 int checkIfFileExists(char *filename);
 
@@ -65,6 +67,33 @@ int checkIfFileExists(char *filename)
         return 1;
     }
     return 0;
+}
+
+/*****************************************************************************
+ * Given a filename, this function will check if the file exists in the
+ * database.
+ * Input:
+ *   databaseFile - The database file to verify if the file exist.
+ *   filename - The name of the file to check if it exists.
+ * Return:
+ *   1 - The file does exist.
+ *   0 - The file does not exist.
+*****************************************************************************/
+int checkIfFileExistsInDatabase(char *databaseFile, char *filename)
+{
+    /* Read all students in stored database. */
+    vector_t studentList;
+    readDatabase(databaseFile, &studentList);
+
+    /* Get all filenames in the database. */
+    vector_t filenames;
+    getAllFilenames(studentList, &filenames);
+    int index = search(filenames, compareString, filename);
+
+    /* Free vectors and return result. */
+    freeVector(studentList);
+    freeVector(filenames);
+    return index != -1;
 }
 
 /*****************************************************************************
@@ -839,16 +868,79 @@ void separateFiles(FILE *database_fp, vector_t filenames)
 }
 
 /*****************************************************************************
+ * This function separates the packaged files and searches for the filename
+ * filter and rewriting that file only.
+ * Input:
+ *   database_fp - File pointer to the database to be read from.
+ *   filenames - List of the file names to be read in the database.
+ *   filenameFilter - Filename to rewrite from database.
+ * Post:
+ *   The packaged files in database_fp will be created in the current
+ *   directory.
+*****************************************************************************/
+void separateFilesFilter(FILE *database_fp, vector_t filenames, char *filenameFilter)
+{
+    /* Loop over each file in the filename list */
+    int i;
+    for (i = 0; i < filenames.size; i++)
+    {
+        /* Read the size of the current file being read. */
+        long fileSize;
+        fread(&fileSize, sizeof(long), 1, database_fp);
+
+        /* Copy the filename from the list so that
+           it is easier to work with. */
+        char filename[MAX_FILENAME_SIZE];
+        strcpy(filename, (char *)vectorGet(filenames, i));
+
+#ifdef DEBUG
+        printf("READ %s size: %ld\n", filename, fileSize);
+#endif
+
+        /* Check if filename equals the one wanted. */
+        if (!strcmp(filename, filenameFilter))
+        {
+            /* Create (or open and overwrite) the filename from the list */
+            FILE *file_fp = fopen(filename, "wb+");
+            if (file_fp == NULL)
+            {
+                printf("error opening file %s\n", filename);
+            }
+
+            /* Now read each byte into the new file from the database. */
+            int buffer;
+            while (fileSize--)
+            {
+                buffer = fgetc(database_fp);
+                fputc(buffer, file_fp);
+            }
+
+            /* Close the new file. */
+            fclose(file_fp);
+        }
+        else
+        {
+            /* If it doesn't, still need to move 
+               the file pointer to next file. */
+            while (fileSize--)
+                fgetc(database_fp);
+        }
+    }
+}
+
+/*****************************************************************************
  * This function extracts all assessment files to the current directory. 
  * This includes unpackaging (decrypt and decompress) the assessment files
  * before extraction.
  * Input:
  *   databaseFile - The name of the database to extract the file from.
+ *   filenameFilter - Filename to rewrite from database. If NULL filter
+ *                    is ignored.
  * Post:
  *   The packaged files in database_fp will be created in the current
  *   directory.
 *****************************************************************************/
-int unpackageDatabaseFiles(char *databaseFile)
+int unpackageDatabaseFiles(char *databaseFile, char *filenameFilter)
 {
     /* Open the database file. */
     FILE *database_fp;
@@ -878,8 +970,11 @@ int unpackageDatabaseFiles(char *databaseFile)
         return 1;
     }
 
-    /* Now separate the grouped files into new files. */
-    separateFiles(files_fp, filenames);
+    /* Now separate the grouped files into new files/file. */
+    if (filenameFilter == NULL)
+        separateFiles(files_fp, filenames);
+    else
+        separateFilesFilter(files_fp, filenames, filenameFilter);
 
     /* close the unpackaged database and remove it. */
     fclose(files_fp);
