@@ -22,7 +22,7 @@ void sortMyAssessments(student_t student);
 void filterMyAssessments(student_t *tempStudent, const student_t student);
 
 /*****************************************************************************
- * This function is the main enter point to the student menu.
+ * This function is the main entry point to the student menu.
  * Input:
  *   databaseFile - The database file name.
  *   studentId - The student ID of the student launching the program.
@@ -305,7 +305,7 @@ void filterMyAssessments(student_t *tempStudent, const student_t student)
 
     if (strcmp(subject, ""))
     {
-        /* If the user has not entered blank/
+        /* If the user has not entered blank
            Loop over all the students assessments */
         initStudent(tempStudent);
         int i;

@@ -171,9 +171,10 @@ void displayStudentAssessments(const student_t student)
 }
 
 /*****************************************************************************
- * This function prints a table of a students assessments.
+ * This function scans the user for how they would like to sort the student
+ * assessment list. And performs a sort in that way.
  * Input:
- *   student - The students whos assignment is to be printed.
+ *   student - The students whos assignments are to be sorted.
  * Post:
  *   student assesments will now be sorted by either ascending 
  *   or descending order depending on option selected.

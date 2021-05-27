@@ -1,7 +1,7 @@
-#include "src/teacher_interface.h" /* teacherMainMenu */
-#include "src/student_interface.h" /* studentMainMenu */
 #include <stdio.h>  /* printf */
 #include <string.h> /* strcmp */
+#include "src/teacher_interface.h"
+#include "src/student_interface.h"
 
 int main(int argc, char *argv[])
 {
@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     }
     else if (argc == 5 && !strcmp(argv[1], "-d") && !strcmp(argv[3], "-s"))
     {
-        studentMainMenu( argv[2], argv[4]);
+        startStudentMainMenu( argv[2], argv[4]);
     }
     else
     {
