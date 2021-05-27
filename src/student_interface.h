@@ -4,6 +4,6 @@
 /*******************************************************************************
  * Public function prototypes
 *******************************************************************************/
-void studentMainMenu(char *databaseFile, char *studentId);
+void startStudentMainMenu(char *databaseFile, char *studentId);
 
 #endif
