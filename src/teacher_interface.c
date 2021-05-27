@@ -766,6 +766,5 @@ void deleteStudentAssessment(student_t *student)
 
 void extractStudentAssessmentFile(student_t *student, char *databaseFile)
 {
-    /* TODO: Implement student assessment file*/
     extractAssessmentFile(databaseFile);
 }

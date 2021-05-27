@@ -769,7 +769,6 @@ void readHeader(FILE *database_fp, vector_t *studentList)
 void readDatabaseFp(FILE *database_fp, vector_t *studentList)
 {
     /* Initialise the student list. */
-    /* TODO: This was sizeof(char) * 255 */
     initVector(studentList, sizeof(student_t));
     /* Read all the database information. */
     readHeader(database_fp, studentList);
