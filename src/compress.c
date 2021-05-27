@@ -64,11 +64,11 @@ void countBytes(FILE *fp, hashmap_t *map)
 }
 
 /*****************************************************************************
- * This function transverses a tree determine the address of each node in
+ * This function trasverses a tree determine the address of each node in
  * the tree. The address will result in a set of 1s and 0s. Where 1
  * denotes right and 0 is left.
  * Input:
- *   current - The current node being tranversed.
+ *   current - The current node being traversed.
  *   addr - Vector of left and rights taken to reach current point.
  * Return:
  *   The sum of the node addresses in bits mutlipled by their frequency
@@ -328,7 +328,8 @@ void huffmanCompress(FILE *in_fp, FILE *out_fp)
 {
     /* Count the frequency of each byte into a hashmap. */
     hashmap_t map;
-    initHashmap(&map, sizeof(node_t), 0x101, compareNodeNode, hashNode, nodeExists, initNode);
+    initHashmap(&map, sizeof(node_t), 0x101,
+                compareNodeNode, hashNode, nodeExists, initNode);
     /* Store the start of the file so that file pointer can be reverted.
        NOTE we cannot seek the start incase the given in_fp is not
        at the start */

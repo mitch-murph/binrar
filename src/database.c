@@ -862,7 +862,8 @@ int readDatabaseToMemory(char *databaseFile, vector_t *files)
  *   files - Will contain a file_t for each file in database_fp database 
  *           file pointer.
 *****************************************************************************/
-void separateFilesToMemory(FILE *database_fp, vector_t filenames, vector_t *files)
+void separateFilesToMemory(FILE *database_fp, vector_t filenames,
+                           vector_t *files)
 {
     /* Loop over each file in the filename list */
     int i;
@@ -951,7 +952,8 @@ void separateFiles(FILE *database_fp, vector_t filenames)
  *   The packaged files in database_fp will be created in the current
  *   directory.
 *****************************************************************************/
-void separateFilesFilter(FILE *database_fp, vector_t filenames, char *filenameFilter)
+void separateFilesFilter(FILE *database_fp, vector_t filenames,
+                         char *filenameFilter)
 {
     /* Loop over each file in the filename list */
     int i;
@@ -1266,14 +1268,16 @@ int unpackageDatabaseFilesContents(FILE *database_fp, char *files)
             return 1;
     }
 
-    /* If the database has been compressed using huffman, decompress database */
+    /* If the database has been compressed using huffman, 
+       decompress database */
     if (bitFlag & RUN_COMPRESS)
     {
         if (runDecompressDatabase(&files_fp, files))
             return 1;
     }
 
-    /* If the database has been compressed using huffman, decompress database */
+    /* If the database has been compressed using huffman, 
+       decompress database */
     if (bitFlag & HUFFMAN_COMPRESS)
     {
         if (huffmanDecompressDatabase(&files_fp, files))
