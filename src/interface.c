@@ -3,6 +3,8 @@
  * Interface
  * Functions that are common between student_interface and teacher_interface
 *****************************************************************************/
+#include "interface.h" /* Function declarations */
+
 #include <stdio.h>   /* printf, getchar, scanf */
 #include "vector.h"  /* vectorGet */
 #include "student.h" /* compareAssessmentAsc, compareAssessmentDesc */
