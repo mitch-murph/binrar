@@ -3,12 +3,11 @@
  * Interface
  * Functions that are common between student_interface and teacher_interface
 *****************************************************************************/
-#include "interface.h" /* Function declarations */
-
 #include <stdio.h>   /* printf, getchar, scanf */
-#include "vector.h"  /* vectorGet */
-#include "student.h" /* compareAssessmentAsc, compareAssessmentDesc */
-#include "sort.h"    /* sort */
+#include "interface.h"
+#include "vector.h"
+#include "student.h"
+#include "sort.h"
 
 /*****************************************************************************
  * This function reads a string and only accepted a fixed length. Exceeding
