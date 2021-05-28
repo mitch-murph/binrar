@@ -13,7 +13,8 @@ int search(vector_t vector, int (*compare)(const void *a, const void *b), const 
     }
     return -1;
 }
-
+/*compares two strings to see if the 
+search algorith has been satisfied*/
 int compareString(const void *ap, const void *bp)
 {
     char *stringA = (char *)ap;
