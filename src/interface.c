@@ -1,4 +1,10 @@
-#include <stdio.h>
+/*****************************************************************************
+ * 48430 Fundamentals of C Programming - Assignment 3
+ * Interface
+ * Functions that are common between student_interface and teacher_interface
+*****************************************************************************/
+#include <stdio.h>   /* printf, getchar, scanf */
+#include "interface.h"
 #include "vector.h"
 #include "student.h"
 #include "sort.h"
@@ -38,23 +44,44 @@ int readStringFixLength(char *strp, int length)
     return flag;
 }
 
+/*****************************************************************************
+ * This function flushs scan input by clearing all chars until newline.
+ * Input:
+ *   Node
+ * Return:
+ *   Number of characters cleared.
+*****************************************************************************/
 int flushScan(void)
 {
+    /* Read all chars until newline is reached. */
     int i = 0;
     while (getchar() != '\n')
         i++;
+    /* Return number of chars read. */
     return i;
 }
 
+/*****************************************************************************
+ * This function asks the user if they are sure they want to continue.
+ * Input:
+ *   message - The message to display to the user.
+ * Return:
+ *   0 - Yes, continue
+ *   1 - No, dont continue
+*****************************************************************************/
 int scanAreYouSure(char *message)
 {
     char option;
     do
     {
+        /* Ask the users the message and read their input. */
         printf("%s", message);
         scanf("%c", &option);
+        /* Check only one character was entered */
         if (flushScan() == 0)
         {
+            /* Determine if it was Y or N, and return the result.
+               If not, ask the user again. */
             if (option == 'Y')
             {
                 return 0;
@@ -84,10 +111,20 @@ void waitForEnter()
         ;
 }
 
-int scanMenu(void (*printMenu)(const void *a), const void *a)
+/*****************************************************************************
+ * This function calls the provided printMenu function and then scans for 
+ * the users option choice.
+ * Input:
+ *   printMenu - Pointer to the printMenu function.
+ *   arg - the optional argument to pass to printMenu.
+ * Return:
+ *   The option selected.
+ *   On read error will reutrn -1
+*****************************************************************************/
+int scanMenu(void (*printMenu)(const void *arg), const void *arg)
 {
     /* Print the menu */
-    printMenu(a);
+    printMenu(arg);
     /* Read user input from menu selection */
     printf("Enter your choice>");
     int option;
@@ -98,22 +135,33 @@ int scanMenu(void (*printMenu)(const void *a), const void *a)
     return option;
 }
 
+/*****************************************************************************
+ * This function prints a table of a students assessments.
+ * Input:
+ *   student - The students whos assignment is to be printed.
+ * Return:
+ *   None
+*****************************************************************************/
 void displayStudentAssessments(const student_t student)
 {
-    int size = student.assessments.size;
+    /* Print the table header. */
     printf("-------------------------------------------------\n");
     printf("|%-s|%-s|%s|\n",
            "Filename       ",
            "Subject        ",
            "Mark           ");
     printf("-------------------------------------------------\n");
+    /* If there are no assessments. Print message. */
+    int size = student.assessments.size;
     if (size < 1)
     {
         printf("|%-47s|\n",
                " No assesments.");
     }
+    /* Loop over every assessment under the student. */
     while (size--)
     {
+        /* Print the assessment. */
         assessment_t *assessment = vectorGet(student.assessments, size);
         printf("|%15.15s", assessment->filename);
         printf("|%-15s", assessment->subject);
@@ -122,8 +170,18 @@ void displayStudentAssessments(const student_t student)
     printf("-------------------------------------------------\n");
 }
 
+/*****************************************************************************
+ * This function scans the user for how they would like to sort the student
+ * assessment list. And performs a sort in that way.
+ * Input:
+ *   student - The students whos assignments are to be sorted.
+ * Post:
+ *   student assesments will now be sorted by either ascending 
+ *   or descending order depending on option selected.
+*****************************************************************************/
 void sortStudentAssessmentFile(student_t *student)
 {
+    /* Ask the user if they want to sort ascending or descending. */
     printf("1. Ascending\n"
            "2. Descending\n");
     printf("Sort mark by>");
@@ -131,6 +189,9 @@ void sortStudentAssessmentFile(student_t *student)
     scanf("%d", &option);
     /* Consume newline */
     flushScan();
+
+    /* Apply the option they have picked.
+       If neither, return to menu. */
     if (option == 1)
     {
         sort(student->assessments, compareAssessmentAsc);
@@ -147,6 +208,18 @@ void sortStudentAssessmentFile(student_t *student)
     }
 }
 
+/*****************************************************************************
+ * This function scans a filename from the user and ensure it is the correct
+ * name size.
+ * Input:
+ *   filename - The variable to store the filename in.
+ *   message - The message to display to the user before scanning the name.
+ * Return:
+ *   1 - Failure
+ *   0 - Success
+ * Post:
+ *   filename will now contain the filename the user has entered.
+*****************************************************************************/
 int scanFilename(char *filename, char *message)
 {
     printf("%s", message);
