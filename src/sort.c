@@ -3,6 +3,7 @@
  * Sort
  * The implemenation of the sort function.
 *****************************************************************************/
+#include <stdio.h>  /* printf */
 #include "vector.h"
 #include "sort.h"
 
@@ -33,6 +34,10 @@ void sort(vector_t vector, int (*compare)(const void *a, const void *b))
             through it again and if not it terminates */
         for (i = 0; i < vector.size - j - 1; i++)
         {
+
+#ifdef DEBUG
+            printf("Swapping positions: %d and %d\n", i, j);
+#endif
             /*checks to see if the element needs to be 
               moved to the adjacent position*/
             if (compare(vectorGet(vector, i), vectorGet(vector, i + 1)) > 0)

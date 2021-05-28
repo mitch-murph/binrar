@@ -173,7 +173,12 @@ void vectorResize(vector_t *vector, int newCapacity)
     vector->vector = malloc(newCapacity * vector->elementSize);
     /* Ensure the vector was resized. */
     if (vector->vector == NULL)
+    {
+#ifdef DEBUG
+        printf("VECTOR cannot allocated new memory.");
+#endif
         return;
+    }
     /* Copy the old values to the new memory, set it to the vector ptr */
     memcpy(vector->vector, oldVector, vector->size * vector->elementSize);
     vector->capacity = newCapacity;
@@ -196,6 +201,9 @@ int vectorRemove(vector_t *vector, int position)
     /* Ensure the position to be removed exists. */
     if (vector->size < position)
     {
+#ifdef DEBUG
+        printf("VECTOR tried to remove non real position.");
+#endif
         return 1;
     }
     /* Loop through all elements past the removed position backwards. */
@@ -226,6 +234,9 @@ int vectorSet(vector_t vector, void *value, int position)
     /* Ensure the value exists in the array. */
     if (vector.capacity < position)
     {
+#ifdef DEBUG
+        printf("VECTOR Setting element out of range.");
+#endif
         return 1;
     }
     /* Replace the value at the given position with the new value. */

@@ -5,8 +5,8 @@
     1. Shift encryption
     2. XOR Cipher
 *****************************************************************************/
-#include <stdio.h>  /* fputc*/
-#include <string.h> /* strlen*/
+#include <stdio.h>  /* fputc, printf */
+#include <string.h> /* strlen */
 #include "encrypt.h"
 
 /*****************************************************************************
@@ -35,6 +35,9 @@ void shift_encrypt_bytes(FILE *fd1, FILE *fd2, int amount)
     {
         shiftCode = shiftCode + amount;
         fputc(shiftCode, fd2);
+#ifdef DEBUG
+        printf("shiftCode: %02x\n", shiftCode);
+#endif
     }
 }
 
@@ -105,5 +108,8 @@ void XOR_cipher(FILE *in_file, FILE *out_file, char *key)
     {
         buffer = buffer ^ key[i++ % keyLen];
         fputc(buffer, out_file);
+#ifdef DEBUG
+        printf("XOR: %02x\n", buffer);
+#endif
     }
 }

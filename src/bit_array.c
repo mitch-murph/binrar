@@ -26,6 +26,9 @@ int getBit(int value, int position)
 {
     /* Bit shift a 1 to the wanted position and bitwise-and
        to check if bit exists */
+#ifdef DEBUG
+    printf("Getting position %d of value %02x\n", position, value);
+#endif
     return (value & (1 << (position))) != 0;
 }
 
@@ -62,6 +65,9 @@ int convertVectorToBitArray(vector_t vector)
         int x = *(int *)vectorGet(vector, i);
         bits = (bits << 1) + x;
     }
+#ifdef DEBUG
+    printf("Vector converted to bits %02x\n", bits);
+#endif
     return bits;
 }
 
@@ -104,8 +110,6 @@ void writeBit(int *bufferp, int *bufferSizep,
             fputc(*bufferp, filep);
             *bufferp = 0;
             *bufferSizep = 0;
-#ifdef DEBUG
-#endif
         }
     }
 }

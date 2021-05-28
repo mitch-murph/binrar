@@ -4,6 +4,7 @@
  * The implemenation of the search function.
 *****************************************************************************/
 #include <string.h> /* strcmp */
+#include <stdio.h>  /* printf */
 #include "search.h"
 
 /*****************************************************************************
@@ -33,6 +34,11 @@ int search(vector_t vector, int (*compare)(const void *a, const void *b),
         if (compare(vectorGet(vector, i), item))
             return i;
     }
+
+#ifdef DEBUG
+    printf("SEARCH Element was not found\n");
+#endif
+
     /* If not found return -1 */
     return -1;
 }

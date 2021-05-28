@@ -51,6 +51,11 @@ int hasFilename(const void *a, const void *b)
     /* Cast type both arguments to their type. */
     assessment_t *assessment = (assessment_t *)a;
     char *filename = (char *)b;
+
+#ifdef DEBUG
+    printf("Filename compare: %s and %s\n", assessment->filename, filename);
+#endif
+
     /* Now compare them. */
     return !(strcmp(assessment->filename, filename));
 }

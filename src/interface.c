@@ -45,6 +45,10 @@ int readStringFixLength(char *strp, int length)
     while (*strp != '\n' && getchar() != '\n')
         flag = 1; /* Loop until '\n' reached */
 
+#ifdef DEBUG
+        printf("Flag: %d\n", flag);
+#endif
+
     /* Set the last char in *str to the null-terminator */
     *strp = '\0';
     return flag;

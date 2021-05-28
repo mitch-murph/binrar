@@ -4,6 +4,7 @@
  * The implemenation of one way hash function
 *****************************************************************************/
 #include <string.h> /* strlen */
+#include <stdio.h>  /* printf */
 #include "secure_hash.h"
 
 /*****************************************************************************
@@ -41,6 +42,10 @@ long int computeHash(char *string, long int hash, long int magic)
         hash = hash ^ (string[i]);
         hash = hash * magic;
     }
+
+#ifdef DEBUG
+    printf("Resulting hash: %ld\n", hash);
+#endif
 
     /* Return the hash. */
     return hash;
