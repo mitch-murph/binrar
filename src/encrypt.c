@@ -16,12 +16,13 @@
 
 
 /******************************************************************************
-* This function reads content from file 1 to encrypt/decrypts and write it in file 2. 
+* This function reads content from file 1 to encrypt/decrypts and write it
+* in file 2. 
 
-* Input:
+ *   Input:
  *   read content in file 1
 
- * Output:
+ *   Output:
  *   write content in file 2.
  
 ******************************************************************************/
@@ -86,6 +87,11 @@ void shift_decrypt(FILE *fd1, FILE *fd2)
 
     shift_encrypt_bytes(fd1, fd2, -SHIFT_AMOUNT);
 }
+
+/*****************************************************************************
+ * This function encrypts/decrypt the file using XOR cipher. 
+
+*****************************************************************************/
 
 void XOR_cipher(FILE *in_file, FILE *out_file, char *key)
 {
