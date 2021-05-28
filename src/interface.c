@@ -114,7 +114,7 @@ int scanAreYouSure(char *message)
  * Return:
  *   None
 *****************************************************************************/
-void waitForEnter()
+void waitForEnter(void)
 {
     printf("Press Enter to Continue");
     while (getchar() != '\n')
