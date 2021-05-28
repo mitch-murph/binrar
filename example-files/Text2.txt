@@ -1,0 +1,7 @@
+This project involves developing a single program with two intended users, 
+i.e., teachers and student. The teacher's run time mode will have complete 
+control over the program, whereas the student's version mode will have 
+limited control like view their assessments and grades. This is anticipated 
+to secure the files from being forged, safeguarded through encryption. 
+Similarly, this project also involves compressing the assessment files 
+to save cost and memory space.

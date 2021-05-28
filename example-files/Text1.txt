@@ -1,0 +1,5 @@
+Our customer is a teacher seeking a software solution to store student assessment 
+files of any file type alongside their information into a single database file. 
+Assessment information includes a mark and the corresponding subject. At the same 
+time, it is to be allocated to a student who has information regarding their 
+student ID and name.
