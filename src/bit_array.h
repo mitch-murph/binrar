@@ -1,3 +1,9 @@
+/*****************************************************************************
+ * 48430 Fundamentals of C Programming - Assignment 3
+ * Bit Array
+ * Utility functions to work on the bit level. Includes reading and writing
+ * to files as bits.
+*****************************************************************************/
 #ifndef BIT_ARRAY_H
 #define BIT_ARRAY_H
 

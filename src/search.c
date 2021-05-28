@@ -7,6 +7,12 @@
 #include "search.h"
 
 /*****************************************************************************
+ * Private function prototypes
+ *  - No private functions in this files.
+ *  - All public function prototypes in header.
+*****************************************************************************/
+
+/*****************************************************************************
  * This function implement the linear search.
  * Input:
  *   vector - The vector to be searched.
@@ -30,7 +36,7 @@ int search(vector_t vector, int (*compare)(const void *a, const void *b),
     /* If not found return -1 */
     return -1;
 }
-/**/
+
 /*****************************************************************************
  * This function compares two strings for the search function.
  * Input:

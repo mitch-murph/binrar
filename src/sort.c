@@ -3,9 +3,14 @@
  * Sort
  * The implemenation of the sort function.
 *****************************************************************************/
-
 #include "vector.h"
 #include "sort.h"
+
+/*****************************************************************************
+ * Private function prototypes
+ *  - No private functions in this files.
+ *  - All public function prototypes in header.
+*****************************************************************************/
 
 /*****************************************************************************
  * This function implement the bubble sort.

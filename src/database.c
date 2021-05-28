@@ -5,7 +5,8 @@
  * student information. Packaging one or more files together and compression
  * and/or encrypting the assessment files.
 *****************************************************************************/
-#include <stdio.h>
+#include <stdio.h>  /* printf, scanf, fputc, remove, rename,
+                       fgetc, fseek, fgetpos, fsetpos */
 #include <string.h> /* strlen */
 #include "database.h"
 #include "vector.h"
@@ -15,6 +16,10 @@
 #include "student.h"
 #include "search.h"
 
+/*****************************************************************************
+ * Preprocessing directives (Private)
+*****************************************************************************/
+/* Name used for the temp database*/
 #define TEMP_DATABASE_NAME "database.bin.tmp"
 
 /*****************************************************************************

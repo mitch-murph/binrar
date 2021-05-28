@@ -1,3 +1,8 @@
+/*****************************************************************************
+ * 48430 Fundamentals of C Programming - Assignment 3
+ * Hashmap
+ * Functions for using a hashmap.
+*****************************************************************************/
 #ifndef HASHMAP_H
 #define HASHMAP_H
 

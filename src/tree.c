@@ -1,3 +1,8 @@
+/*****************************************************************************
+ * 48430 Fundamentals of C Programming - Assignment 3
+ * Tree
+ * Functions for a tree implemenation
+*****************************************************************************/
 #include <stdio.h> /* printf */
 #include "tree.h"
 

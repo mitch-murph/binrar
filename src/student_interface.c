@@ -1,5 +1,10 @@
+/*****************************************************************************
+ * 48430 Fundamentals of C Programming - Assignment 3
+ * Student Interface
+ * Functions for the student interface
+*****************************************************************************/
 #include <string.h> /* strcpy */
-#include <stdio.h>  /* printf */
+#include <stdio.h>  /* printf, scanf */
 #include <stdlib.h> /* atoi */
 #include "interface.h"
 #include "vector.h"

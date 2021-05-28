@@ -1,3 +1,10 @@
+/*****************************************************************************
+ * 48430 Fundamentals of C Programming - Assignment 3
+ * Database management.
+ * Functions for managing the database. This includes reading and writing
+ * student information. Packaging one or more files together and compression
+ * and/or encrypting the assessment files.
+*****************************************************************************/
 #ifndef DATABASE_H
 #define DATABASE_H
 
@@ -5,7 +12,7 @@
 #include <stdio.h>
 
 /*****************************************************************************
- * Preprocessing directives
+ * Preprocessing directives (Public)
 *****************************************************************************/
 #define XOR_ENCRYPT 1         /* XOR encrypt bit flag position */
 #define SHIFT_ENCRYPT 2       /* shift encrypt bit flag position */

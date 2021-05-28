@@ -1,8 +1,19 @@
+/*****************************************************************************
+ * 48430 Fundamentals of C Programming - Assignment 3
+ * Student
+ * Functions for the student information.
+*****************************************************************************/
 #include <stdio.h>  /* printf */
 #include <string.h> /* strcmp */
 #include "student.h"
 #include "vector.h"
 #include "search.h"
+
+/*****************************************************************************
+ * Private function prototypes
+ *  - No private functions in this files.
+ *  - All public function prototypes in header.
+*****************************************************************************/
 
 /*****************************************************************************
  * This function compares a students ID with a given ID.

@@ -9,7 +9,15 @@
 #include <string.h> /* strlen*/
 #include "encrypt.h"
 
-#define SHIFT_AMOUNT 69
+/*****************************************************************************
+ * Preprocessing directives (Private)
+*****************************************************************************/
+#define SHIFT_AMOUNT 69 /* Amount to shift by in shift encryption */
+
+/*****************************************************************************
+ * Private function prototypes
+*****************************************************************************/
+void shift_encrypt_bytes(FILE *fd1, FILE *fd2, int amount);
 
 /*****************************************************************************
  * This function performs the actual shift encryption/decryption process.

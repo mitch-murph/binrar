@@ -1,8 +1,17 @@
+/*****************************************************************************
+ * 48430 Fundamentals of C Programming - Assignment 3
+ * Tree
+ * Functions for a tree implemenation
+*****************************************************************************/
 #ifndef VECTOR_H
 #define VECTOR_H
 
-#include <stdlib.h>
+#include <stdlib.h> /* malloc, free */
 
+/*****************************************************************************
+ * Structs
+*****************************************************************************/
+/* Struct to store information about a vector */
 struct vector
 {
     int size;
@@ -13,6 +22,9 @@ struct vector
 
 typedef struct vector vector_t;
 
+/*****************************************************************************
+ * Public function prototypes
+*****************************************************************************/
 int initVector(vector_t *vector, size_t elementSize);
 int initVectorCap(vector_t *vector, int capacity, size_t elementSize);
 int copyVector(vector_t *dest, const vector_t src);

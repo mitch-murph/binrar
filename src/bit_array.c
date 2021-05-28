@@ -98,14 +98,14 @@ void writeBit(int *bufferp, int *bufferSizep,
         /* If the buffer is full. Write it to the file. */
         if (*bufferSizep == 8)
         {
-            #ifdef DEBUG
-                printf("Writing bits %02x\n", *bufferp);
-            #endif
+#ifdef DEBUG
+            printf("Writing bits %02x\n", *bufferp);
+#endif
             fputc(*bufferp, filep);
             *bufferp = 0;
             *bufferSizep = 0;
-            #ifdef DEBUG
-            #endif
+#ifdef DEBUG
+#endif
         }
     }
 }
@@ -127,9 +127,9 @@ int readBit(int *bufferp, int *bufferSizep, FILE *filep)
     {
         *bufferp = fgetc(filep);
         *bufferSizep = 7;
-        #ifdef DEBUG
-            printf("Reading bits %02x\n", *bufferp);
-        #endif
+#ifdef DEBUG
+        printf("Reading bits %02x\n", *bufferp);
+#endif
     }
     else
     {

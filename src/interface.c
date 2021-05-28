@@ -10,6 +10,12 @@
 #include "sort.h"
 
 /*****************************************************************************
+ * Private function prototypes
+ *  - No private functions in this files.
+ *  - All public function prototypes in header.
+*****************************************************************************/
+
+/*****************************************************************************
  * This function reads a string and only accepted a fixed length. Exceeding
  * characters are ignored.
  * Input:

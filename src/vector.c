@@ -1,8 +1,16 @@
+/*****************************************************************************
+ * 48430 Fundamentals of C Programming - Assignment 3
+ * Tree
+ * Functions for a tree implemenation
+*****************************************************************************/
+#include <stdlib.h> /* malloc, free */
+#include <stdio.h>  /* printf */
+#include <string.h> /* memcpy */
 #include "vector.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 
+/*****************************************************************************
+ * Preprocessing directives (Private)
+*****************************************************************************/
 #define DEFAULT_CAPACITY 10
 
 /*****************************************************************************
