@@ -85,7 +85,9 @@ int hashmapSet(hashmap_t hashmap, void *item)
     /* Set the value in the map to the item. */
     if (vectorSet(hashmap.map, item, hash))
     {
-        printf("Error: Hashmap cannot set");
+#ifdef DEBUG
+        printf("Error: Hashmap cannot set\n");
+#endif
         return 1;
     }
     return 0;
@@ -115,5 +117,8 @@ void *hashmapGet(hashmap_t hashmap, void *item)
         return maybeItem;
     }
     /* Otherwise, return the NULL */
+#ifdef DEBUG
+    printf("Hashmap value was not found.\n");
+#endif
     return NULL;
 }

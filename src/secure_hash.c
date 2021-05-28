@@ -1,9 +1,18 @@
+/*****************************************************************************
+ * 48430 Fundamentals of C Programming - Assignment 3
+ * Secure Hash
+ * The implemenation of one way hash function
+*****************************************************************************/
 #include <string.h> /* strlen */
+#include <stdio.h>  /* printf */
 #include "secure_hash.h"
 
-#define INITIAL_ENCRYPT 250285572184613
-#define INITIAL_PASSWORD_CHECK 745558737037388
-#define MAGIC 838474839873231
+/*****************************************************************************
+ * Preprocessing directives (Private)
+*****************************************************************************/
+#define INITIAL_ENCRYPT 250285572184613        /* initial encrypt hash */
+#define INITIAL_PASSWORD_CHECK 745558737037388 /* initial password hash */
+#define MAGIC 838474839873231                  /* initial magic hash */
 
 /*****************************************************************************
  * Private function prototypes
@@ -33,6 +42,10 @@ long int computeHash(char *string, long int hash, long int magic)
         hash = hash ^ (string[i]);
         hash = hash * magic;
     }
+
+#ifdef DEBUG
+    printf("Resulting hash: %ld\n", hash);
+#endif
 
     /* Return the hash. */
     return hash;

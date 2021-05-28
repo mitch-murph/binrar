@@ -1,9 +1,17 @@
+/*****************************************************************************
+ * 48430 Fundamentals of C Programming - Assignment 3
+ * Interface
+ * Functions that are common between student_interface and teacher_interface
+*****************************************************************************/
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
 #include "vector.h"
 #include "student.h"
 
+/*****************************************************************************
+ * Public function prototypes
+*****************************************************************************/
 int readStringFixLength(char *strp, int length);
 int flushScan(void);
 int scanAreYouSure(char *message);

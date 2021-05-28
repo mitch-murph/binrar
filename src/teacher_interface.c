@@ -1,3 +1,8 @@
+/*****************************************************************************
+ * 48430 Fundamentals of C Programming - Assignment 3
+ * Teacher Interface
+ * Functions for the teacher interface
+*****************************************************************************/
 #include <string.h> /* strcpy */
 #include <stdio.h>  /* printf, scanf */
 #include <math.h>   /* pow */
@@ -15,14 +20,12 @@ void teacherMainMenu(void);
 int scanFindStudent(const vector_t studentList);
 void printLaunch(void);
 void printTeacherMainMenu(const void *a);
-
 void teacherStudentMainMenu(vector_t *studentList, char *databaseFile);
 void teacherAssessmentMenu(vector_t *studentList, char *databaseFile);
 char setBitFlag(char *filename);
 void saveDatabase(const vector_t studentList, char *databaseFile);
 void loadDatabase(vector_t *studentList, char *databaseFile);
 void extractAll(char *databaseFile);
-
 void printTeacherStudentMainMenu(const void *studentList);
 void displayAllStudents(vector_t *studentList);
 void findStudent(const vector_t studentList, char *databaseFile);
@@ -31,7 +34,6 @@ void deleteStudent(vector_t *studentList);
 void teacherStudentListMenu(vector_t *studentList, char *databaseFile);
 void printTeacherStudentListMenu(const void *studentList);
 void sortStudents(vector_t *studentList);
-
 void printTeacherAssessmentMenu(const void *a);
 void teacherAssessmentsListMenu(vector_t *studentList, char *databaseFile);
 void displayAllAssessments(vector_t *studentList);
@@ -42,14 +44,12 @@ void sortAllAssessmentList(vector_t *assessments);
 void filterAllAssessmentList(const vector_t studentList,
                              vector_t *assessments);
 void printTeacherAssessmentListMenu(const void *a);
-
 void teacherStudentMenu(student_t *student, char *databaseFile);
 void printTeacherStudentMenu(const void *a);
 void studentAssessmentList(student_t *student, char *databaseFile);
 void addStudentAssessments(student_t *student);
 void deleteStudentAssessment(student_t *student);
 void extractStudentAssessmentFile(student_t *student, char *databaseFile);
-
 void printStudentAssessmentList(const void *a);
 
 /*****************************************************************************

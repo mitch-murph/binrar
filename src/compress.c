@@ -45,6 +45,10 @@ void countBytes(FILE *fp, hashmap_t *map)
         node.key = buffer;
         node_t *maybeNode = hashmapGet(*map, &node);
 
+#ifdef DEBUG
+        printf("Count bytes buffer: %02x\n", buffer);
+#endif
+
         /* If it does exist increments its frequency count.
            Otherwises use node created. */
         if (maybeNode != NULL)
@@ -228,6 +232,9 @@ node_t *buildHuffmanTree(vector_t nodes)
         vectorRemove(&nodes, curr);
         vectorRemove(&nodes, curr - 1);
 
+#ifdef DEBUG
+        printf("Positions combined: %d and %d\n", curr, curr - 1);
+#endif
         /* Push the new node onto the vector. */
         vectorPushBack(&nodes, &new);
     }

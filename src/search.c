@@ -1,23 +1,64 @@
-#include "search.h"
+/*****************************************************************************
+ * 48430 Fundamentals of C Programming - Assignment 3
+ * Search
+ * The implemenation of the search function.
+*****************************************************************************/
 #include <string.h> /* strcmp */
-/*function to implement the search*/
-int search(vector_t vector, int (*compare)(const void *a, const void *b), const void *item)
+#include <stdio.h>  /* printf */
+#include "search.h"
+
+/*****************************************************************************
+ * Private function prototypes
+ *  - No private functions in this files.
+ *  - All public function prototypes in header.
+*****************************************************************************/
+
+/*****************************************************************************
+ * This function implement the linear search.
+ * Input:
+ *   vector - The vector to be searched.
+ *   compare - The function to compare the values by.
+ *   item - The item to search the vector for.
+ * Return:
+ *   The index of the value in the vector.
+ *   If not found -1.
+*****************************************************************************/
+int search(vector_t vector, int (*compare)(const void *a, const void *b),
+           const void *item)
 {
-    /*checks each element sequentially 
-              to find the required key.*/
+    /* check each element sequentially to find the required key.*/
     int i;
     for (i = 0; i < vector.size; i++)
     {
+        /* Check if the required key. */
         if (compare(vectorGet(vector, i), item))
             return i;
     }
+
+#ifdef DEBUG
+    printf("SEARCH Element was not found\n");
+#endif
+
+    /* If not found return -1 */
     return -1;
 }
-/*compares two strings to see if the 
-search algorith has been satisfied*/
+
+/*****************************************************************************
+ * This function compares two strings for the search function.
+ * Input:
+ *   ap - A void pointer to a string A
+ *       Must be this type to satisfy search()
+ *   bp - A void pointer to a string B
+ *       Must be this type to satisfy search()
+ * Return:
+ *   1 - If they are equal.
+ *   0 - If they are not equal.
+*****************************************************************************/
 int compareString(const void *ap, const void *bp)
 {
+    /* Cast type both arguments to strings. */
     char *stringA = (char *)ap;
     char *stringB = (char *)bp;
+    /* Compare their values. */
     return !strcmp(stringA, stringB);
 }

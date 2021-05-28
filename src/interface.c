@@ -10,6 +10,12 @@
 #include "sort.h"
 
 /*****************************************************************************
+ * Private function prototypes
+ *  - No private functions in this files.
+ *  - All public function prototypes in header.
+*****************************************************************************/
+
+/*****************************************************************************
  * This function reads a string and only accepted a fixed length. Exceeding
  * characters are ignored.
  * Input:
@@ -38,6 +44,10 @@ int readStringFixLength(char *strp, int length)
 	   is read. */
     while (*strp != '\n' && getchar() != '\n')
         flag = 1; /* Loop until '\n' reached */
+
+#ifdef DEBUG
+        printf("Flag: %d\n", flag);
+#endif
 
     /* Set the last char in *str to the null-terminator */
     *strp = '\0';
