@@ -1,8 +1,10 @@
 #include "search.h"
 #include <string.h> /* strcmp */
-
+/*function to implement the search*/
 int search(vector_t vector, int (*compare)(const void *a, const void *b), const void *item)
 {
+    /*checks each element sequentially 
+              to find the required key.*/
     int i;
     for (i = 0; i < vector.size; i++)
     {
