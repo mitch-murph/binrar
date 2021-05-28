@@ -17,7 +17,7 @@ int initVector(vector_t *vector, size_t elementSize);
 int initVectorCap(vector_t *vector, int capacity, size_t elementSize);
 int copyVector(vector_t *dest, const vector_t src);
 void freeVector(vector_t vector);
-void vector_resize(vector_t *vector, int new_capacity);
+void vectorResize(vector_t *vector, int new_capacity);
 void *vectorPushBack(vector_t *vector, void *value);
 void *vectorPop(vector_t *vector);
 void *vectorGet(vector_t vector, int index);
